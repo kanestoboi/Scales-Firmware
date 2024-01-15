@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
 
 #include "nordic_common.h"
 #include "nrf.h"
@@ -16,6 +17,8 @@
 #include "nrf_log_default_backends.h"
 #include "nrf_delay.h"
 #include "nrfx_twi.h"
+
+#include "Components/LCD/nrf_gfx.h"
 
 #include "Components/ADS123X/ADS123X.h"
 #include "Components/FuelGauge/MAX17260/max17260.h"
@@ -42,13 +45,28 @@ float roundedValue;
 #define TWI_SCL_M           6         //I2C SCL Pin
 #define TWI_SDA_M           8        //I2C SDA Pin
 
-#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(80)
+#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(120)
 
 // Create a Handle for the twi communication
 const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
 
 MAX17260 max17260Sensor;
 ADS123X scale;
+
+bool writeToWeightCharacteristic = false;
+
+
+extern const nrf_gfx_font_desc_t orkney_8ptFontInfo;
+extern const nrf_gfx_font_desc_t orkney_24ptFontInfo;
+extern const nrf_lcd_t nrf_lcd_st7735;
+
+static const nrf_lcd_t * p_lcd = &nrf_lcd_st7735;
+static const nrf_gfx_font_desc_t * p_font = &orkney_24ptFontInfo;
+
+static void screen_clear(void)
+{
+    nrf_gfx_screen_fill(p_lcd, 0xFFFF);
+}
 
 void tare_scale()
 {
@@ -62,7 +80,6 @@ void calibrate_scale()
     float val; 
     ADS123X_readAverage(&scale, &val, 80);
 
-    nrf_gpio_pin_set(42U);
     float scaleFactor = ((val - ADS123X_getOffset(&scale))/50.0f);
     NRF_LOG_RAW_INFO("Scale Factor:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(scaleFactor) );
     ADS123X_setScaleFactor(&scale, scaleFactor);
@@ -76,20 +93,39 @@ void calibrate_scale()
     NRF_LOG_INFO("Scales calibrated.");
 }
 
+void enable_write_to_weight_characteristic()
+{
+    writeToWeightCharacteristic = true;
+}
+
+void disable_write_to_weight_characteristic()
+{
+    writeToWeightCharacteristic = false;
+}
+
 void initialise_accelerometer()
 {    
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
-void shutdown_accelerometer()
-{
-    NRF_LOG_INFO("Shutting down scales");
-    NRF_LOG_FLUSH();
-   
-    ret_code_t err_code = app_timer_stop(m_notification_timer_id);
-    APP_ERROR_CHECK(err_code);
 
+char m_last_weight_string[20] = "";
+static void weight_print(float weight)
+{
+    char buffer[20];//[20];  // Adjust the buffer size based on your needs
+
+    // Convert float to string
+    sprintf(buffer, "%*.*f g", 6, 1, m_last_weight_string);
+
+    //nrf_gfx_point_t text_start = NRF_GFX_POINT(5, nrf_gfx_height_get(p_lcd)/2-20);
+    //APP_ERROR_CHECK(nrf_gfx_print_fast(p_lcd, &text_start, 0xFFFF, 0x00, m_last_weight_string, &orkney_24ptFontInfo, true));
+
+    sprintf(buffer, "%05.1f", weight);
+
+    nrf_gfx_point_t text_start2 = NRF_GFX_POINT(5, nrf_gfx_height_get(p_lcd)/2-20);
+    APP_ERROR_CHECK(nrf_gfx_print_fast(p_lcd, &text_start2, 0xFFFF, 0x00, buffer, &orkney_24ptFontInfo, true));
+    memcpy(m_last_weight_string, buffer, 20);
 }
 
 /**@brief Function for handling the Accelerometer measurement timer timeout.
@@ -107,20 +143,24 @@ static void notification_timeout_handler(void * p_context)
 
     ADS123X_getUnits(&scale, &scaleValue, 2U);
 
-    roundedValue = abs(roundf(scaleValue * 10));
+    roundedValue = abs(roundf(scaleValue * 10.0));
 
-    ble_weight_sensor_service_sensor_data_update((uint8_t*)&scaleValue, sizeof(float));
+    if (writeToWeightCharacteristic)
+    {
+        ble_weight_sensor_service_sensor_data_update((uint8_t*)&scaleValue, sizeof(float));
+    }
+    weight_print(roundedValue/10.0);
     
     //NRF_LOG_RAW_INFO("ScaledValue:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(roundedValue/10) );
     //NRF_LOG_FLUSH();
 
 
-    if (&max17260Sensor.initialised)
+    /*if (&max17260Sensor.initialised)
     {
         float soc;
         max17260_getStateOfCharge(&max17260Sensor, &soc);
         bluetooth_update_battery_level((uint8_t)roundf(soc));
-    }
+    }*/
 }
 
 
@@ -256,6 +296,14 @@ void twi_master_init(void)
     nrfx_twi_enable(&m_twi);
 }
 
+
+static void text_print(void)
+{
+    static const char * test_text = "Scales";
+    nrf_gfx_point_t text_start = NRF_GFX_POINT(5, nrf_gfx_height_get(p_lcd)/2-20);
+    APP_ERROR_CHECK(nrf_gfx_print_fast(p_lcd, &text_start, 0xFFFF, 0, test_text, p_font, true));
+}
+
 /**@brief Function for application main en
 try.
  */
@@ -305,22 +353,33 @@ int main(void)
         NRF_LOG_INFO("MAX17260 not found");
     }*/
     
-    bluetooth_register_connected_callback(initialise_accelerometer);
-    bluetooth_register_disconnected_callback(shutdown_accelerometer);
+    bluetooth_register_connected_callback(enable_write_to_weight_characteristic);
+    bluetooth_register_disconnected_callback(disable_write_to_weight_characteristic);
+
+
 
 
     NRF_LOG_FLUSH();
 
-    // Keeping this LED on as a visual indicator that the accelerometer has been found        
-    //nrf_buddy_led_on(3);
 
-    // Enter main loop.
+    // Reset LCD
+    nrf_gpio_cfg_output(15U);
+    nrf_gpio_pin_clear(15U);
+    nrf_delay_ms(100);
+    nrf_gpio_pin_set(15U);
 
-     nrf_gpio_cfg_output(42U);
-    nrf_gpio_pin_set(42U);
-    //nrf_delay_ms(500); 
-    //nrf_gpio_pin_set(8U);
-    //nrf_delay_ms(500); 
+    nrf_gfx_init(p_lcd);
+
+
+    nrf_gfx_rotation_set(p_lcd, NRF_LCD_ROTATE_90);
+
+    screen_clear();
+
+    // set LCD backlight to on
+    nrf_gpio_cfg_output(45U);
+    nrf_gpio_pin_set(45U);
+
+    text_print();
 
     uint8_t pin_DOUT = 33;
     uint8_t pin_SCLK = 35;
@@ -338,13 +397,19 @@ int main(void)
     ADS123X_PowerOff(&scale);
     ADS123X_setGain(&scale, GAIN_128);
     ADS123X_setSpeed(&scale, SPEED_80SPS);
-    nrf_delay_ms(500); 
 
     ADS123X_PowerOn(&scale);
 
     //ADS123X_calibrateOnNextConversion(&scale);
+
+    static const char * test_text = "Taring";
+    nrf_gfx_point_t text_start = NRF_GFX_POINT(5, nrf_gfx_height_get(p_lcd)/2-20);
+    APP_ERROR_CHECK(nrf_gfx_print_fast(p_lcd, &text_start, 0xFFFF, 0, test_text, p_font, true));
+
     ADS123X_tare(&scale, 80);
     float taredValue = ADS123X_getOffset(&scale);
+
+    screen_clear();
     NRF_LOG_RAW_INFO("Offset:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(taredValue) );
 
     NRF_LOG_FLUSH();
@@ -356,6 +421,7 @@ int main(void)
 
     ADS123X_getUnits(&scale, &scaleValue, 2U);
 
+    initialise_accelerometer();    
 
     for (;;)
     {
