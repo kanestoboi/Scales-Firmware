@@ -329,7 +329,8 @@ ret_code_t nrf_gfx_print_fast(nrf_lcd_t const * p_instance,
                          const char * string,
                          const nrf_gfx_font_desc_t * p_font,
                          bool wrap);
-/* @} */
+
+void nrf_gfx_print_square();
 
 #endif //NRF_GFX_H__
 

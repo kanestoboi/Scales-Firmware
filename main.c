@@ -18,7 +18,7 @@
 #include "nrf_delay.h"
 #include "nrfx_twi.h"
 
-#include "Components/LCD/nrf_gfx.h"
+#include "Components/LCD/scales_lcd.h"
 
 #include "Components/ADS123X/ADS123X.h"
 #include "Components/FuelGauge/MAX17260/max17260.h"
@@ -56,17 +56,7 @@ ADS123X scale;
 bool writeToWeightCharacteristic = false;
 
 
-extern const nrf_gfx_font_desc_t orkney_8ptFontInfo;
-extern const nrf_gfx_font_desc_t orkney_24ptFontInfo;
-extern const nrf_lcd_t nrf_lcd_st7735;
 
-static const nrf_lcd_t * p_lcd = &nrf_lcd_st7735;
-static const nrf_gfx_font_desc_t * p_font = &orkney_24ptFontInfo;
-
-static void screen_clear(void)
-{
-    nrf_gfx_screen_fill(p_lcd, 0xFFFF);
-}
 
 void tare_scale()
 {
@@ -110,23 +100,6 @@ void initialise_accelerometer()
 }
 
 
-char m_last_weight_string[20] = "";
-static void weight_print(float weight)
-{
-    char buffer[20];//[20];  // Adjust the buffer size based on your needs
-
-    // Convert float to string
-    sprintf(buffer, "%*.*f g", 6, 1, m_last_weight_string);
-
-    //nrf_gfx_point_t text_start = NRF_GFX_POINT(5, nrf_gfx_height_get(p_lcd)/2-20);
-    //APP_ERROR_CHECK(nrf_gfx_print_fast(p_lcd, &text_start, 0xFFFF, 0x00, m_last_weight_string, &orkney_24ptFontInfo, true));
-
-    sprintf(buffer, "%05.1f", weight);
-
-    nrf_gfx_point_t text_start2 = NRF_GFX_POINT(5, nrf_gfx_height_get(p_lcd)/2-20);
-    APP_ERROR_CHECK(nrf_gfx_print_fast(p_lcd, &text_start2, 0xFFFF, 0x00, buffer, &orkney_24ptFontInfo, true));
-    memcpy(m_last_weight_string, buffer, 20);
-}
 
 /**@brief Function for handling the Accelerometer measurement timer timeout.
  *
@@ -150,6 +123,8 @@ static void notification_timeout_handler(void * p_context)
         ble_weight_sensor_service_sensor_data_update((uint8_t*)&scaleValue, sizeof(float));
     }
     weight_print(roundedValue/10.0);
+
+    //printSquare();
     
     //NRF_LOG_RAW_INFO("ScaledValue:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(roundedValue/10) );
     //NRF_LOG_FLUSH();
@@ -297,12 +272,7 @@ void twi_master_init(void)
 }
 
 
-static void text_print(void)
-{
-    static const char * test_text = "Scales";
-    nrf_gfx_point_t text_start = NRF_GFX_POINT(5, nrf_gfx_height_get(p_lcd)/2-20);
-    APP_ERROR_CHECK(nrf_gfx_print_fast(p_lcd, &text_start, 0xFFFF, 0, test_text, p_font, true));
-}
+
 
 /**@brief Function for application main en
 try.
@@ -357,27 +327,9 @@ int main(void)
     bluetooth_register_disconnected_callback(disable_write_to_weight_characteristic);
 
 
-
-
     NRF_LOG_FLUSH();
 
-
-    // Reset LCD
-    nrf_gpio_cfg_output(15U);
-    nrf_gpio_pin_clear(15U);
-    nrf_delay_ms(100);
-    nrf_gpio_pin_set(15U);
-
-    nrf_gfx_init(p_lcd);
-
-
-    nrf_gfx_rotation_set(p_lcd, NRF_LCD_ROTATE_90);
-
-    screen_clear();
-
-    // set LCD backlight to on
-    nrf_gpio_cfg_output(45U);
-    nrf_gpio_pin_set(45U);
+    scales_lcd_init();
 
     text_print();
 
@@ -389,7 +341,7 @@ int main(void)
     uint8_t pin_SPEED = 39;
 
     NRF_LOG_INFO("Starting");
-
+    NRF_LOG_FLUSH();
 
     
     ADS123X_Init(&scale, pin_DOUT, pin_SCLK, pin_PWDN, pin_GAIN0, pin_GAIN1, pin_SPEED);
@@ -401,15 +353,11 @@ int main(void)
     ADS123X_PowerOn(&scale);
 
     //ADS123X_calibrateOnNextConversion(&scale);
-
-    static const char * test_text = "Taring";
-    nrf_gfx_point_t text_start = NRF_GFX_POINT(5, nrf_gfx_height_get(p_lcd)/2-20);
-    APP_ERROR_CHECK(nrf_gfx_print_fast(p_lcd, &text_start, 0xFFFF, 0, test_text, p_font, true));
-
+    print_taring();
     ADS123X_tare(&scale, 80);
     float taredValue = ADS123X_getOffset(&scale);
 
-    screen_clear();
+    //screen_clear();
     NRF_LOG_RAW_INFO("Offset:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(taredValue) );
 
     NRF_LOG_FLUSH();
