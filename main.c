@@ -28,6 +28,8 @@
 #include "Components/SavedParameters/SavedParameters.h"
 
 APP_TIMER_DEF(m_notification_timer_id);
+APP_TIMER_DEF(m_wakeup_timer_id);
+APP_TIMER_DEF(m_keep_alive_timer_id);
 
 #define NRF_LOG_FLOAT_SCALES(val) (uint32_t)(((val) < 0 && (val) > -1.0) ? "-" : ""),   \
                            (int32_t)(val),                                              \
@@ -45,7 +47,9 @@ float roundedValue;
 #define TWI_SCL_M           6         //I2C SCL Pin
 #define TWI_SDA_M           8        //I2C SDA Pin
 
-#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(120)
+#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(20)    
+#define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(10000)
+#define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
 
 // Create a Handle for the twi communication
 const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
@@ -55,9 +59,6 @@ ADS123X scale;
 
 bool writeToWeightCharacteristic = false;
 
-
-
-
 void tare_scale()
 {
     ADS123X_tare(&scale, 80);
@@ -65,8 +66,17 @@ void tare_scale()
     NRF_LOG_INFO("Scales tared.");
 }
 
+void initialise_accelerometer();
+
 void calibrate_scale()
 {
+    ret_code_t err_code;
+    err_code = app_timer_stop(m_notification_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_keep_alive_timer_id);
+    APP_ERROR_CHECK(err_code);
+
     float val; 
     ADS123X_readAverage(&scale, &val, 80);
 
@@ -81,6 +91,8 @@ void calibrate_scale()
     NRF_LOG_RAW_INFO("Read Back Scale Factor:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(scaleFactor) );
 
     NRF_LOG_INFO("Scales calibrated.");
+
+    initialise_accelerometer();
 }
 
 void enable_write_to_weight_characteristic()
@@ -96,6 +108,9 @@ void disable_write_to_weight_characteristic()
 void initialise_accelerometer()
 {    
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -136,6 +151,72 @@ static void notification_timeout_handler(void * p_context)
         max17260_getStateOfCharge(&max17260Sensor, &soc);
         bluetooth_update_battery_level((uint8_t)roundf(soc));
     }*/
+
+    ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
+float m_last_keep_alive_value = 0.0;
+float m_last_wakeup_value = 0.0;
+static void keep_alive_timeout_handler(void * p_context)
+{
+    UNUSED_PARAMETER(p_context);
+    ret_code_t err_code;
+    // create arrays which will hold x,y & z co-ordinates values of acc
+
+    if (abs(m_last_keep_alive_value - roundedValue) < 0.3 && !writeToWeightCharacteristic)
+    {
+        err_code = app_timer_stop(m_notification_timer_id);
+        APP_ERROR_CHECK(err_code);
+
+        err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
+        APP_ERROR_CHECK(err_code);
+
+        // set LCD backlight to off
+        nrf_gpio_cfg_output(45);
+        nrf_gpio_pin_clear(45);
+
+        m_last_wakeup_value  = roundedValue;
+
+    }
+
+    m_last_keep_alive_value = roundedValue;
+
+
+}
+
+
+static void wakeup_timeout_handler(void * p_context)
+{
+    UNUSED_PARAMETER(p_context);
+    ret_code_t err_code;
+
+    //ADS123X_PowerOn(&scale);
+
+    ADS123X_getUnits(&scale, &scaleValue, 2U);
+    //ADS123X_PowerOff(&scale);
+
+    roundedValue = abs(roundf(scaleValue * 10.0));
+
+    if (abs(m_last_wakeup_value - roundedValue) > 0.3)
+    {
+        // set LCD backlight to on
+        nrf_gpio_cfg_output(45);
+        nrf_gpio_pin_set(45);
+        print_taring();
+        ADS123X_tare(&scale, 80);
+        err_code = app_timer_stop(m_wakeup_timer_id);
+        APP_ERROR_CHECK(err_code);
+
+        //ADS123X_PowerOn(&scale);
+        initialise_accelerometer();
+    }
+    else{
+        m_last_wakeup_value = roundedValue;
+        
+    }
+
+    
 }
 
 
@@ -148,9 +229,14 @@ static void timers_init(void)
     // Initialize timer module.
     ret_code_t err_code = app_timer_init();
     APP_ERROR_CHECK(err_code);
-
     
-    err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_REPEATED, notification_timeout_handler);
+    err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_SINGLE_SHOT, notification_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_wakeup_timer_id, APP_TIMER_MODE_REPEATED, wakeup_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_keep_alive_timer_id, APP_TIMER_MODE_REPEATED, keep_alive_timeout_handler);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -330,7 +416,6 @@ int main(void)
     NRF_LOG_FLUSH();
 
     scales_lcd_init();
-
     text_print();
 
     uint8_t pin_DOUT = 33;

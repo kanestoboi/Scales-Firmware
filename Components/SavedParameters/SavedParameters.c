@@ -39,7 +39,7 @@ typedef struct SavedParameters_t
 
 static SavedParameters_t mSavedParameters = 
 {
-    .scaleFactor = 0.0,
+    .scaleFactor = -2243.8,
 };
 
 /* A record containing dummy configuration data. */
