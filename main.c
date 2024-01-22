@@ -48,7 +48,7 @@ float roundedValue;
 #define TWI_SDA_M           8        //I2C SDA Pin
 
 #define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(20)    
-#define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(10000)
+#define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(60000)
 #define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
 
 // Create a Handle for the twi communication
@@ -66,7 +66,7 @@ void tare_scale()
     NRF_LOG_INFO("Scales tared.");
 }
 
-void initialise_accelerometer();
+void initialise_weight_sensor();
 
 void calibrate_scale()
 {
@@ -92,7 +92,7 @@ void calibrate_scale()
 
     NRF_LOG_INFO("Scales calibrated.");
 
-    initialise_accelerometer();
+    initialise_weight_sensor();
 }
 
 void enable_write_to_weight_characteristic()
@@ -105,7 +105,7 @@ void disable_write_to_weight_characteristic()
     writeToWeightCharacteristic = false;
 }
 
-void initialise_accelerometer()
+void initialise_weight_sensor()
 {    
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -207,9 +207,7 @@ static void wakeup_timeout_handler(void * p_context)
         ADS123X_tare(&scale, 80);
         err_code = app_timer_stop(m_wakeup_timer_id);
         APP_ERROR_CHECK(err_code);
-
-        //ADS123X_PowerOn(&scale);
-        initialise_accelerometer();
+        initialise_weight_sensor();
     }
     else{
         m_last_wakeup_value = roundedValue;
@@ -454,7 +452,7 @@ int main(void)
 
     ADS123X_getUnits(&scale, &scaleValue, 2U);
 
-    initialise_accelerometer();    
+    initialise_weight_sensor();    
 
     for (;;)
     {
