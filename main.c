@@ -97,6 +97,17 @@ void calibrate_scale()
     initialise_weight_sensor();
 }
 
+void set_coffee_to_water_ratio(uint16_t requestValue)
+{
+    saved_parameters_setCoffeeToWaterRatioNumerator(requestValue >> 8);
+    saved_parameters_setCoffeeToWaterRatioDenominator(requestValue);
+}
+
+void set_weigh_mode(uint8_t requestValue)
+{
+    saved_parameters_setWeighMode(requestValue);
+}      
+
 void enable_write_to_weight_characteristic()
 {
     writeToWeightCharacteristic = true;
@@ -374,8 +385,6 @@ void twi_master_init(void)
 }
 
 
-
-
 /**@brief Function for application main en
 try.
  */
@@ -387,6 +396,9 @@ int main(void)
 
     // Initialize the nRF logger. Log messages are sent out the RTT interface
     log_init();
+
+    // Initialise the saved parameters module
+   saved_parameters_init();
     
     // Start execution.
     NRF_LOG_INFO("Scales Started.");
@@ -406,8 +418,20 @@ int main(void)
 
     ble_weight_sensor_set_tare_callback(&tare_scale);
     ble_weight_sensor_set_calibration_callback(&calibrate_scale);
+    ble_weight_sensor_set_coffee_to_water_ratio_callback(&set_coffee_to_water_ratio);
+    ble_weight_sensor_set_weigh_mode_callback(&set_weigh_mode);
 
-    saved_parameters_init();
+    uint16_t savedCoffeeToWaterRatio = saved_parameters_getCoffeeToWaterRatioNumerator() << 8 | saved_parameters_getCoffeeToWaterRatioDenominator();
+    ble_weight_sensor_service_coffee_to_water_ratio_update((uint8_t*)&savedCoffeeToWaterRatio, sizeof(savedCoffeeToWaterRatio));
+
+    uint8_t savedWeighMode = saved_parameters_getWeighMode();
+    ble_weight_sensor_service_weigh_mode_update(&savedWeighMode, sizeof(savedWeighMode));
+
+
+
+    bluetooth_register_connected_callback(enable_write_to_weight_characteristic);
+    bluetooth_register_disconnected_callback(disable_write_to_weight_characteristic);
+
     bluetooth_advertising_start(erase_bonds);
     NRF_LOG_INFO("Bluetooth setup complete");
     NRF_LOG_FLUSH();
@@ -425,8 +449,7 @@ int main(void)
         NRF_LOG_INFO("MAX17260 not found");
     }*/
     
-    bluetooth_register_connected_callback(enable_write_to_weight_characteristic);
-    bluetooth_register_disconnected_callback(disable_write_to_weight_characteristic);
+
 
 
     NRF_LOG_FLUSH();

@@ -25,10 +25,12 @@
 
 #define WEIGHT_SENSOR_SERVICE_UUID_BASE {0x86, 0xfe, 0x92, 0x36, 0x4B, 0x4e, 0x67, 0xAF, 0xBE, 0x41, 0x8B, 0x81, 0xE4, 0x46, 0x89, 0xCE}
 
-#define WEIGHT_SENSOR_SERVICE_UUID                  0x1400
-#define WEIGHT_SENSOR_WEIGHT_VALUE_CHAR_UUID        0x1401
-#define WEIGHT_SENSOR_TARE_CHAR_UUID                0x1402
-#define WEIGHT_SENSOR_CALIBRATION_CHAR_UUID         0x1403
+#define WEIGHT_SENSOR_SERVICE_UUID                      0x1400
+#define WEIGHT_SENSOR_WEIGHT_VALUE_CHAR_UUID            0x1401
+#define WEIGHT_SENSOR_TARE_CHAR_UUID                    0x1402
+#define WEIGHT_SENSOR_CALIBRATION_CHAR_UUID             0x1403
+#define WEIGHT_SENSOR_COFFEE_TO_WATER_RATIO_CHAR_UUID   0x1404
+#define WEIGHT_SENSOR_WEIGH_MODE_CHAR_UUID              0x1405
 
 
 /**@brief   Macro for defining a ble_weight_sensor instance.
@@ -52,6 +54,12 @@ typedef enum
     BLE_WEIGHT_SENSOR_EVT_DISCONNECTED,
     BLE_WEIGHT_SENSOR_EVT_CONNECTED
 } ble_weight_sensor_evt_type_t;
+
+typedef enum
+{
+    BLE_WEIGHT_SENSOR_READ_VALUE_REQUEST,
+    BLE_WEIGHT_SENSOR_WRITE_VALUE_REQUEST,
+} ble_weight_sensor_request_type_t;
 
 /**@brief Custom Service event. */
 typedef struct
@@ -79,6 +87,8 @@ struct ble_accerometer_service_s
     ble_gatts_char_handles_t        weight_sensor_sensor_data_handles;      /**< Handles related to the weight_sensor Value characteristic. */
     ble_gatts_char_handles_t        weight_sensor_tare_handles;
     ble_gatts_char_handles_t        weight_sensor_calibration_handles;
+    ble_gatts_char_handles_t        weight_sensor_coffee_to_water_ratio_handles;
+    ble_gatts_char_handles_t        weight_sensor_weigh_mode_handles;
     uint16_t                      conn_handle;                    /**< Handle of the current connection (as provided by the BLE stack, is BLE_CONN_HANDLE_INVALID if not in a connection). */
     uint8_t                       uuid_type; 
 };
@@ -128,6 +138,10 @@ uint32_t ble_weight_sensor_service_sensor_data_update(uint8_t *custom_value, uin
 
 uint32_t ble_weight_sensor_service_tare_update(uint8_t *custom_value, uint8_t custom_value_length);
 
+uint32_t ble_weight_sensor_service_coffee_to_water_ratio_update(uint8_t *custom_value, uint8_t custom_value_length);
+
+uint32_t ble_weight_sensor_service_weigh_mode_update(uint8_t *custom_value, uint8_t custom_value_length);
+
 void ble_weight_sensor_on_weight_sensor_evt(ble_weight_sensor_service_t * p_weight_sensor_service, ble_weight_sensor_evt_t * p_evt);
 
 uint32_t ble_weight_sensor_service_sensor_data_set(uint8_t *custom_value, uint8_t custom_value_length);
@@ -135,6 +149,10 @@ uint32_t ble_weight_sensor_service_sensor_data_set(uint8_t *custom_value, uint8_
 void ble_weight_sensor_set_tare_callback(void (*func)(void));
 
 void ble_weight_sensor_set_calibration_callback(void (*func)(void));
+
+void ble_weight_sensor_set_coffee_to_water_ratio_callback(void (*func)(uint16_t requestValue ));
+
+void ble_weight_sensor_set_weigh_mode_callback(void (*func)(uint8_t requestValue));
 
 extern ble_weight_sensor_service_t m_weight_sensor;
 

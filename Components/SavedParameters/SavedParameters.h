@@ -15,4 +15,12 @@ void saved_parameters_init();
 float saved_parameters_getSavedScaleFactor();
 void saved_parameters_SetSavedScaleFactor(float scaleFactor);
 
+uint8_t saved_parameters_getCoffeeToWaterRatioNumerator();
+void saved_parameters_setCoffeeToWaterRatioNumerator(uint8_t numerator);
+uint8_t saved_parameters_getCoffeeToWaterRatioDenominator();
+void saved_parameters_setCoffeeToWaterRatioDenominator(uint8_t denominator);
+
+uint8_t saved_parameters_getWeighMode();
+void saved_parameters_setWeighMode(uint8_t mode);
+
 #endif

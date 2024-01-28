@@ -35,11 +35,17 @@ static struct
 typedef struct SavedParameters_t
 {
     float scaleFactor;
+    uint8_t coffee_to_water_ratio_numerator;
+    uint8_t coffee_to_water_ratio_denominator;
+    uint8_t weighMode;
 } SavedParameters_t;
 
 static SavedParameters_t mSavedParameters = 
 {
     .scaleFactor = -2243.8,
+    .coffee_to_water_ratio_numerator = 1,
+    .coffee_to_water_ratio_denominator = 12,
+    .weighMode = 0,
 };
 
 /* A record containing dummy configuration data. */
@@ -221,6 +227,39 @@ float saved_parameters_getSavedScaleFactor()
 void saved_parameters_SetSavedScaleFactor(float scaleFactor)
 {
     mSavedParameters.scaleFactor = scaleFactor;
+    record_update();
+}
+
+uint8_t saved_parameters_getCoffeeToWaterRatioNumerator()
+{
+    return mSavedParameters.coffee_to_water_ratio_numerator;
+}
+
+void saved_parameters_setCoffeeToWaterRatioNumerator(uint8_t numerator)
+{
+    mSavedParameters.coffee_to_water_ratio_numerator = numerator;
+    record_update();
+}
+
+uint8_t saved_parameters_getCoffeeToWaterRatioDenominator()
+{
+    return mSavedParameters.coffee_to_water_ratio_denominator;
+}
+
+void saved_parameters_setCoffeeToWaterRatioDenominator(uint8_t denominator)
+{
+    mSavedParameters.coffee_to_water_ratio_denominator = denominator;
+    record_update();
+}
+
+uint8_t saved_parameters_getWeighMode()
+{
+    return mSavedParameters.weighMode;
+}
+
+void saved_parameters_setWeighMode(uint8_t mode)
+{
+    mSavedParameters.weighMode = mode;
     record_update();
 }
 
