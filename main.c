@@ -28,6 +28,7 @@
 #include "Components/SavedParameters/SavedParameters.h"
 
 APP_TIMER_DEF(m_notification_timer_id);
+APP_TIMER_DEF(m_display_timer_id);
 APP_TIMER_DEF(m_wakeup_timer_id);
 APP_TIMER_DEF(m_keep_alive_timer_id);
 
@@ -47,7 +48,8 @@ float roundedValue;
 #define TWI_SCL_M           6         //I2C SCL Pin
 #define TWI_SDA_M           8        //I2C SDA Pin
 
-#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(20)    
+#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(20)   
+#define DISPLAY_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(120)  
 #define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(60000)
 #define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
 
@@ -110,15 +112,19 @@ void initialise_weight_sensor()
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 
+    err_code = app_timer_start(m_display_timer_id, DISPLAY_NOTIFICATION_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+
+
     err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
 
 
-/**@brief Function for handling the Accelerometer measurement timer timeout.
+/**@brief Function for handling the weight measurement timer timeout.
  *
- * @details This function will be called each time the accelerometer level measurement timer expires.
+ * @details This function will be called each time the weight measurement timer expires.
  *
  * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
  *                       app_start_timer() call to the timeout handler.
@@ -137,7 +143,7 @@ static void notification_timeout_handler(void * p_context)
     {
         ble_weight_sensor_service_sensor_data_update((uint8_t*)&scaleValue, sizeof(float));
     }
-    weight_print(roundedValue/10.0);
+    //weight_print(roundedValue/10.0);
 
     //printSquare();
     
@@ -154,6 +160,15 @@ static void notification_timeout_handler(void * p_context)
 
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
+}
+
+static void display_timeout_handler(void * p_context)
+{
+   // weight_print(roundedValue/10.0);
+
+    ret_code_t err_code = app_timer_start(m_display_timer_id, DISPLAY_NOTIFICATION_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+
 }
 
 float m_last_keep_alive_value = 0.0;
@@ -229,6 +244,9 @@ static void timers_init(void)
     APP_ERROR_CHECK(err_code);
     
     err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_SINGLE_SHOT, notification_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_display_timer_id, APP_TIMER_MODE_SINGLE_SHOT, display_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_wakeup_timer_id, APP_TIMER_MODE_REPEATED, wakeup_timeout_handler);

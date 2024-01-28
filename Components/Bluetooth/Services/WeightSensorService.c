@@ -381,6 +381,7 @@ static void on_write(ble_weight_sensor_service_t * p_weight_sensor_service, ble_
     {
         // Put specific task here. 
         NRF_LOG_INFO("Message Received.");
+        NRF_LOG_FLUSH();
     }
 
     // Check if the Custom value CCCD is written to and that the value is the appropriate length, i.e 2 bytes.
@@ -416,7 +417,7 @@ static void on_write(ble_weight_sensor_service_t * p_weight_sensor_service, ble_
         case 1:
         {
             NRF_LOG_INFO("Message Received from Tare.");
-
+            NRF_LOG_FLUSH();
             mTareCallback();
             
             break;
@@ -441,7 +442,7 @@ static void on_write(ble_weight_sensor_service_t * p_weight_sensor_service, ble_
         case 1:
         {
             NRF_LOG_INFO("Message Received from Calibration 1.");
-
+            NRF_LOG_FLUSH();
             mCalibrationCallback();
             
             break;
@@ -449,8 +450,7 @@ static void on_write(ble_weight_sensor_service_t * p_weight_sensor_service, ble_
         case 2:
         {
             NRF_LOG_INFO("Message Received from Calibration 2.");
-
-            
+            NRF_LOG_FLUSH();
             
             break;
         }
