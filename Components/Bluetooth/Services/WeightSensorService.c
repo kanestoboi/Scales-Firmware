@@ -471,15 +471,15 @@ void ble_weight_sensor_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_CONNECTED:
-            on_connect(p_weight_sensor_service, p_ble_evt);
+            ble_weight_sensor_on_connect(p_weight_sensor_service, p_ble_evt);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
-            on_disconnect(p_weight_sensor_service, p_ble_evt);
+            ble_weight_sensor_on_disconnect(p_weight_sensor_service, p_ble_evt);
             break;
 
         case BLE_GATTS_EVT_WRITE:
-            on_write(p_weight_sensor_service, p_ble_evt);
+            ble_weight_sensor_on_write(p_weight_sensor_service, p_ble_evt);
             break;
 
         default:
@@ -493,7 +493,7 @@ void ble_weight_sensor_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context
  * @param[in]   p_cus       Custom Service structure.
  * @param[in]   p_ble_evt   Event received from the BLE stack.
  */
-static void on_connect(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt)
+static void ble_weight_sensor_on_connect(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt)
 {
     m_weight_sensor.conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
 
@@ -515,7 +515,7 @@ static void on_connect(ble_weight_sensor_service_t * p_weight_sensor_service, bl
  * @param[in]   p_cus       Custom Service structure.
  * @param[in]   p_ble_evt   Event received from the BLE stack.
  */
-static void on_disconnect(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt)
+static void ble_weight_sensor_on_disconnect(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt)
 {
     UNUSED_PARAMETER(p_ble_evt);
     m_weight_sensor.conn_handle = BLE_CONN_HANDLE_INVALID;
@@ -528,7 +528,7 @@ static void on_disconnect(ble_weight_sensor_service_t * p_weight_sensor_service,
  * @param[in]   p_cus       Custom Service structure.
  * @param[in]   p_ble_evt   Event received from the BLE stack.
  */
-static void on_write(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt)
+static void ble_weight_sensor_on_write(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt)
 {
    const ble_gatts_evt_write_t * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
     

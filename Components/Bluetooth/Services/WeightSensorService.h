@@ -45,7 +45,7 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                           \
                      ble_weight_sensor_on_ble_evt, &_name)
 
 // Forward declaration of the ble_accerometer_service_t type.
-typedef struct ble_accerometer_service_s ble_weight_sensor_service_t;
+typedef struct ble_weight_sensor_service_s ble_weight_sensor_service_t;
 
 typedef enum
 {
@@ -80,7 +80,7 @@ typedef struct
 } ble_weight_sensor_service_init_t;
 
 /**@brief weight_sensor Service structure. This contains various status information for the service. */
-struct ble_accerometer_service_s
+struct ble_weight_sensor_service_s
 {
     ble_weight_sensor_evt_handler_t         evt_handler;                    /**< Event handler to be called for handling events in the Custom Service. */
     uint16_t                        service_handle;                 /**< Handle of weight_sensor Service (as provided by the BLE stack). */
@@ -116,11 +116,11 @@ uint32_t ble_weight_sensor_service_init();
  */
 void ble_weight_sensor_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context);
 
-static void on_connect(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt);
+static void ble_weight_sensor_on_connect(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt);
 
-static void on_disconnect(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt);
+static void ble_weight_sensor_on_disconnect(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt);
 
-static void on_write(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt);
+static void ble_weight_sensor_on_write(ble_weight_sensor_service_t * p_weight_sensor_service, ble_evt_t const * p_ble_evt);
 
 /**@brief Function for updating the custom value.
  *

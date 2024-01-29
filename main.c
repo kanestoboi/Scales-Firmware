@@ -15,7 +15,6 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
-#include "nrf_delay.h"
 #include "nrfx_twi.h"
 
 #include "Components/LCD/scales_lcd.h"
@@ -25,12 +24,14 @@
 #include "Components/LED/nrf_buddy_led.h"
 #include "Components/Bluetooth/Bluetooth.h"
 #include "Components/Bluetooth/Services/WeightSensorService.h"
+#include "Components/Bluetooth/Services/ElapsedTimeService.h"
 #include "Components/SavedParameters/SavedParameters.h"
 
 APP_TIMER_DEF(m_notification_timer_id);
 APP_TIMER_DEF(m_display_timer_id);
 APP_TIMER_DEF(m_wakeup_timer_id);
 APP_TIMER_DEF(m_keep_alive_timer_id);
+APP_TIMER_DEF(m_elapsed_time_timer_id);
 
 #define NRF_LOG_FLOAT_SCALES(val) (uint32_t)(((val) < 0 && (val) > -1.0) ? "-" : ""),   \
                            (int32_t)(val),                                              \
@@ -39,6 +40,7 @@ APP_TIMER_DEF(m_keep_alive_timer_id);
 float scaleValue;
 float roundedValue;
 
+uint32_t currentElapsedTime = 0;
 
 
 //Initializing TWI0 instance
@@ -52,6 +54,7 @@ float roundedValue;
 #define DISPLAY_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(120)  
 #define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(60000)
 #define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
+#define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 
 // Create a Handle for the twi communication
 const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
@@ -162,12 +165,12 @@ static void notification_timeout_handler(void * p_context)
     //NRF_LOG_FLUSH();
 
 
-    /*if (&max17260Sensor.initialised)
+    if (&max17260Sensor.initialised)
     {
         float soc;
         max17260_getStateOfCharge(&max17260Sensor, &soc);
         bluetooth_update_battery_level((uint8_t)roundf(soc));
-    }*/
+    }
 
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -238,11 +241,22 @@ static void wakeup_timeout_handler(void * p_context)
     else{
         m_last_wakeup_value = roundedValue;
         
-    }
-
-    
+    } 
 }
 
+void elapsed_time_timeout_handler(void * p_context)
+{
+    currentElapsedTime++;
+
+    ble_elapsed_time_t elapsed_time = 
+    {
+        .flags = 0b00000001, // Time value is counter
+        .elapsed_time_lsb = currentElapsedTime & 0xFF,
+        .elapsed_time_5sb = currentElapsedTime >> 8 & 0xFF
+    };
+
+    ble_elapsed_time_service_elapsed_time_update(elapsed_time);
+}
 
 /**@brief Function for the Timer initialization.
  *
@@ -264,6 +278,9 @@ static void timers_init(void)
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_keep_alive_timer_id, APP_TIMER_MODE_REPEATED, keep_alive_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_elapsed_time_timer_id, APP_TIMER_MODE_REPEATED, elapsed_time_timeout_handler);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -415,6 +432,20 @@ int main(void)
     {
         NRF_LOG_INFO("Error Initialing weight sensor service");
     }
+ 
+    if (ble_elapsed_time_service_init() != NRF_SUCCESS)
+    {
+        NRF_LOG_INFO("Error Initialing Elapsed Time service");
+    }
+    else
+    {
+        //ble_elapsed_time_t elapsed_time;
+        //memset(&elapsed_time, 0, sizeof(elapsed_time));
+        //if(ble_elapsed_time_service_elapsed_time_update(elapsed_time) != NRF_SUCCESS)
+        //{
+        //    NRF_LOG_INFO("Updating ETS");
+        //}
+    }
 
     ble_weight_sensor_set_tare_callback(&tare_scale);
     ble_weight_sensor_set_calibration_callback(&calibrate_scale);
@@ -436,7 +467,7 @@ int main(void)
     NRF_LOG_INFO("Bluetooth setup complete");
     NRF_LOG_FLUSH();
 
-    /*if (max17260_init(&max17260Sensor, &m_twi))
+    if (max17260_init(&max17260Sensor, &m_twi))
     {
         NRF_LOG_INFO("MAX17260 Initialised");
         
@@ -447,10 +478,8 @@ int main(void)
     else
     {
         NRF_LOG_INFO("MAX17260 not found");
-    }*/
+    }
     
-
-
 
     NRF_LOG_FLUSH();
 
@@ -467,7 +496,7 @@ int main(void)
     NRF_LOG_INFO("Starting");
     NRF_LOG_FLUSH();
 
-    
+ /*   
     ADS123X_Init(&scale, pin_DOUT, pin_SCLK, pin_PWDN, pin_GAIN0, pin_GAIN1, pin_SPEED);
     
     ADS123X_PowerOff(&scale);
@@ -493,7 +522,10 @@ int main(void)
 
     ADS123X_getUnits(&scale, &scaleValue, 2U);
 
-    initialise_weight_sensor();    
+    initialise_weight_sensor(); 
+    */
+    err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);   
 
     for (;;)
     {
