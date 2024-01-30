@@ -2,11 +2,12 @@
 @Echo off
 echo Compiling Release
 emBuild -config "Release" -echo ../Scales_pca10056_s140.emProject
+emBuild -config "Release" -echo ../../Scales-Bootloader/SclaesBootloader_s140_pca10056.emProject
 
 set build-configuration=Release
 
 set majorFirmwareVersion=0
-set minorFirmwareVersion=5
+set minorFirmwareVersion=1
 set patchFirmwareVersion=0
 
 @REM set the firmware version as a uint32 where each bytes represents the major, minor and patch versionsS

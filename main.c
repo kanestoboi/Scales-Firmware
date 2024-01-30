@@ -496,7 +496,7 @@ int main(void)
     NRF_LOG_INFO("Starting");
     NRF_LOG_FLUSH();
 
- /*   
+    
     ADS123X_Init(&scale, pin_DOUT, pin_SCLK, pin_PWDN, pin_GAIN0, pin_GAIN1, pin_SPEED);
     
     ADS123X_PowerOff(&scale);
@@ -523,7 +523,7 @@ int main(void)
     ADS123X_getUnits(&scale, &scaleValue, 2U);
 
     initialise_weight_sensor(); 
-    */
+    
     err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);   
 
