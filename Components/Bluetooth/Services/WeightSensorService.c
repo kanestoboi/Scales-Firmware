@@ -576,7 +576,7 @@ static void ble_weight_sensor_on_write(ble_weight_sensor_service_t * p_weight_se
 
             if (mTareCallback != NULL)
             {
-                mCalibrationCallback();
+                mTareCallback();
             }
             else
             {

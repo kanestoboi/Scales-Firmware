@@ -193,7 +193,7 @@ static void keep_alive_timeout_handler(void * p_context)
     ret_code_t err_code;
     // create arrays which will hold x,y & z co-ordinates values of acc
 
-    if (abs(m_last_keep_alive_value - roundedValue) < 0.3 && !writeToWeightCharacteristic)
+    if (abs(m_last_keep_alive_value - roundedValue) < 5 && !writeToWeightCharacteristic)
     {
         err_code = app_timer_stop(m_notification_timer_id);
         APP_ERROR_CHECK(err_code);
