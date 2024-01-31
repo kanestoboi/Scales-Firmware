@@ -7,7 +7,7 @@ emBuild -config "Release" -echo ../../Scales-Bootloader/SclaesBootloader_s140_pc
 set build-configuration=Release
 
 set majorFirmwareVersion=0
-set minorFirmwareVersion=1
+set minorFirmwareVersion=2
 set patchFirmwareVersion=0
 
 @REM set the firmware version as a uint32 where each bytes represents the major, minor and patch versionsS
