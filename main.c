@@ -153,7 +153,7 @@ static void notification_timeout_handler(void * p_context)
 
     ADS123X_getUnits(&scale, &scaleValue, 2U);
 
-    roundedValue = abs(roundf(scaleValue * 10.0));
+    roundedValue = fabs(roundf(scaleValue * 10.0));
 
     if (writeToWeightCharacteristic)
     {
@@ -186,8 +186,9 @@ static void keep_alive_timeout_handler(void * p_context)
     ret_code_t err_code;
     // create arrays which will hold x,y & z co-ordinates values of acc
 
-    if (abs(m_last_keep_alive_value - roundedValue) < 5 && !writeToWeightCharacteristic)
+    if (fabs(m_last_keep_alive_value - roundedValue) < 5 && !writeToWeightCharacteristic)
     {
+        NRF_LOG_INFO("SLEEPING");
         err_code = app_timer_stop(m_notification_timer_id);
         APP_ERROR_CHECK(err_code);
 
@@ -203,6 +204,7 @@ static void keep_alive_timeout_handler(void * p_context)
     }
     else
     {
+        NRF_LOG_INFO("NOT SLEEPING THIS ROUND");
         err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_NOTIFICATION_INTERVAL, NULL);
     }
 
@@ -222,10 +224,11 @@ static void wakeup_timeout_handler(void * p_context)
     ADS123X_getUnits(&scale, &scaleValue, 2U);
     //ADS123X_PowerOff(&scale);
 
-    roundedValue = abs(roundf(scaleValue * 10.0));
+    roundedValue = fabs(roundf(scaleValue * 10.0));
 
-    if (abs(m_last_wakeup_value - roundedValue) > 5)
+    if (fabs(m_last_wakeup_value - roundedValue) > 5)
     {
+        NRF_LOG_INFO("WAKING.");
         // set LCD backlight to on
         nrf_gpio_cfg_output(45);
         nrf_gpio_pin_set(45);
@@ -236,6 +239,7 @@ static void wakeup_timeout_handler(void * p_context)
         initialise_weight_sensor();
     }
     else{
+        NRF_LOG_INFO("DIDN'T MEET WAKE THRESHOLD.");
         err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
         APP_ERROR_CHECK(err_code);
         m_last_wakeup_value = roundedValue;
