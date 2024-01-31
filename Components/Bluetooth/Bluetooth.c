@@ -41,8 +41,11 @@
 #include "ble_dfu.h"
 #include "nrf_bootloader_info.h"
 
-
-#define DEVICE_NAME                     "Bluetooth Scales"                       /**< Name of device. Will be included in the advertising data. */
+#ifdef  DEBUG
+#define DEVICE_NAME                     "Bluetooth Scales DEBUG"                       /**< Name of device. Will be included in the advertising data. */
+#else
+#define DEVICE_NAME                     "Bluetooth Scales" 
+#endif
 #define MANUFACTURER_NAME               "Kane"                                  /**< Manufacturer. Will be passed to Device Information Service. */
 #define APP_ADV_INTERVAL                2000                                    /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
 
