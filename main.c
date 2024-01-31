@@ -32,6 +32,7 @@ APP_TIMER_DEF(m_display_timer_id);
 APP_TIMER_DEF(m_wakeup_timer_id);
 APP_TIMER_DEF(m_keep_alive_timer_id);
 APP_TIMER_DEF(m_elapsed_time_timer_id);
+APP_TIMER_DEF(m_battery_level_timer_id);
 
 #define NRF_LOG_FLOAT_SCALES(val) (uint32_t)(((val) < 0 && (val) > -1.0) ? "-" : ""),   \
                            (int32_t)(val),                                              \
@@ -55,6 +56,7 @@ uint32_t currentElapsedTime = 0;
 #define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(18000)
 #define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
+#define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
 
 // Create a Handle for the twi communication
 const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
@@ -125,10 +127,10 @@ void initialise_weight_sensor()
 {    
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
-
+/*
     err_code = app_timer_start(m_display_timer_id, DISPLAY_NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
-
+*/
 
     err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -163,15 +165,6 @@ static void notification_timeout_handler(void * p_context)
     
     //NRF_LOG_RAW_INFO("ScaledValue:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(roundedValue/10) );
     //NRF_LOG_FLUSH();
-
-
-    if (&max17260Sensor.initialised)
-    {
-        float soc;
-        max17260_getStateOfCharge(&max17260Sensor, &soc);
-        bluetooth_update_battery_level((uint8_t)roundf(soc));
-    }
-
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
@@ -208,6 +201,10 @@ static void keep_alive_timeout_handler(void * p_context)
         m_last_wakeup_value  = roundedValue;
 
     }
+    else
+    {
+        err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_NOTIFICATION_INTERVAL, NULL);
+    }
 
     m_last_keep_alive_value = roundedValue;
 
@@ -227,7 +224,7 @@ static void wakeup_timeout_handler(void * p_context)
 
     roundedValue = abs(roundf(scaleValue * 10.0));
 
-    if (abs(m_last_wakeup_value - roundedValue) > 0.3)
+    if (abs(m_last_wakeup_value - roundedValue) > 5)
     {
         // set LCD backlight to on
         nrf_gpio_cfg_output(45);
@@ -239,6 +236,8 @@ static void wakeup_timeout_handler(void * p_context)
         initialise_weight_sensor();
     }
     else{
+        err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
+        APP_ERROR_CHECK(err_code);
         m_last_wakeup_value = roundedValue;
         
     } 
@@ -258,6 +257,19 @@ void elapsed_time_timeout_handler(void * p_context)
     ble_elapsed_time_service_elapsed_time_update(elapsed_time);
 }
 
+void battery_level_timeout_handler(void * p_context)
+{
+    if (&max17260Sensor.initialised)
+    {
+        float soc;
+        max17260_getStateOfCharge(&max17260Sensor, &soc);
+        bluetooth_update_battery_level((uint8_t)roundf(soc));
+    }
+
+    ret_code_t err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
 /**@brief Function for the Timer initialization.
  *
  * @details Initializes the timer module. This creates and starts application timers.
@@ -274,13 +286,16 @@ static void timers_init(void)
     err_code = app_timer_create(&m_display_timer_id, APP_TIMER_MODE_SINGLE_SHOT, display_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_create(&m_wakeup_timer_id, APP_TIMER_MODE_REPEATED, wakeup_timeout_handler);
+    err_code = app_timer_create(&m_wakeup_timer_id, APP_TIMER_MODE_SINGLE_SHOT, wakeup_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_create(&m_keep_alive_timer_id, APP_TIMER_MODE_REPEATED, keep_alive_timeout_handler);
+    err_code = app_timer_create(&m_keep_alive_timer_id, APP_TIMER_MODE_SINGLE_SHOT, keep_alive_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_elapsed_time_timer_id, APP_TIMER_MODE_REPEATED, elapsed_time_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_battery_level_timer_id, APP_TIMER_MODE_SINGLE_SHOT, battery_level_timeout_handler);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -526,6 +541,9 @@ int main(void)
     
     err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);   
+    
+    err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);  
 
     for (;;)
     {

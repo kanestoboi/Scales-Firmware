@@ -7,7 +7,7 @@
 #include "math.h"
 #include "nrf_log_ctrl.h"
 
-BLE_WEIGHT_SENSOR_DEF(m_elapsed_time_service);
+BLE_ELAPSED_TIME_DEF(m_elapsed_time_service);
 
 uint32_t elapsed_time_service_elapsed_time_char_add(ble_elapsed_time_service_t * p_elapsed_time_service, const ble_elapsed_time_service_init_t * p_ble_elapsed_time_service_init);
 

@@ -32,7 +32,7 @@
  * @param   _name   Name of the instance.
  * @hideinitializer
  */
-#define BLE_WEIGHT_SENSOR_DEF(_name)                          \
+#define BLE_ELAPSED_TIME_DEF(_name)                          \
 ble_elapsed_time_service_t _name;                     \
 NRF_SDH_BLE_OBSERVER(_name ## _obs,                           \
                      BLE_HRS_BLE_OBSERVER_PRIO,               \
