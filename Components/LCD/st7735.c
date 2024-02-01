@@ -143,11 +143,6 @@ static const uint8_t ST7735_WIDTH = 80;
 #define ST7735_SPI_INSTANCE 3
 #endif
 
-void callback(nrfx_spim_evt_t const * p_event, void * p_context)
-{
-    
-}
-
 static const nrfx_spim_t spi = NRFX_SPIM_INSTANCE(ST7735_SPI_INSTANCE);  /**< SPI instance. */
 
 /**
@@ -518,13 +513,9 @@ static uint32_t st7735_set_addr_window_to_buffer(uint8_t * data, uint8_t x0, uin
 
 static void st7735_dummy_display(uint8_t * data, uint16_t len, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
-    if(len == 0xFFFF){
-        set_addr_window(x0, y0, x1, y1);
-    }
-    else{
-      //spi_write(&data, len);
-      write_data_buffered(data, len);
-    }
+    set_addr_window(x0, y0, x1, y1);
+
+    write_data_buffered(data, len);   
 }
 
 static void st7735_rotation_set(nrf_lcd_rotation_t rotation)

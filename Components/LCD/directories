@@ -1,0 +1,798 @@
+<folder Name="src">
+  <folder Name="core">
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_global.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_group.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_group.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_class.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_class.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_draw.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_draw.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_event.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_event.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_id_builtin.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_pos.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_pos.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_property.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_property.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_scroll.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_scroll.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_style.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_style.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_style_gen.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_style_gen.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_tree.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_obj_tree.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_refr.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/core/lv_refr.h" />
+  </folder>
+  <folder Name="display">
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/display/lv_display.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/display/lv_display.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/display/lv_display_private.h" />
+  </folder>
+  <folder Name="draw">
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_arc.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_arc.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_buf.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_buf.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_image.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_image.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_label.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_label.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_line.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_line.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_mask.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_mask.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_rect.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_rect.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_triangle.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_triangle.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_vector.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_draw_vector.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_image_buf.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_image_buf.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_image_decoder.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/lv_image_decoder.h" />
+    <folder Name="nxp">
+      <folder Name="pxp">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_draw_buf_pxp.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_draw_pxp.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_draw_pxp.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_draw_pxp_fill.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_draw_pxp_img.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_draw_pxp_layer.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_pxp_cfg.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_pxp_cfg.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_pxp_osa.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_pxp_osa.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_pxp_utils.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/pxp/lv_pxp_utils.h" />
+      </folder>
+      <folder Name="vglite">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_buf_vglite.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite_arc.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite_border.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite_fill.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite_img.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite_label.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite_layer.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite_line.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_draw_vglite_triangle.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_vglite_buf.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_vglite_buf.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_vglite_matrix.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_vglite_matrix.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_vglite_path.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_vglite_path.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_vglite_utils.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/nxp/vglite/lv_vglite_utils.h" />
+      </folder>
+    </folder>
+    <folder Name="renesas">
+      <folder Name="dave2d">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_arc.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_border.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_fill.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_image.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_label.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_line.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_mask_rectangle.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_triangle.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_utils.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/renesas/dave2d/lv_draw_dave2d_utils.h" />
+      </folder>
+    </folder>
+    <folder Name="sdl">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sdl/lv_draw_sdl.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sdl/lv_draw_sdl.h" />
+    </folder>
+    <folder Name="sw">
+      <folder Name="arm2d">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/arm2d/lv_draw_sw_arm2d.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/arm2d/lv_draw_sw_helium.h" />
+      </folder>
+      <folder Name="blend">
+        <folder Name="arm2d">
+          <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/arm2d/lv_blend_arm2d.h" />
+          <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/arm2d/lv_blend_helium.h" />
+        </folder>
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/lv_draw_sw_blend.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/lv_draw_sw_blend.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/lv_draw_sw_blend_to_argb8888.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.h" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/lv_draw_sw_blend_to_rgb888.h" />
+        <folder Name="neon">
+          <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/neon/lv_blend_neon.S" />
+          <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/blend/neon/lv_blend_neon.h" />
+        </folder>
+      </folder>
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_arc.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_border.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_box_shadow.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_fill.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_gradient.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_gradient.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_img.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_letter.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_line.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_mask.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_mask.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_mask_rect.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_transform.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_triangle.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/sw/lv_draw_sw_vector.c" />
+    </folder>
+    <folder Name="vg_lite">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_buf_vg_lite.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_arc.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_border.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_box_shadow.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_fill.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_img.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_label.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_layer.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_line.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_mask_rect.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_triangle.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_type.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_draw_vg_lite_vector.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_vg_lite_decoder.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_vg_lite_decoder.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_vg_lite_math.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_vg_lite_math.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_vg_lite_path.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_vg_lite_path.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_vg_lite_utils.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/draw/vg_lite/lv_vg_lite_utils.h" />
+    </folder>
+  </folder>
+  <folder Name="drivers">
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/README.md" />
+    <folder Name="display">
+      <folder Name="drm">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/drm/lv_linux_drm.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/drm/lv_linux_drm.h" />
+      </folder>
+      <folder Name="fb">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/fb/lv_linux_fbdev.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/fb/lv_linux_fbdev.h" />
+      </folder>
+      <folder Name="ili9341">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/ili9341/lv_ili9341.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/ili9341/lv_ili9341.h" />
+      </folder>
+      <folder Name="lcd">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/lcd/lv_lcd_generic_mipi.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/lcd/lv_lcd_generic_mipi.h" />
+      </folder>
+      <folder Name="st7735">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/st7735/lv_st7735.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/st7735/lv_st7735.h" />
+      </folder>
+      <folder Name="st7789">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/st7789/lv_st7789.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/st7789/lv_st7789.h" />
+      </folder>
+      <folder Name="st7796">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/st7796/lv_st7796.c" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/st7796/lv_st7796.h" />
+      </folder>
+      <folder Name="tft_espi">
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/tft_espi/lv_tft_espi.cpp" />
+        <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/display/tft_espi/lv_tft_espi.h" />
+      </folder>
+    </folder>
+    <folder Name="evdev">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/evdev/lv_evdev.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/evdev/lv_evdev.h" />
+    </folder>
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/lv_drivers.h" />
+    <folder Name="nuttx">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_cache.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_cache.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_entry.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_entry.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_fbdev.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_fbdev.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_lcd.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_lcd.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_libuv.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_libuv.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_profiler.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_profiler.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_touchscreen.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/nuttx/lv_nuttx_touchscreen.h" />
+    </folder>
+    <folder Name="sdl">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/sdl/lv_sdl_keyboard.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/sdl/lv_sdl_keyboard.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/sdl/lv_sdl_mouse.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/sdl/lv_sdl_mouse.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/sdl/lv_sdl_mousewheel.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/sdl/lv_sdl_mousewheel.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/sdl/lv_sdl_window.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/sdl/lv_sdl_window.h" />
+    </folder>
+    <folder Name="windows">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/windows/lv_windows_context.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/windows/lv_windows_context.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/windows/lv_windows_display.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/windows/lv_windows_display.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/windows/lv_windows_input.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/windows/lv_windows_input.h" />
+    </folder>
+    <folder Name="x11">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/x11/lv_x11.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/x11/lv_x11_display.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/drivers/x11/lv_x11_input.c" />
+    </folder>
+  </folder>
+  <folder Name="font">
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_binfont_loader.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_binfont_loader.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_dejavu_16_persian_hebrew.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_fmt_txt.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_fmt_txt.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_10.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_12.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_14.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_16.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_18.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_20.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_22.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_24.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_26.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_28.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_28_compressed.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_30.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_32.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_34.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_36.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_38.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_40.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_42.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_44.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_46.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_48.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_montserrat_8.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_simsun_16_cjk.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_unscii_16.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_font_unscii_8.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/font/lv_symbol_def.h" />
+  </folder>
+  <folder Name="indev">
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/indev/lv_indev.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/indev/lv_indev.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/indev/lv_indev_private.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/indev/lv_indev_scroll.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/indev/lv_indev_scroll.h" />
+  </folder>
+  <folder Name="layouts">
+    <folder Name="flex">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/layouts/flex/lv_flex.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/layouts/flex/lv_flex.h" />
+    </folder>
+    <folder Name="grid">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/layouts/grid/lv_grid.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/layouts/grid/lv_grid.h" />
+    </folder>
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/layouts/lv_layout.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/layouts/lv_layout.h" />
+  </folder>
+  <folder Name="libs">
+    <folder Name="barcode">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/barcode/code128.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/barcode/code128.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/barcode/lv_barcode.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/barcode/lv_barcode.h" />
+    </folder>
+    <folder Name="bin_decoder">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/bin_decoder/lv_bin_decoder.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/bin_decoder/lv_bin_decoder.h" />
+    </folder>
+    <folder Name="bmp">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/bmp/lv_bmp.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/bmp/lv_bmp.h" />
+    </folder>
+    <folder Name="ffmpeg">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/ffmpeg/lv_ffmpeg.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/ffmpeg/lv_ffmpeg.h" />
+    </folder>
+    <folder Name="freetype">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/arial.ttf" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/ftmodule.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/ftoption.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/lv_freetype.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/lv_freetype.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/lv_freetype_glyph.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/lv_freetype_image.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/lv_freetype_outline.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/lv_freetype_private.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/freetype/lv_ftsystem.c" />
+    </folder>
+    <folder Name="fsdrv">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/fsdrv/lv_fs_cbfs.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/fsdrv/lv_fs_fatfs.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/fsdrv/lv_fs_memfs.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/fsdrv/lv_fs_posix.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/fsdrv/lv_fs_stdio.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/fsdrv/lv_fs_win32.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/fsdrv/lv_fsdrv.h" />
+    </folder>
+    <folder Name="gif">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/gif/gifdec.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/gif/gifdec.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/gif/gifdec_mve.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/gif/lv_gif.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/gif/lv_gif.h" />
+    </folder>
+    <folder Name="libjpeg_turbo">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/libjpeg_turbo/lv_libjpeg_turbo.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/libjpeg_turbo/lv_libjpeg_turbo.h" />
+    </folder>
+    <folder Name="libpng">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/libpng/lv_libpng.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/libpng/lv_libpng.h" />
+    </folder>
+    <folder Name="lodepng">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/lodepng/lodepng.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/lodepng/lodepng.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/lodepng/lv_lodepng.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/lodepng/lv_lodepng.h" />
+    </folder>
+    <folder Name="lz4">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/lz4/LICENSE" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/lz4/lz4.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/lz4/lz4.h" />
+    </folder>
+    <folder Name="qrcode">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/qrcode/lv_qrcode.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/qrcode/lv_qrcode.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/qrcode/qrcodegen.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/qrcode/qrcodegen.h" />
+    </folder>
+    <folder Name="rle">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/rle/lv_rle.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/rle/lv_rle.h" />
+    </folder>
+    <folder Name="rlottie">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/rlottie/lv_rlottie.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/rlottie/lv_rlottie.h" />
+    </folder>
+    <folder Name="thorvg">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/add_lvgl_if.sh" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/config.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/thorvg.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/thorvg_capi.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgAnimation.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgArray.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgBezier.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgBezier.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgCanvas.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgCanvas.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgCapi.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgCommon.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgCompressor.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgCompressor.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgFill.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgFill.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgFrameModule.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgInitializer.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgIteratorAccessor.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgLoadModule.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgLoader.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgLoader.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgMath.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgMath.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgPaint.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgPaint.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgPicture.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgPicture.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgRawLoader.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgRawLoader.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgRender.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgRender.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSaveModule.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSaver.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgScene.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgScene.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgShape.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgShape.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgStr.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgStr.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgCssStyle.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgCssStyle.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgLoader.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgLoader.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgLoaderCommon.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgPath.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgPath.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgSceneBuilder.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgSceneBuilder.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgUtil.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSvgUtil.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwCanvas.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwCommon.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwFill.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwImage.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwMath.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwMemPool.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwRaster.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwRasterAvx.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwRasterC.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwRasterNeon.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwRasterTexmap.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwRenderer.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwRenderer.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwRle.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwShape.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgSwStroke.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgTaskScheduler.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgTaskScheduler.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgXmlParser.cpp" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/thorvg/tvgXmlParser.h" />
+    </folder>
+    <folder Name="tiny_ttf">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tiny_ttf/lv_tiny_ttf.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tiny_ttf/lv_tiny_ttf.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tiny_ttf/stb_rect_pack.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tiny_ttf/stb_truetype_htcw.h" />
+    </folder>
+    <folder Name="tjpgd">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tjpgd/lv_tjpgd.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tjpgd/lv_tjpgd.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tjpgd/tjpgd.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tjpgd/tjpgd.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/libs/tjpgd/tjpgdcnf.h" />
+    </folder>
+  </folder>
+  <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/lv_api_map.h" />
+  <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/lv_conf_internal.h" />
+  <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/lv_conf_kconfig.h" />
+  <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/lv_init.c" />
+  <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/lv_init.h" />
+  <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/lvgl.h" />
+  <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/lvgl_private.h" />
+  <folder Name="misc">
+    <folder Name="cache">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/_lv_cache_lru_rb.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/_lv_cache_lru_rb.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/lv_cache.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/lv_cache.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/lv_cache_entry.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/lv_cache_entry.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/lv_cache_entry_private.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/lv_cache_private.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/lv_image_cache.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/cache/lv_image_cache.h" />
+    </folder>
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_anim.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_anim.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_anim_timeline.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_anim_timeline.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_area.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_area.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_array.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_array.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_assert.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_async.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_async.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_bidi.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_bidi.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_color.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_color.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_color_op.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_color_op.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_event.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_event.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_fs.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_fs.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_ll.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_ll.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_log.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_log.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_lru.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_lru.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_math.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_math.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_palette.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_palette.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_profiler.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_profiler_builtin.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_profiler_builtin.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_rb.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_rb.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_style.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_style.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_style_gen.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_style_gen.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_templ.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_templ.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_text.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_text.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_text_ap.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_text_ap.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_timer.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_timer.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_types.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_utils.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/misc/lv_utils.h" />
+  </folder>
+  <folder Name="osal">
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_cmsis_rtos2.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_cmsis_rtos2.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_freertos.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_freertos.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_os.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_os_none.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_os_none.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_pthread.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_pthread.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_rtthread.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_rtthread.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_windows.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/osal/lv_windows.h" />
+  </folder>
+  <folder Name="others">
+    <folder Name="file_explorer">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/file_explorer/lv_file_explorer.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/file_explorer/lv_file_explorer.h" />
+    </folder>
+    <folder Name="fragment">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/fragment/README.md" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/fragment/lv_fragment.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/fragment/lv_fragment.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/fragment/lv_fragment_manager.c" />
+    </folder>
+    <folder Name="gridnav">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/gridnav/lv_gridnav.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/gridnav/lv_gridnav.h" />
+    </folder>
+    <folder Name="ime">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/ime/lv_ime_pinyin.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/ime/lv_ime_pinyin.h" />
+    </folder>
+    <folder Name="imgfont">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/imgfont/lv_imgfont.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/imgfont/lv_imgfont.h" />
+    </folder>
+    <folder Name="monkey">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/monkey/lv_monkey.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/monkey/lv_monkey.h" />
+    </folder>
+    <folder Name="observer">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/observer/lv_observer.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/observer/lv_observer.h" />
+    </folder>
+    <folder Name="snapshot">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/snapshot/lv_snapshot.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/snapshot/lv_snapshot.h" />
+    </folder>
+    <folder Name="sysmon">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/sysmon/lv_sysmon.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/sysmon/lv_sysmon.h" />
+    </folder>
+    <folder Name="vg_lite_tvg">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/vg_lite_tvg/vg_lite.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/vg_lite_tvg/vg_lite_matrix.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/others/vg_lite_tvg/vg_lite_tvg.cpp" />
+    </folder>
+  </folder>
+  <folder Name="stdlib">
+    <folder Name="builtin">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/builtin/lv_mem_core_builtin.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/builtin/lv_sprintf_builtin.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/builtin/lv_string_builtin.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/builtin/lv_tlsf.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/builtin/lv_tlsf.h" />
+    </folder>
+    <folder Name="clib">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/clib/lv_mem_core_clib.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/clib/lv_sprintf_clib.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/clib/lv_string_clib.c" />
+    </folder>
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/lv_mem.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/lv_mem.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/lv_sprintf.h" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/lv_string.h" />
+    <folder Name="micropython">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/micropython/lv_mem_core_micropython.c" />
+    </folder>
+    <folder Name="rtthread">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/rtthread/lv_mem_core_rtthread.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/rtthread/lv_sprintf_rtthread.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/stdlib/rtthread/lv_string_rtthread.c" />
+    </folder>
+  </folder>
+  <folder Name="themes">
+    <folder Name="default">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/themes/default/lv_theme_default.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/themes/default/lv_theme_default.h" />
+    </folder>
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/themes/lv_theme.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/themes/lv_theme.h" />
+    <folder Name="mono">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/themes/mono/lv_theme_mono.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/themes/mono/lv_theme_mono.h" />
+    </folder>
+    <folder Name="simple">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/themes/simple/lv_theme_simple.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/themes/simple/lv_theme_simple.h" />
+    </folder>
+  </folder>
+  <folder Name="tick">
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/tick/lv_tick.c" />
+    <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/tick/lv_tick.h" />
+  </folder>
+  <folder Name="widgets">
+    <folder Name="animimage">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/animimage/lv_animimage.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/animimage/lv_animimage.h" />
+    </folder>
+    <folder Name="arc">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/arc/lv_arc.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/arc/lv_arc.h" />
+    </folder>
+    <folder Name="bar">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/bar/lv_bar.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/bar/lv_bar.h" />
+    </folder>
+    <folder Name="button">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/button/lv_button.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/button/lv_button.h" />
+    </folder>
+    <folder Name="buttonmatrix">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/buttonmatrix/lv_buttonmatrix.h" />
+    </folder>
+    <folder Name="calendar">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/calendar/lv_calendar.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/calendar/lv_calendar.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/calendar/lv_calendar_header_arrow.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/calendar/lv_calendar_header_arrow.h" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/calendar/lv_calendar_header_dropdown.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/calendar/lv_calendar_header_dropdown.h" />
+    </folder>
+    <folder Name="canvas">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/canvas/lv_canvas.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/canvas/lv_canvas.h" />
+    </folder>
+    <folder Name="chart">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/chart/lv_chart.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/chart/lv_chart.h" />
+    </folder>
+    <folder Name="checkbox">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/checkbox/lv_checkbox.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/checkbox/lv_checkbox.h" />
+    </folder>
+    <folder Name="dropdown">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/dropdown/lv_dropdown.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/dropdown/lv_dropdown.h" />
+    </folder>
+    <folder Name="image">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/image/lv_image.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/image/lv_image.h" />
+    </folder>
+    <folder Name="imagebutton">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/imagebutton/lv_imagebutton.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/imagebutton/lv_imagebutton.h" />
+    </folder>
+    <folder Name="keyboard">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/keyboard/lv_keyboard.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/keyboard/lv_keyboard.h" />
+    </folder>
+    <folder Name="label">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/label/lv_label.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/label/lv_label.h" />
+    </folder>
+    <folder Name="led">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/led/lv_led.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/led/lv_led.h" />
+    </folder>
+    <folder Name="line">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/line/lv_line.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/line/lv_line.h" />
+    </folder>
+    <folder Name="list">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/list/lv_list.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/list/lv_list.h" />
+    </folder>
+    <folder Name="menu">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/menu/lv_menu.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/menu/lv_menu.h" />
+    </folder>
+    <folder Name="msgbox">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/msgbox/lv_msgbox.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/msgbox/lv_msgbox.h" />
+    </folder>
+    <folder Name="objx_templ">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/objx_templ/lv_objx_templ.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/objx_templ/lv_objx_templ.h" />
+    </folder>
+    <folder Name="roller">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/roller/lv_roller.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/roller/lv_roller.h" />
+    </folder>
+    <folder Name="scale">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/scale/lv_scale.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/scale/lv_scale.h" />
+    </folder>
+    <folder Name="slider">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/slider/lv_slider.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/slider/lv_slider.h" />
+    </folder>
+    <folder Name="span">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/span/lv_span.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/span/lv_span.h" />
+    </folder>
+    <folder Name="spinbox">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/spinbox/lv_spinbox.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/spinbox/lv_spinbox.h" />
+    </folder>
+    <folder Name="spinner">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/spinner/lv_spinner.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/spinner/lv_spinner.h" />
+    </folder>
+    <folder Name="switch">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/switch/lv_switch.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/switch/lv_switch.h" />
+    </folder>
+    <folder Name="table">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/table/lv_table.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/table/lv_table.h" />
+    </folder>
+    <folder Name="tabview">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/tabview/lv_tabview.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/tabview/lv_tabview.h" />
+    </folder>
+    <folder Name="textarea">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/textarea/lv_textarea.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/textarea/lv_textarea.h" />
+    </folder>
+    <folder Name="tileview">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/tileview/lv_tileview.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/tileview/lv_tileview.h" />
+    </folder>
+    <folder Name="win">
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/win/lv_win.c" />
+      <file file_name="/c/nRF5 SDK/Scales-Firmware/Components/LCD/lvgl/src/widgets/win/lv_win.h" />
+    </folder>
+  </folder>
+</folder>

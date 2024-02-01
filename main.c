@@ -52,7 +52,7 @@ uint32_t currentElapsedTime = 0;
 #define TWI_SDA_M           8        //I2C SDA Pin
 
 #define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(20)   
-#define DISPLAY_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(120)  
+#define DISPLAY_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(40)  
 #define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(18000)
 #define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
@@ -127,10 +127,10 @@ void initialise_weight_sensor()
 {    
     ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
-/*
+
     err_code = app_timer_start(m_display_timer_id, DISPLAY_NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
-*/
+
 
     err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -171,7 +171,7 @@ static void notification_timeout_handler(void * p_context)
 
 static void display_timeout_handler(void * p_context)
 {
-   // weight_print(roundedValue/10.0);
+    weight_print(roundedValue/10.0);
 
     ret_code_t err_code = app_timer_start(m_display_timer_id, DISPLAY_NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -498,7 +498,6 @@ int main(void)
     {
         NRF_LOG_INFO("MAX17260 not found");
     }
-    
 
     NRF_LOG_FLUSH();
 
@@ -529,7 +528,6 @@ int main(void)
     ADS123X_tare(&scale, 80);
     float taredValue = ADS123X_getOffset(&scale);
 
-    //screen_clear();
     NRF_LOG_RAW_INFO("Offset:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(taredValue) );
 
     NRF_LOG_FLUSH();
