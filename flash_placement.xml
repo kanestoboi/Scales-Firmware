@@ -1,10 +1,15 @@
 <!DOCTYPE Linker_Placement_File>
 <Root name="Flash Section Placement">
-  <MemorySegment name="FLASH1" start="$(FLASH_PH_START)" size="$(FLASH_PH_SIZE)">
-    <ProgramSection load="no" name=".reserved_flash" start="$(FLASH_PH_START)" size="$(FLASH_START)-$(FLASH_PH_START)" />
-    <ProgramSection alignment="0x100" load="Yes" name=".vectors" start="$(FLASH_START)" />
+  <MemorySegment name="FLASH1" start="$(FLASH1_START)" size="$(FLASH1_SIZE)">
+    <ProgramSection load="no" name=".reserved_flash" start="$(FLASH_PH_START)" size="$(FLASH1_START)" />
+    <ProgramSection alignment="0x100" load="Yes" name=".vectors" start="$(FLASH1_START)" />
     <ProgramSection alignment="4" load="Yes" name=".init" />
     <ProgramSection alignment="4" load="Yes" name=".init_rodata" />
+    
+    
+  </MemorySegment>
+  <MemorySegment name="FLASH2" start="$(FLASH2_START)" size="$(FLASH2_SIZE)">
+       
     <ProgramSection alignment="4" load="Yes" name=".text" size="" />
     <ProgramSection alignment="4" keep="Yes" load="Yes" name=".sdh_soc_observers" inputsections="*(SORT(.sdh_soc_observers*))" address_symbol="__start_sdh_soc_observers" end_symbol="__stop_sdh_soc_observers" />
     <ProgramSection alignment="4" keep="Yes" load="Yes" name=".pwr_mgmt_data" inputsections="*(SORT(.pwr_mgmt_data*))" address_symbol="__start_pwr_mgmt_data" end_symbol="__stop_pwr_mgmt_data" />
@@ -18,7 +23,7 @@
     <ProgramSection alignment="4" keep="Yes" load="Yes" name=".crypto_data" inputsections="*(SORT(.crypto_data*))" address_symbol="__start_crypto_data" end_symbol="__stop_crypto_data" />
     <ProgramSection alignment="4" keep="Yes" load="Yes" name=".log_const_data" inputsections="*(SORT(.log_const_data*))" address_symbol="__start_log_const_data" end_symbol="__stop_log_const_data" />
     <ProgramSection alignment="4" keep="Yes" load="Yes" name=".log_backends" inputsections="*(SORT(.log_backends*))" address_symbol="__start_log_backends" end_symbol="__stop_log_backends" />
-    <ProgramSection alignment="4" keep="Yes" load="No" name=".nrf_sections" address_symbol="__start_nrf_sections" />
+    <ProgramSection alignment="4" keep="Yes" load="Yes" name=".nrf_sections" address_symbol="__start_nrf_sections" />
     <ProgramSection alignment="4" keep="Yes" load="Yes" name=".cli_sorted_cmd_ptrs"  inputsections="*(.cli_sorted_cmd_ptrs*)" runin=".cli_sorted_cmd_ptrs_run"/>
     <ProgramSection alignment="4" keep="Yes" load="Yes" name=".fs_data"  inputsections="*(.fs_data*)" runin=".fs_data_run"/>
     <ProgramSection alignment="4" keep="Yes" load="Yes" name=".log_dynamic_data"  inputsections="*(SORT(.log_dynamic_data*))" runin=".log_dynamic_data_run"/>
@@ -30,7 +35,7 @@
     <ProgramSection alignment="4" load="Yes" runin=".fast_run" name=".fast" />
     <ProgramSection alignment="4" load="Yes" runin=".data_run" name=".data" />
     <ProgramSection alignment="4" load="Yes" runin=".tdata_run" name=".tdata" />
-  </MemorySegment>
+  </MemorySegment> 
   <MemorySegment name="RAM1" start="$(RAM_PH_START)" size="$(RAM_PH_SIZE)">
     <ProgramSection load="no" name=".reserved_ram" start="$(RAM_PH_START)" size="$(RAM_START)-$(RAM_PH_START)" />
     <ProgramSection alignment="0x100" load="No" name=".vectors_ram" start="$(RAM_START)" address_symbol="__app_ram_start__"/>

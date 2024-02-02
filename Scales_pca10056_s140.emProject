@@ -38,8 +38,8 @@
       linker_printf_width_precision_supported="Yes"
       linker_scanf_fmt_level="long"
       linker_section_placement_file="flash_placement.xml"
-      linker_section_placement_macros="FLASH_PH_START=0x0;FLASH_PH_SIZE=0x100000;RAM_PH_START=0x20000000;RAM_PH_SIZE=0x40000;FLASH_START=0x27000;FLASH_SIZE=0xd9000;RAM_START=0x200022D0;RAM_SIZE=0x3DDD0"
-      linker_section_placements_segments="FLASH1 RX 0x0 0x100000;RAM1 RWX 0x20000000 0x40000"
+      linker_section_placement_macros="FLASH_PH_START=0x0;FLASH_PH_SIZE=0x100000;RAM_PH_START=0x20000000;RAM_PH_SIZE=0x40000;FLASH1_START=0x27000;FLASH1_SIZE=0x51000;FLASH2_START=0x83000;FLASH2_SIZE=0x75000;RAM_START=0x200022D0;RAM_SIZE=0x3DDD0"
+      linker_section_placements_segments="FLASH1 RX 0x0 0x51000; FLASH2 RX 0x7E000 0x7A000;RAM1 RWX 0x20000000 0x40000"
       macros="CMSIS_CONFIG_TOOL=../nRF5_SDK_current/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar"
       project_directory=""
       project_type="Executable" />
@@ -877,8 +877,6 @@
             </folder>
           </folder>
           <file file_name="Components/LCD/lv_conf.h" />
-          <file file_name="Components/LCD/nrf_gfx.c" />
-          <file file_name="Components/LCD/nrf_gfx.h" />
           <file file_name="Components/LCD/nrf_lcd.h" />
           <file file_name="Components/LCD/scales_lcd.c" />
           <file file_name="Components/LCD/scales_lcd.h" />
@@ -898,13 +896,6 @@
       </folder>
       <file file_name="main.c" />
       <file file_name="sdk_config.h" />
-    </folder>
-    <folder Name="Board Definition">
-      <file file_name="../nRF5_SDK_current/components/boards/boards.c" />
-    </folder>
-    <folder Name="Board Support">
-      <file file_name="../nRF5_SDK_current/components/libraries/bsp/bsp.c" />
-      <file file_name="../nRF5_SDK_current/components/libraries/bsp/bsp_btn_ble.c" />
     </folder>
     <folder Name="None">
       <file file_name="../nRF5_SDK_current/modules/nrfx/mdk/ses_startup_nrf52840.s" />
@@ -948,26 +939,15 @@
       <file file_name="../nRF5_SDK_Current/components/libraries/bootloader/dfu/nrf_dfu_svci.c" />
     </folder>
     <folder Name="nRF_Drivers">
-      <file file_name="../nRF5_SDK_current/integration/nrfx/legacy/nrf_drv_clock.c" />
-      <file file_name="../nRF5_SDK_Current/integration/nrfx/legacy/nrf_drv_spi.c" />
-      <file file_name="../nRF5_SDK_Current/integration/nrfx/legacy/nrf_drv_twi.c" />
-      <file file_name="../nRF5_SDK_current/integration/nrfx/legacy/nrf_drv_uart.c" />
       <file file_name="../nRF5_SDK_current/modules/nrfx/soc/nrfx_atomic.c" />
       <file file_name="../nRF5_SDK_current/modules/nrfx/drivers/src/nrfx_clock.c" />
       <file file_name="../nRF5_SDK_current/modules/nrfx/drivers/src/nrfx_gpiote.c" />
       <file file_name="../nRF5_SDK_current/modules/nrfx/drivers/src/prs/nrfx_prs.c" />
       <file file_name="../nRF5_SDK_Current/modules/nrfx/drivers/src/nrfx_saadc.c" />
-      <file file_name="../nRF5_SDK_Current/modules/nrfx/drivers/src/nrfx_spi.c" />
       <file file_name="../nRF5_SDK_Current/modules/nrfx/drivers/src/nrfx_spim.c" />
       <file file_name="../nRF5_SDK_Current/modules/nrfx/drivers/src/nrfx_twi.c" />
-      <file file_name="../nRF5_SDK_current/modules/nrfx/drivers/src/nrfx_uart.c" />
-      <file file_name="../nRF5_SDK_current/modules/nrfx/drivers/src/nrfx_uarte.c" />
     </folder>
-    <folder Name="nRF_External">
-      <file file_name="../nRF5_SDK_Current/external/thedotfactory_fonts/nrf_font.h" />
-      <file file_name="../nRF5_SDK_Current/external/thedotfactory_fonts/orkney24pts.c" />
-      <file file_name="../nRF5_SDK_Current/external/thedotfactory_fonts/orkney8pts.c" />
-    </folder>
+    <folder Name="nRF_External" />
     <folder Name="nRF_Libraries">
       <file file_name="../nRF5_SDK_current/components/libraries/button/app_button.c" />
       <file file_name="../nRF5_SDK_current/components/libraries/util/app_error.c" />
