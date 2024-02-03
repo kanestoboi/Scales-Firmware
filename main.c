@@ -16,6 +16,7 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 #include "nrfx_twi.h"
+#include "nrf_delay.h"
 
 #include "Components/LCD/scales_lcd.h"
 
@@ -53,7 +54,7 @@ uint32_t currentElapsedTime = 0;
 
 #define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(20)   
 #define DISPLAY_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(40)  
-#define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(18000)
+#define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(180000)
 #define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
@@ -233,6 +234,7 @@ static void wakeup_timeout_handler(void * p_context)
         nrf_gpio_cfg_output(45);
         nrf_gpio_pin_set(45);
         print_taring();
+        nrf_delay_ms(2000);
         ADS123X_tare(&scale, 80);
         err_code = app_timer_stop(m_wakeup_timer_id);
         APP_ERROR_CHECK(err_code);
@@ -525,6 +527,7 @@ int main(void)
 
     //ADS123X_calibrateOnNextConversion(&scale);
     print_taring();
+    nrf_delay_ms(2000);
     ADS123X_tare(&scale, 80);
     float taredValue = ADS123X_getOffset(&scale);
 

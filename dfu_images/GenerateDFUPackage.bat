@@ -2,7 +2,7 @@
 @Echo off
 echo Compiling Release
 emBuild -config "Release" -echo ../Scales_pca10056_s140.emProject
-emBuild -config "Release" -echo ../../Scales-Bootloader/SclaesBootloader_s140_pca10056.emProject
+emBuild -config "Release" -echo ../../Scales-Bootloader/ScalesBootloader_s140_pca10056.emProject
 
 set build-configuration=Release
 
@@ -16,7 +16,8 @@ set /a firmwareVersion=(majorFirmwareVersion * 65536) + (minorFirmwareVersion * 
 echo Firmware version: 0x%firmwareVersion%
 
 set /A bootloaderVersion=1
-set /A blSettingsVersion=1
+@REM nrf5 SDK 17 needs to use setting version 2
+set /A blSettingsVersion=2 
 
 set application-hex=../Output/%build-configuration%/Exe/Scales.hex
 set soft-device-hex=../../nRF5_SDK_Current/components/softdevice/s140/hex/s140_nrf52_7.2.0_softdevice.hex
