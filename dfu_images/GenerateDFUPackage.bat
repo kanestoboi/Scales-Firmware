@@ -16,7 +16,7 @@ set /a firmwareVersion=(majorFirmwareVersion * 65536) + (minorFirmwareVersion * 
 echo Firmware version: 0x%firmwareVersion%
 
 set /A bootloaderVersion=1
-@REM Theebl settings version depends on the SDK version. >= 15.3.0 is bl settings version 2
+@REM The bl settings version depends on the SDK version. >= 15.3.0 is bl settings version 2
 set /A blSettingsVersion=2  
 
 set application-hex=../Output/%build-configuration%/Exe/Scales.hex
