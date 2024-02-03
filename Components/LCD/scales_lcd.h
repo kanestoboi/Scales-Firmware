@@ -4,8 +4,11 @@
 void scales_lcd_init();
 
 void screen_clear(void);
-void print_taring();
-void weight_print(float weight);
+void display_indicate_tare();
+void display_update_weight_label(float weight);
+
+void display_update_timer_label(uint32_t seconds);
+void display_update_battery_label(uint8_t batteryLevel);
 void text_print();
 
 #endif

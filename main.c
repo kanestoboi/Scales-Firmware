@@ -172,7 +172,7 @@ static void notification_timeout_handler(void * p_context)
 
 static void display_timeout_handler(void * p_context)
 {
-    weight_print(roundedValue/10.0);
+    display_update_weight_label(roundedValue/10.0);
 
     ret_code_t err_code = app_timer_start(m_display_timer_id, DISPLAY_NOTIFICATION_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -233,7 +233,7 @@ static void wakeup_timeout_handler(void * p_context)
         // set LCD backlight to on
         nrf_gpio_cfg_output(45);
         nrf_gpio_pin_set(45);
-        print_taring();
+        display_indicate_tare();
         nrf_delay_ms(2000);
         ADS123X_tare(&scale, 80);
         err_code = app_timer_stop(m_wakeup_timer_id);
@@ -261,6 +261,8 @@ void elapsed_time_timeout_handler(void * p_context)
     };
 
     ble_elapsed_time_service_elapsed_time_update(elapsed_time);
+
+    display_update_timer_label(currentElapsedTime);
 }
 
 void battery_level_timeout_handler(void * p_context)
@@ -270,7 +272,10 @@ void battery_level_timeout_handler(void * p_context)
         float soc;
         max17260_getStateOfCharge(&max17260Sensor, &soc);
         bluetooth_update_battery_level((uint8_t)roundf(soc));
+        display_update_battery_label((uint8_t)roundf(soc));
+        
     }
+
 
     ret_code_t err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -525,7 +530,7 @@ int main(void)
     ADS123X_PowerOn(&scale);
 
     //ADS123X_calibrateOnNextConversion(&scale);
-    print_taring();
+    display_indicate_tare();
     nrf_delay_ms(2000);
     ADS123X_tare(&scale, 80);
     float taredValue = ADS123X_getOffset(&scale);

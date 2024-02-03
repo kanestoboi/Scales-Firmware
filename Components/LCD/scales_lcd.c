@@ -1,16 +1,14 @@
-#include "nrf_gfx.h"
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 #include "nrfx_spim.h"
 #include "app_timer.h"
+#include "nrf_lcd.h"
 
 #include <string.h>
 
 #include "scales_lcd.h"
 #include "lvgl/lvgl.h"
 
-extern const nrf_gfx_font_desc_t orkney_8ptFontInfo;
-extern const nrf_gfx_font_desc_t orkney_24ptFontInfo;
 extern const nrf_lcd_t nrf_lcd_st7735;
 
 APP_TIMER_DEF(m_lvgl_timer_id);
@@ -30,6 +28,8 @@ static const uint8_t ST7735_RST_PIN = 15;
 static const uint8_t ST7735_BACKLIGHT_PIN = 45;
 
 lv_obj_t *weightLabel;
+lv_obj_t *batteryLabel;
+lv_obj_t *timeLabel;
 
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
 #define LVGL_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(LVGL_TIMER_INTERVAL_MS)
@@ -96,7 +96,20 @@ void scales_lcd_init()
 
 
     weightLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( weightLabel, LV_ALIGN_CENTER, 0, 0 );
+    lv_obj_align( weightLabel, LV_ALIGN_BOTTOM_MID, 0, 0 );
+    lv_label_set_text( weightLabel, "" );
+
+    batteryLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( batteryLabel, LV_ALIGN_TOP_RIGHT, 0, 0 );
+    lv_obj_set_style_text_font(batteryLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_label_set_text( weightLabel, "" );
+
+
+    timeLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( timeLabel, LV_ALIGN_TOP_LEFT, 0, 0 );
+    lv_obj_set_style_text_font(timeLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_label_set_text( timeLabel, "" );
+
 
 
     err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_SINGLE_SHOT, lvgl_timeout_handler);
@@ -104,16 +117,12 @@ void scales_lcd_init()
 
     err_code = app_timer_start(m_lvgl_timer_id, LVGL_TIMER_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
-    
-
-
-
 }
 
 
-void weight_print(float weight)
+void display_update_weight_label(float weight)
 {
-    char buffer[20];//[20];  // Adjust the buffer size based on your needs
+    char buffer[6];
 
     // Convert float to string
     sprintf(buffer, "%0.1f", weight);
@@ -126,12 +135,29 @@ void text_print(void)
     lv_label_set_text( weightLabel, "Scales" );
 }
 
-void print_taring()
+void display_indicate_tare()
 {
     lv_label_set_text( weightLabel, "Taring");
 }
 
-void printSquare()
+void display_update_timer_label(uint32_t seconds)
 {
-    nrf_gfx_print_square(p_lcd);
+    int hours, minutes, remainingSeconds;
+
+    hours = seconds / 3600;
+    minutes = (seconds % 3600) / 60;
+    remainingSeconds = seconds % 60;
+
+    char buffer[9];
+    sprintf(buffer, "%02d:%02d:%02d", hours, minutes, remainingSeconds);
+
+    lv_label_set_text( timeLabel, buffer);
+}
+
+void display_update_battery_label(uint8_t batteryLevel)
+{
+    char buffer[4];
+    sprintf(buffer, "%d%%", batteryLevel);
+
+    lv_label_set_text( batteryLabel, buffer);
 }
