@@ -33,7 +33,10 @@ bool ADS123X_IsReady(ADS123X *device)
 
 ADS123X_ERROR_t ADS123X_read(ADS123X *device, int32_t *value)
 {
-  while(!ADS123X_IsReady(device)) {}
+  if (!ADS123X_IsReady(device))
+  {
+    return SENSOR_NOT_READY;
+  }
   int32_t readValue = 0;
   
   // Read 24 bits
@@ -116,11 +119,13 @@ ADS123X_ERROR_t ADS123X_readAverage(ADS123X *device, float *value, uint8_t times
   
   int32_t readValue;
 
-  for(uint16_t index = 0; index < times; index++)
+  for(uint16_t index = 0; index < times;)
   {
-    ADS123X_read(device, &readValue);
-
-    sum += readValue;
+    if(ADS123X_read(device, &readValue) == NoERROR)
+    {
+        sum += readValue;
+        index++;
+    }
   }
 
   *value = (float)sum/(float)times;
@@ -144,10 +149,13 @@ ADS123X_ERROR_t ADS123X_tare(ADS123X *device, uint8_t times)
 
   int32_t sum = 0;
 
-  for( uint32_t index = 0; index < times; index++)
+  for( uint32_t index = 0; index < times; )
   {
-    ADS123X_read(device, &readValue);
-    sum += readValue;
+    if(ADS123X_read(device, &readValue) == NoERROR)
+    {
+        sum += readValue;
+        index++;
+    }
   }
 
   ADS123X_setOffset(device, sum/times);

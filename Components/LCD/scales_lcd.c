@@ -34,16 +34,13 @@ lv_obj_t *timeLabel;
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
 #define LVGL_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(LVGL_TIMER_INTERVAL_MS)
 //LVGL draw into this buffer, 1/10 screen size usually works well. The size is in bytes
-#define DRAW_BUF_SIZE (hor_res * ver_res / 10 * (LV_COLOR_DEPTH / 8))
+#define DRAW_BUF_SIZE (hor_res * ver_res * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE/8];
 
 static void lvgl_timeout_handler(void * p_context)
 {
     lv_task_handler(); // let the GUI do its work 
     lv_tick_inc(LVGL_TIMER_INTERVAL_MS); // tell LVGL how much time has passed 
-
-    ret_code_t err_code = app_timer_start(m_lvgl_timer_id, LVGL_TIMER_INTERVAL_TICKS, NULL);
-    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -77,11 +74,8 @@ void scales_lcd_init()
     nrf_gpio_pin_clear(ST7735_RST_PIN);
     nrf_delay_ms(100);
     nrf_gpio_pin_set(ST7735_RST_PIN);
-
-    // set LCD backlight to on
+    // set LCD backlight pin to output
     nrf_gpio_cfg_output(ST7735_BACKLIGHT_PIN);
-    nrf_gpio_pin_set(ST7735_BACKLIGHT_PIN);
-
     // initialise lcd driver
     err_code = p_lcd->lcd_init();
     p_lcd->lcd_rotation_set(NRF_LCD_ROTATE_90);
@@ -94,7 +88,6 @@ void scales_lcd_init()
     lv_display_set_flush_cb(display, flush_cb);
     lv_display_set_buffers(display, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
-
     weightLabel = lv_label_create( lv_scr_act() );
     lv_obj_align( weightLabel, LV_ALIGN_BOTTOM_MID, 0, 0 );
     lv_label_set_text( weightLabel, "" );
@@ -102,7 +95,7 @@ void scales_lcd_init()
     batteryLabel = lv_label_create( lv_scr_act() );
     lv_obj_align( batteryLabel, LV_ALIGN_TOP_RIGHT, 0, 0 );
     lv_obj_set_style_text_font(batteryLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_label_set_text( weightLabel, "" );
+    lv_label_set_text( batteryLabel, "" );
 
 
     timeLabel = lv_label_create( lv_scr_act() );
@@ -110,13 +103,13 @@ void scales_lcd_init()
     lv_obj_set_style_text_font(timeLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_label_set_text( timeLabel, "" );
 
-
-
-    err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_SINGLE_SHOT, lvgl_timeout_handler);
+    err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_start(m_lvgl_timer_id, LVGL_TIMER_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
+
+    display_turn_backlight_on();
 }
 
 
@@ -160,4 +153,16 @@ void display_update_battery_label(uint8_t batteryLevel)
     sprintf(buffer, "%d%%", batteryLevel);
 
     lv_label_set_text( batteryLabel, buffer);
+}
+
+void display_turn_backlight_on()
+{
+    nrf_gpio_pin_set(ST7735_BACKLIGHT_PIN);
+
+}
+
+void display_turn_backlight_off()
+{
+    nrf_gpio_pin_clear(ST7735_BACKLIGHT_PIN);
+
 }

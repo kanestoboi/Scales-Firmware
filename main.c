@@ -20,7 +20,7 @@
 
 #include "Components/LCD/scales_lcd.h"
 
-#include "Components/ADS123X/ADS123X.h"
+#include "Components/WeightSensor/WeightSensor.h"
 #include "Components/FuelGauge/MAX17260/max17260.h"
 #include "Components/LED/nrf_buddy_led.h"
 #include "Components/Bluetooth/Bluetooth.h"
@@ -28,22 +28,14 @@
 #include "Components/Bluetooth/Services/ElapsedTimeService.h"
 #include "Components/SavedParameters/SavedParameters.h"
 
-APP_TIMER_DEF(m_notification_timer_id);
+APP_TIMER_DEF(m_read_weight_timer_id);
 APP_TIMER_DEF(m_display_timer_id);
 APP_TIMER_DEF(m_wakeup_timer_id);
 APP_TIMER_DEF(m_keep_alive_timer_id);
 APP_TIMER_DEF(m_elapsed_time_timer_id);
 APP_TIMER_DEF(m_battery_level_timer_id);
 
-#define NRF_LOG_FLOAT_SCALES(val) (uint32_t)(((val) < 0 && (val) > -1.0) ? "-" : ""),   \
-                           (int32_t)(val),                                              \
-                           (int32_t)((((val) > 0) ? (val) - (int32_t)(val)              \
-                                                : (int32_t)(val) - (val))*10)
-float scaleValue;
-float roundedValue;
-
 uint32_t currentElapsedTime = 0;
-
 
 //Initializing TWI0 instance
 #define TWI_INSTANCE_ID     0
@@ -52,9 +44,9 @@ uint32_t currentElapsedTime = 0;
 #define TWI_SCL_M           6         //I2C SCL Pin
 #define TWI_SDA_M           8        //I2C SDA Pin
 
-#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(20)   
-#define DISPLAY_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(40)  
-#define KEEP_ALIVE_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(180000)
+#define READ_WEIGHT_SENSOR_TICKS_INTERVAL           APP_TIMER_TICKS(40)   
+#define DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS           APP_TIMER_TICKS(40)  
+#define KEEP_ALIVE_INTERVAL_TICKS           APP_TIMER_TICKS(180000)
 #define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
@@ -63,44 +55,26 @@ uint32_t currentElapsedTime = 0;
 const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
 
 MAX17260 max17260Sensor;
-ADS123X scale;
 
 bool writeToWeightCharacteristic = false;
 
-void tare_scale()
-{
-    ADS123X_tare(&scale, 80);
 
-    NRF_LOG_INFO("Scales tared.");
+void start_weight_sensor_timers();
+
+static void calibration_complete_callback(float scaleFactor)
+{
+    NRF_LOG_INFO("calibration_complete_callback entered.");
+    NRF_LOG_FLUSH();
+    saved_parameters_SetSavedScaleFactor(scaleFactor);
+    NRF_LOG_INFO("Calibration complete callback.");
+    NRF_LOG_FLUSH();
 }
 
-void initialise_weight_sensor();
-
-void calibrate_scale()
+static void weight_sensor_service_calibration_callback()
 {
-    ret_code_t err_code;
-    err_code = app_timer_stop(m_notification_timer_id);
-    APP_ERROR_CHECK(err_code);
+    weight_sensor_calibrate(calibration_complete_callback);
 
-    err_code = app_timer_stop(m_keep_alive_timer_id);
-    APP_ERROR_CHECK(err_code);
-
-    float val; 
-    ADS123X_readAverage(&scale, &val, 80);
-
-    float scaleFactor = ((val - ADS123X_getOffset(&scale))/50.0f);
-    NRF_LOG_RAW_INFO("Scale Factor:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(scaleFactor) );
-    ADS123X_setScaleFactor(&scale, scaleFactor);
-
-    saved_parameters_SetSavedScaleFactor(scaleFactor);
-
-    scaleFactor = saved_parameters_getSavedScaleFactor();
-
-    NRF_LOG_RAW_INFO("Read Back Scale Factor:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(scaleFactor) );
-
-    NRF_LOG_INFO("Scales calibrated.");
-
-    initialise_weight_sensor();
+    NRF_LOG_INFO("weight_sensor_service_calibration_callback exit.");
 }
 
 void set_coffee_to_water_ratio(uint16_t requestValue)
@@ -124,19 +98,17 @@ void disable_write_to_weight_characteristic()
     writeToWeightCharacteristic = false;
 }
 
-void initialise_weight_sensor()
+void start_weight_sensor_timers()
 {    
-    ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
+    ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_start(m_display_timer_id, DISPLAY_NOTIFICATION_INTERVAL, NULL);
+    err_code = app_timer_start(m_display_timer_id, DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
 
-
-    err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_NOTIFICATION_INTERVAL, NULL);
+    err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
 }
-
 
 
 /**@brief Function for handling the weight measurement timer timeout.
@@ -146,37 +118,29 @@ void initialise_weight_sensor()
  * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
  *                       app_start_timer() call to the timeout handler.
  */
-static void notification_timeout_handler(void * p_context)
+static void read_weight_timeout_handler(void * p_context)
 {
     UNUSED_PARAMETER(p_context);
-    //ret_code_t err_code;
-    // create arrays which will hold x,y & z co-ordinates values of acc
 
-    ADS123X_getUnits(&scale, &scaleValue, 2U);
-
-    roundedValue = fabs(roundf(scaleValue * 10.0));
+    float scaleValue = roundf(weight_sensor_get_weight_filtered()*10)/10.0;
 
     if (writeToWeightCharacteristic)
     {
         ble_weight_sensor_service_sensor_data_update((uint8_t*)&scaleValue, sizeof(float));
     }
-    //weight_print(roundedValue/10.0);
 
-    //printSquare();
-    
-    //NRF_LOG_RAW_INFO("ScaledValue:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(roundedValue/10) );
-    //NRF_LOG_FLUSH();
-    ret_code_t err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
+    ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
 static void display_timeout_handler(void * p_context)
 {
+    float roundedValue = roundf(weight_sensor_get_weight_filtered() * 10.0);
+
     display_update_weight_label(roundedValue/10.0);
 
-    ret_code_t err_code = app_timer_start(m_display_timer_id, DISPLAY_NOTIFICATION_INTERVAL, NULL);
+    ret_code_t err_code = app_timer_start(m_display_timer_id, DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
-
 }
 
 float m_last_keep_alive_value = 0.0;
@@ -185,12 +149,13 @@ static void keep_alive_timeout_handler(void * p_context)
 {
     UNUSED_PARAMETER(p_context);
     ret_code_t err_code;
-    // create arrays which will hold x,y & z co-ordinates values of acc
+    
+    float roundedValue = roundf(weight_sensor_get_weight_filtered() * 10.0);
 
     if (fabs(m_last_keep_alive_value - roundedValue) < 5 && !writeToWeightCharacteristic)
     {
         NRF_LOG_INFO("SLEEPING");
-        err_code = app_timer_stop(m_notification_timer_id);
+        err_code = app_timer_stop(m_read_weight_timer_id);
         APP_ERROR_CHECK(err_code);
 
         err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
@@ -201,12 +166,11 @@ static void keep_alive_timeout_handler(void * p_context)
         nrf_gpio_pin_clear(45);
 
         m_last_wakeup_value  = roundedValue;
-
     }
     else
     {
         NRF_LOG_INFO("NOT SLEEPING THIS ROUND");
-        err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_NOTIFICATION_INTERVAL, NULL);
+        err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_INTERVAL_TICKS, NULL);
     }
 
     m_last_keep_alive_value = roundedValue;
@@ -220,12 +184,7 @@ static void wakeup_timeout_handler(void * p_context)
     UNUSED_PARAMETER(p_context);
     ret_code_t err_code;
 
-    //ADS123X_PowerOn(&scale);
-
-    ADS123X_getUnits(&scale, &scaleValue, 2U);
-    //ADS123X_PowerOff(&scale);
-
-    roundedValue = fabs(roundf(scaleValue * 10.0));
+    float roundedValue = roundf(weight_sensor_get_weight_filtered() * 10.0);
 
     if (fabs(m_last_wakeup_value - roundedValue) > 5)
     {
@@ -235,17 +194,16 @@ static void wakeup_timeout_handler(void * p_context)
         nrf_gpio_pin_set(45);
         display_indicate_tare();
         nrf_delay_ms(2000);
-        ADS123X_tare(&scale, 80);
+        weight_sensor_tare();
         err_code = app_timer_stop(m_wakeup_timer_id);
         APP_ERROR_CHECK(err_code);
-        initialise_weight_sensor();
+        start_weight_sensor_timers();
     }
     else{
         NRF_LOG_INFO("DIDN'T MEET WAKE THRESHOLD.");
         err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
         APP_ERROR_CHECK(err_code);
         m_last_wakeup_value = roundedValue;
-        
     } 
 }
 
@@ -273,9 +231,7 @@ void battery_level_timeout_handler(void * p_context)
         max17260_getStateOfCharge(&max17260Sensor, &soc);
         bluetooth_update_battery_level((uint8_t)roundf(soc));
         display_update_battery_label((uint8_t)roundf(soc));
-        
     }
-
 
     ret_code_t err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -291,7 +247,7 @@ static void timers_init(void)
     ret_code_t err_code = app_timer_init();
     APP_ERROR_CHECK(err_code);
     
-    err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_SINGLE_SHOT, notification_timeout_handler);
+    err_code = app_timer_create(&m_read_weight_timer_id, APP_TIMER_MODE_SINGLE_SHOT, read_weight_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_display_timer_id, APP_TIMER_MODE_SINGLE_SHOT, display_timeout_handler);
@@ -441,7 +397,7 @@ int main(void)
     log_init();
 
     // Initialise the saved parameters module
-   saved_parameters_init();
+    saved_parameters_init();
     
     // Start execution.
     NRF_LOG_INFO("Scales Started.");
@@ -452,6 +408,7 @@ int main(void)
     timers_init();                      // Initialise nRF5 timers library
     nrf_buddy_leds_init();              // initialise nRF52 buddy leds library
     power_management_init();            // initialise the nRF5 power management library
+    scales_lcd_init();
 
     bluetooth_init();
     if (ble_weight_sensor_service_init() != NRF_SUCCESS)
@@ -463,26 +420,20 @@ int main(void)
     {
         NRF_LOG_INFO("Error Initialing Elapsed Time service");
     }
-    else
-    {
-        //ble_elapsed_time_t elapsed_time;
-        //memset(&elapsed_time, 0, sizeof(elapsed_time));
-        //if(ble_elapsed_time_service_elapsed_time_update(elapsed_time) != NRF_SUCCESS)
-        //{
-        //    NRF_LOG_INFO("Updating ETS");
-        //}
-    }
 
-    ble_weight_sensor_set_tare_callback(&tare_scale);
-    ble_weight_sensor_set_calibration_callback(&calibrate_scale);
-    ble_weight_sensor_set_coffee_to_water_ratio_callback(&set_coffee_to_water_ratio);
-    ble_weight_sensor_set_weigh_mode_callback(&set_weigh_mode);
+    ble_weight_sensor_set_tare_callback(weight_sensor_tare);
+    ble_weight_sensor_set_calibration_callback(weight_sensor_service_calibration_callback);
+    ble_weight_sensor_set_coffee_to_water_ratio_callback(set_coffee_to_water_ratio);
+    ble_weight_sensor_set_weigh_mode_callback(set_weigh_mode);
 
     uint16_t savedCoffeeToWaterRatio = saved_parameters_getCoffeeToWaterRatioNumerator() << 8 | saved_parameters_getCoffeeToWaterRatioDenominator();
     ble_weight_sensor_service_coffee_to_water_ratio_update((uint8_t*)&savedCoffeeToWaterRatio, sizeof(savedCoffeeToWaterRatio));
 
     uint8_t savedWeighMode = saved_parameters_getWeighMode();
     ble_weight_sensor_service_weigh_mode_update(&savedWeighMode, sizeof(savedWeighMode));
+
+    float scaleFactor = saved_parameters_getSavedScaleFactor();
+    weight_sensor_init(scaleFactor);
 
 
 
@@ -508,45 +459,7 @@ int main(void)
 
     NRF_LOG_FLUSH();
 
-    scales_lcd_init();
-
-    uint8_t pin_DOUT = 33;
-    uint8_t pin_SCLK = 35;
-    uint8_t pin_PWDN = 37;
-    uint8_t pin_GAIN0 = 36;
-    uint8_t pin_GAIN1 = 38;
-    uint8_t pin_SPEED = 39;
-
-    NRF_LOG_INFO("Starting");
-    NRF_LOG_FLUSH();
-
-    
-    ADS123X_Init(&scale, pin_DOUT, pin_SCLK, pin_PWDN, pin_GAIN0, pin_GAIN1, pin_SPEED);
-    
-    ADS123X_PowerOff(&scale);
-    ADS123X_setGain(&scale, GAIN_128);
-    ADS123X_setSpeed(&scale, SPEED_80SPS);
-
-    ADS123X_PowerOn(&scale);
-
-    //ADS123X_calibrateOnNextConversion(&scale);
-    display_indicate_tare();
-    nrf_delay_ms(2000);
-    ADS123X_tare(&scale, 80);
-    float taredValue = ADS123X_getOffset(&scale);
-
-    NRF_LOG_RAW_INFO("Offset:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(taredValue) );
-
-    NRF_LOG_FLUSH();
-
-    float scaleFactor = saved_parameters_getSavedScaleFactor();
-    ADS123X_setScaleFactor(&scale, scaleFactor);
-
-    NRF_LOG_RAW_INFO("Scale Factor:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(scaleFactor) );
-
-    ADS123X_getUnits(&scale, &scaleValue, 2U);
-
-    initialise_weight_sensor(); 
+    start_weight_sensor_timers(); 
     
     err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);   
