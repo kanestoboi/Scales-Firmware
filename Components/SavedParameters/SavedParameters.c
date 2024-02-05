@@ -44,7 +44,7 @@ static SavedParameters_t mSavedParameters =
 {
     .scaleFactor = -2243.8,
     .coffee_to_water_ratio_numerator = 1,
-    .coffee_to_water_ratio_denominator = 12,
+    .coffee_to_water_ratio_denominator = 16,
     .weighMode = 0,
 };
 

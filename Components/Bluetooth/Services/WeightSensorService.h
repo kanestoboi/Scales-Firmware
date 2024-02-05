@@ -31,6 +31,8 @@
 #define WEIGHT_SENSOR_CALIBRATION_CHAR_UUID             0x1403
 #define WEIGHT_SENSOR_COFFEE_TO_WATER_RATIO_CHAR_UUID   0x1404
 #define WEIGHT_SENSOR_WEIGH_MODE_CHAR_UUID              0x1405
+#define WEIGHT_SENSOR_COFFEE_WEIGHT_CHAR_UUID           0x1406
+#define WEIGHT_SENSOR_WATER_WEIGHT_CHAR_UUID            0x1407
 
 
 /**@brief   Macro for defining a ble_weight_sensor instance.
@@ -89,6 +91,8 @@ struct ble_weight_sensor_service_s
     ble_gatts_char_handles_t        weight_sensor_calibration_handles;
     ble_gatts_char_handles_t        weight_sensor_coffee_to_water_ratio_handles;
     ble_gatts_char_handles_t        weight_sensor_weigh_mode_handles;
+    ble_gatts_char_handles_t        weight_sensor_set_coffee_weight_handles;
+    ble_gatts_char_handles_t        weight_sensor_water_weight_handles;
     uint16_t                      conn_handle;                    /**< Handle of the current connection (as provided by the BLE stack, is BLE_CONN_HANDLE_INVALID if not in a connection). */
     uint8_t                       uuid_type; 
 };
@@ -142,6 +146,8 @@ uint32_t ble_weight_sensor_service_coffee_to_water_ratio_update(uint8_t *custom_
 
 uint32_t ble_weight_sensor_service_weigh_mode_update(uint8_t *custom_value, uint8_t custom_value_length);
 
+uint32_t ble_weight_sensor_service_water_weight_update(float weight);
+
 void ble_weight_sensor_on_weight_sensor_evt(ble_weight_sensor_service_t * p_weight_sensor_service, ble_weight_sensor_evt_t * p_evt);
 
 uint32_t ble_weight_sensor_service_sensor_data_set(uint8_t *custom_value, uint8_t custom_value_length);
@@ -153,6 +159,10 @@ void ble_weight_sensor_set_calibration_callback(void (*func)(void));
 void ble_weight_sensor_set_coffee_to_water_ratio_callback(void (*func)(uint16_t requestValue ));
 
 void ble_weight_sensor_set_weigh_mode_callback(void (*func)(uint8_t requestValue));
+
+void ble_weight_sensor_set_coffee_weight_callback(void (*func)(void));
+
+void ble_weight_sensor_set_start_timer_callback(void (*func)(void));
 
 extern ble_weight_sensor_service_t m_weight_sensor;
 

@@ -29,10 +29,7 @@ APP_TIMER_DEF(m_read_ads123x__timer_id);
 #define ADS123X_TIMER_INTERVAL_MS              12   // 12ms
 #define ADS123X_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(ADS123X_TIMER_INTERVAL_MS)
 
-#define NRF_LOG_FLOAT_SCALES(val) (uint32_t)(((val) < 0 && (val) > -1.0) ? "-" : ""),   \
-                           (int32_t)(val),                                              \
-                           (int32_t)((((val) > 0) ? (val) - (int32_t)(val)              \
-                                                : (int32_t)(val) - (val))*10)
+
 
 static void start_read_ads123x__timer()
 {
@@ -184,6 +181,5 @@ float weight_sensor_get_weight_filtered()
         }
 
         return mFilteredScaleValue;
-    }
-    
+    } 
 }

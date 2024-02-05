@@ -11,12 +11,18 @@ void (*mTareCallback)(void) = NULL;
 void (*mCalibrationCallback)(void) = NULL;
 void (*mCoffeeToWaterRatioCallback)(uint16_t requestValue) = NULL;
 void (*mWeighModeCallback)(uint8_t requestValue) = NULL;
+void (*mSetCoffeeWeightCallback)(void) = NULL;
+void (*mStartTimerCallback)(void) = NULL;
+
 
 static uint32_t weight_sensor_weight_value_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init);
 static uint32_t weight_sensor_tare_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init);
 static uint32_t weight_sensor_calibration_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init);
 static uint32_t weight_sensor_coffee_to_water_ratio_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init);
 static uint32_t weight_sensor_weigh_mode_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init);
+static uint32_t weight_sensor_set_coffee_weight_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init);
+static uint32_t weight_sensor_water_weight_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init);
+
 
 BLE_WEIGHT_SENSOR_DEF(m_weight_sensor);
 
@@ -85,6 +91,18 @@ uint32_t ble_weight_sensor_service_init()
     }
 
     err_code = weight_sensor_weigh_mode_char_add(&m_weight_sensor, &weight_sensor_service_init);
+    if (err_code != NRF_SUCCESS)
+    {
+        return err_code;
+    }
+
+    err_code =  weight_sensor_set_coffee_weight_char_add(&m_weight_sensor, &weight_sensor_service_init);
+    if (err_code != NRF_SUCCESS)
+    {
+        return err_code;
+    }
+
+    err_code =  weight_sensor_water_weight_char_add(&m_weight_sensor, &weight_sensor_service_init);
     if (err_code != NRF_SUCCESS)
     {
         return err_code;
@@ -459,6 +477,152 @@ uint32_t weight_sensor_weigh_mode_char_add(ble_weight_sensor_service_t * p_weigh
 
 }
 
+/**@brief Function for adding the Custom Value characteristic.
+ *
+ * @param[in]   p_cus        Custom Service structure.
+ * @param[in]   p_cus_init   Information needed to initialize the service.
+ *
+ * @return      NRF_SUCCESS on success, otherwise an error code.
+ */
+uint32_t weight_sensor_set_coffee_weight_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init)
+{
+    uint32_t            err_code;
+    ble_gatts_char_md_t char_md;
+    ble_gatts_attr_md_t cccd_md;
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          ble_uuid;
+    ble_gatts_attr_md_t attr_md;
+
+    memset(&cccd_md, 0, sizeof(cccd_md));
+
+    // Read  operation on Cccd should be possible without authentication.
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    
+    cccd_md.vloc       = BLE_GATTS_VLOC_STACK;
+
+    memset(&char_md, 0, sizeof(char_md));
+
+    char_md.char_props.read   = 1;
+    char_md.char_props.write  = 1;
+    char_md.char_props.notify = 1; 
+    char_md.p_char_user_desc  = NULL;
+    char_md.p_char_pf         = NULL;
+    char_md.p_user_desc_md    = NULL;
+    char_md.p_cccd_md         = &cccd_md; 
+    char_md.p_sccd_md         = NULL;
+
+    memset(&attr_md, 0, sizeof(attr_md));
+
+    attr_md.read_perm  = p_ble_weight_sensor_service_init->weight_sensor_sensor_attr_md.read_perm;
+    attr_md.write_perm = p_ble_weight_sensor_service_init->weight_sensor_sensor_attr_md.write_perm;
+    attr_md.vloc       = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth    = 0;
+    attr_md.wr_auth    = 0;
+    attr_md.vlen       = 0;
+
+    ble_uuid.type = m_weight_sensor.uuid_type;
+
+    ble_uuid.uuid = WEIGHT_SENSOR_COFFEE_WEIGHT_CHAR_UUID;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+
+    attr_char_value.p_uuid    = &ble_uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = 1*sizeof(uint8_t);
+    attr_char_value.init_offs = 0;
+
+    uint8_t resetValue = 0;        
+    attr_char_value.p_value   = (uint8_t*)&resetValue; // Pointer to the initial value
+
+    attr_char_value.max_len   = 1*sizeof(uint8_t);
+
+    err_code = sd_ble_gatts_characteristic_add(m_weight_sensor.service_handle, &char_md,
+                                               &attr_char_value,
+                                               &m_weight_sensor.weight_sensor_set_coffee_weight_handles);
+    
+    if (err_code != NRF_SUCCESS)
+    {
+        return err_code;
+    }
+
+    return NRF_SUCCESS;
+
+}
+
+/**@brief Function for adding the Custom Value characteristic.
+ *
+ * @param[in]   p_cus        Custom Service structure.
+ * @param[in]   p_cus_init   Information needed to initialize the service.
+ *
+ * @return      NRF_SUCCESS on success, otherwise an error code.
+ */
+uint32_t weight_sensor_water_weight_char_add(ble_weight_sensor_service_t * p_weight_sensor_service, const ble_weight_sensor_service_init_t * p_ble_weight_sensor_service_init)
+{
+    uint32_t            err_code;
+    ble_gatts_char_md_t char_md;
+    ble_gatts_attr_md_t cccd_md;
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          ble_uuid;
+    ble_gatts_attr_md_t attr_md;
+
+    memset(&cccd_md, 0, sizeof(cccd_md));
+
+    // Read  operation on Cccd should be possible without authentication.
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    
+    cccd_md.vloc       = BLE_GATTS_VLOC_STACK;
+
+    memset(&char_md, 0, sizeof(char_md));
+
+    char_md.char_props.read   = 1;
+    char_md.char_props.write  = 1;
+    char_md.char_props.notify = 1; 
+    char_md.p_char_user_desc  = NULL;
+    char_md.p_char_pf         = NULL;
+    char_md.p_user_desc_md    = NULL;
+    char_md.p_cccd_md         = &cccd_md; 
+    char_md.p_sccd_md         = NULL;
+
+    memset(&attr_md, 0, sizeof(attr_md));
+
+    attr_md.read_perm  = p_ble_weight_sensor_service_init->weight_sensor_sensor_attr_md.read_perm;
+    attr_md.write_perm = p_ble_weight_sensor_service_init->weight_sensor_sensor_attr_md.write_perm;
+    attr_md.vloc       = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth    = 0;
+    attr_md.wr_auth    = 0;
+    attr_md.vlen       = 0;
+
+    ble_uuid.type = m_weight_sensor.uuid_type;
+
+    ble_uuid.uuid = WEIGHT_SENSOR_WATER_WEIGHT_CHAR_UUID;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+
+    attr_char_value.p_uuid    = &ble_uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = 1*sizeof(float);
+    attr_char_value.init_offs = 0;
+
+    float resetValue = 0.0;        
+    attr_char_value.p_value   = (uint8_t*)&resetValue; // Pointer to the initial value
+
+    attr_char_value.max_len   = 1*sizeof(float);
+
+    err_code = sd_ble_gatts_characteristic_add(m_weight_sensor.service_handle, &char_md,
+                                               &attr_char_value,
+                                               &m_weight_sensor.weight_sensor_water_weight_handles);
+    
+    if (err_code != NRF_SUCCESS)
+    {
+        return err_code;
+    }
+
+    return NRF_SUCCESS;
+
+}
+
 void ble_weight_sensor_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context)
 {
     ble_weight_sensor_service_t * p_weight_sensor_service = (ble_weight_sensor_service_t *) p_context;
@@ -623,12 +787,19 @@ static void ble_weight_sensor_on_write(ble_weight_sensor_service_t * p_weight_se
         {
             NRF_LOG_INFO("Message Received from Calibration 2.");
             NRF_LOG_FLUSH();
+
+            if (mCalibrationCallback != NULL)
+            {
+                mStartTimerCallback();
+            }
+            else
+            {
+                NRF_LOG_INFO("No Calibration 2 callback registered");
+            }
             
             break;
         }
 
-
-        
         default:
             break;
         }
@@ -668,6 +839,24 @@ static void ble_weight_sensor_on_write(ble_weight_sensor_service_t * p_weight_se
         else
         {
             NRF_LOG_INFO("No weigh mode callback set.");
+        }
+
+        NRF_LOG_FLUSH();
+    }
+
+    if ((p_evt_write->handle == m_weight_sensor.weight_sensor_set_coffee_weight_handles.value_handle)
+        && (p_evt_write->len == 1)
+       )
+    {
+        NRF_LOG_INFO("Value Received from coffee weight.");
+
+        if (*mSetCoffeeWeightCallback != NULL)
+        {
+            mSetCoffeeWeightCallback();
+        }
+        else
+        {
+            NRF_LOG_INFO("No set coffee weight callback set.");
         }
 
         NRF_LOG_FLUSH();
@@ -850,6 +1039,50 @@ uint32_t ble_weight_sensor_service_weigh_mode_update(uint8_t *custom_value, uint
     return err_code;
 }
 
+uint32_t ble_weight_sensor_service_water_weight_update(float weight)
+{
+    uint32_t err_code = NRF_SUCCESS;
+    ble_gatts_value_t gatts_value;
+
+    // Initialize value struct.
+    memset(&gatts_value, 0, sizeof(gatts_value));
+
+    gatts_value.len     = 1*sizeof(float);
+    gatts_value.offset  = 0;
+    gatts_value.p_value = (uint8_t*)&weight;   
+
+    // Update database.
+    err_code= sd_ble_gatts_value_set(m_weight_sensor.conn_handle,
+                                        m_weight_sensor.weight_sensor_water_weight_handles.value_handle,
+                                        &gatts_value);
+    if (err_code != NRF_SUCCESS)
+    {
+        return err_code;
+    }
+
+    // Send value if connected and notifying.
+    if ((m_weight_sensor.conn_handle != BLE_CONN_HANDLE_INVALID)) 
+    {
+        ble_gatts_hvx_params_t hvx_params;
+
+        memset(&hvx_params, 0, sizeof(hvx_params));
+
+        hvx_params.handle = m_weight_sensor.weight_sensor_water_weight_handles.value_handle;
+        hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+        hvx_params.offset = gatts_value.offset;
+        hvx_params.p_len  = &gatts_value.len;
+        hvx_params.p_data = gatts_value.p_value;
+
+        err_code = sd_ble_gatts_hvx(m_weight_sensor.conn_handle, &hvx_params);
+    }
+    else
+    {
+        err_code = NRF_ERROR_INVALID_STATE;
+    }
+
+    return err_code;
+}
+
 /**@brief Function for handling the Accelerometer Service Service events.
  *
  * @details This function will be called for all Accelerometer Service events which are passed to
@@ -900,4 +1133,14 @@ void ble_weight_sensor_set_coffee_to_water_ratio_callback(void (*func)(uint16_t 
 void ble_weight_sensor_set_weigh_mode_callback(void (*func)(uint8_t requestValue))
 {
     mWeighModeCallback = func;
+}
+
+void ble_weight_sensor_set_coffee_weight_callback(void (*func)(void))
+{
+    mSetCoffeeWeightCallback = func;
+}
+
+void ble_weight_sensor_set_start_timer_callback(void (*func)(void))
+{
+    mStartTimerCallback = func;
 }

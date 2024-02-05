@@ -86,7 +86,28 @@ void set_coffee_to_water_ratio(uint16_t requestValue)
 void set_weigh_mode(uint8_t requestValue)
 {
     saved_parameters_setWeighMode(requestValue);
+}
+
+void set_coffee_weight_callback()
+{
+    float waterWeight = weight_sensor_get_weight_filtered() / (saved_parameters_getCoffeeToWaterRatioNumerator()) * saved_parameters_getCoffeeToWaterRatioDenominator();
+    NRF_LOG_RAW_INFO("waterWeight:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(waterWeight) );
+    NRF_LOG_INFO("set_coffee_weight_callback - calculated water weight");
+    ble_weight_sensor_service_water_weight_update(waterWeight);
+    NRF_LOG_INFO("set_coffee_weight_callback - exit");
 }      
+
+void start_timer_callback()
+{
+    ret_code_t err_code = app_timer_stop(m_elapsed_time_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    currentElapsedTime = 0;
+
+    err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);   
+}
+
 
 void enable_write_to_weight_characteristic()
 {
@@ -425,6 +446,11 @@ int main(void)
     ble_weight_sensor_set_calibration_callback(weight_sensor_service_calibration_callback);
     ble_weight_sensor_set_coffee_to_water_ratio_callback(set_coffee_to_water_ratio);
     ble_weight_sensor_set_weigh_mode_callback(set_weigh_mode);
+    ble_weight_sensor_set_coffee_weight_callback(set_coffee_weight_callback);
+    ble_weight_sensor_set_start_timer_callback(start_timer_callback);
+
+    saved_parameters_setCoffeeToWaterRatioNumerator(1);
+    saved_parameters_setCoffeeToWaterRatioDenominator(16);
 
     uint16_t savedCoffeeToWaterRatio = saved_parameters_getCoffeeToWaterRatioNumerator() << 8 | saved_parameters_getCoffeeToWaterRatioDenominator();
     ble_weight_sensor_service_coffee_to_water_ratio_update((uint8_t*)&savedCoffeeToWaterRatio, sizeof(savedCoffeeToWaterRatio));
@@ -434,6 +460,8 @@ int main(void)
 
     float scaleFactor = saved_parameters_getSavedScaleFactor();
     weight_sensor_init(scaleFactor);
+
+
 
 
 
@@ -460,9 +488,6 @@ int main(void)
     NRF_LOG_FLUSH();
 
     start_weight_sensor_timers(); 
-    
-    err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);   
     
     err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);  
