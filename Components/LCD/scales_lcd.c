@@ -100,8 +100,8 @@ void scales_lcd_init()
 
     timeLabel = lv_label_create( lv_scr_act() );
     lv_obj_align( timeLabel, LV_ALIGN_TOP_LEFT, 0, 0 );
-    lv_obj_set_style_text_font(timeLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_label_set_text( timeLabel, "" );
+    lv_obj_set_style_text_font(timeLabel, &lv_font_montserrat_34, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_label_set_text( timeLabel, "00:00" );
 
     err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
     APP_ERROR_CHECK(err_code);
@@ -142,7 +142,7 @@ void display_update_timer_label(uint32_t seconds)
     remainingSeconds = seconds % 60;
 
     char buffer[9];
-    sprintf(buffer, "%02d:%02d:%02d", hours, minutes, remainingSeconds);
+    sprintf(buffer, "%02d:%02d", minutes, remainingSeconds);
 
     lv_label_set_text( timeLabel, buffer);
 }
