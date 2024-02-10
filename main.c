@@ -26,6 +26,7 @@
 #include "Components/Bluetooth/Bluetooth.h"
 #include "Components/Bluetooth/Services/WeightSensorService.h"
 #include "Components/Bluetooth/Services/ElapsedTimeService.h"
+#include "Components/Bluetooth/Services/BatteryService.h"
 #include "Components/SavedParameters/SavedParameters.h"
 
 APP_TIMER_DEF(m_read_weight_timer_id);
@@ -249,9 +250,46 @@ void battery_level_timeout_handler(void * p_context)
     if (&max17260Sensor.initialised)
     {
         float soc;
+        float current;
+        float ttf;
+        float tte;
+
         max17260_getStateOfCharge(&max17260Sensor, &soc);
-        bluetooth_update_battery_level((uint8_t)roundf(soc));
+        max17260_getAvgCurrent(&max17260Sensor, &current);
+        max17260_getTimeToFull(&max17260Sensor, &ttf);
+        max17260_getTimeToEmpty(&max17260Sensor, &tte);
+        battery_service_battery_level_update((uint8_t)roundf(soc), BLE_CONN_HANDLE_ALL);
+
+        battery_time_status_t battery_time_status;
+
+        uint32_t tte_minutes = (uint32_t)(tte / 60.0);
+        uint32_t ttf_minutes = (uint32_t)(ttf / 60.0);
+
+        battery_time_status.flags = 0;
+
+        battery_time_status.time_until_discharged_bytes[0] = tte_minutes & 0xFF;
+        battery_time_status.time_until_discharged_bytes[1] = tte_minutes >> 8 & 0xFF;
+        battery_time_status.time_until_discharged_bytes[2] = tte_minutes >> 16 & 0xFF;
+
+        if (current > 0)
+        {
+            battery_time_status.flags = 0x02;
+            battery_time_status.time_uintil_recharged_bytes[0] = ttf_minutes & 0xFF;
+            battery_time_status.time_uintil_recharged_bytes[1] = ttf_minutes >> 8 & 0xFF;
+            battery_time_status.time_uintil_recharged_bytes[2] = ttf_minutes >> 16 & 0xFF;
+        }
+        else
+        {
+            battery_time_status.flags = 0x02;
+        }
+
+        battery_service_battery_time_status_update(battery_time_status, BLE_CONN_HANDLE_ALL);
+
         display_update_battery_label((uint8_t)roundf(soc));
+
+        //NRF_LOG_RAW_INFO("Current:%s%d.%01d mA\n" , NRF_LOG_FLOAT_SCALES(current*1000) );
+        //NRF_LOG_RAW_INFO("ttf:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(ttf) );
+        //NRF_LOG_RAW_INFO("tte:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(tte) );
     }
 
     ret_code_t err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
@@ -442,6 +480,12 @@ int main(void)
         NRF_LOG_INFO("Error Initialing Elapsed Time service");
     }
 
+    if (battery_service_init() != NRF_SUCCESS)
+    {
+        NRF_LOG_INFO("Error Initialing battery service");
+    }
+    
+
     ble_weight_sensor_set_tare_callback(weight_sensor_tare);
     ble_weight_sensor_set_calibration_callback(weight_sensor_service_calibration_callback);
     ble_weight_sensor_set_coffee_to_water_ratio_callback(set_coffee_to_water_ratio);
@@ -472,6 +516,7 @@ int main(void)
     NRF_LOG_INFO("Bluetooth setup complete");
     NRF_LOG_FLUSH();
 
+    
     if (max17260_init(&max17260Sensor, &m_twi))
     {
         NRF_LOG_INFO("MAX17260 Initialised");

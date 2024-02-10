@@ -322,6 +322,22 @@ bool max17260_getCurrent(MAX17260 *sensor, float *destination)
     return true;
 }
 
+bool max17260_getAvgCurrent(MAX17260 *sensor, float *destination)
+{
+    int16_t currentRegisterValue;
+
+    bool err_code = max17260_register_read(sensor, MAX17260_AVG_CURRENT_REG, (uint8_t*)&currentRegisterValue, 2);
+
+    if (err_code != true) {
+        // NRF_LOG_INFO("Error code: %d\n", err_code);
+        return false;
+    }
+
+    *destination = (float)(currentRegisterValue) * MAX17260_CURRENT_SCALE_FACTOR;
+
+    return true;
+}
+
 bool max17260_getTemperature(MAX17260 *sensor, float *destination)
 {
     int16_t temperatureRegisterValue;

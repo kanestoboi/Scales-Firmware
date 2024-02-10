@@ -164,6 +164,8 @@ bool max17260_getAverageCellVoltage(MAX17260 *sensor, float *destination);
 
 bool max17260_getCurrent(MAX17260 *sensor, float *destination);
 
+bool max17260_getAvgCurrent(MAX17260 *sensor, float *destination);
+
 bool max17260_getTemperature(MAX17260 *sensor, float *destination);
 
 bool max17260_getStateOfCharge(MAX17260 *sensor, float *destination);

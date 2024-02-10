@@ -12,7 +12,6 @@
 #include "ble_advdata.h"
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
-#include "ble_bas.h"
 #include "ble_dis.h"
 #include "nrf_sdh.h"
 #include "nrf_sdh_soc.h"
@@ -109,7 +108,6 @@ static void bluetooth_call_connected_callback_registered_functions();
 static void bluetooth_call_disconnected_callback_registered_functions();
 
 
-BLE_BAS_DEF(m_bas);                                                     /**< Structure used to identify the battery service. */
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising);                                             /**< Advertising module instance. */
@@ -318,28 +316,12 @@ static void services_init(void)
 {
     ret_code_t         err_code;
     nrf_ble_qwr_init_t qwr_init = {0};
-    ble_bas_init_t     bas_init;
+
 
     // Initialize Queued Write Module.
     qwr_init.error_handler = nrf_qwr_error_handler;
 
     err_code = nrf_ble_qwr_init(&m_qwr, &qwr_init);
-    APP_ERROR_CHECK(err_code);
-
-    // Initialize Battery Service.
-    memset(&bas_init, 0, sizeof(bas_init));
-
-    // Here the sec level for the Battery Service can be changed/increased.
-    bas_init.bl_rd_sec        = SEC_OPEN;
-    bas_init.bl_cccd_wr_sec   = SEC_OPEN;
-    bas_init.bl_report_rd_sec = SEC_OPEN;
-
-    bas_init.evt_handler          = NULL;
-    bas_init.support_notification = true;
-    bas_init.p_report_ref         = NULL;
-    bas_init.initial_batt_level   = 100;
-
-    err_code = ble_bas_init(&m_bas, &bas_init);
     APP_ERROR_CHECK(err_code);
 
 
@@ -640,13 +622,6 @@ void bluetooth_advertising_start(bool erase_bonds)
         ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
         APP_ERROR_CHECK(err_code);
     }
-}
-
-
-void bluetooth_update_battery_level(uint8_t batteryLevel)
-{
-    ret_code_t err_code;
-    err_code = ble_bas_battery_level_update(&m_bas, batteryLevel, BLE_CONN_HANDLE_ALL);
 }
 
 // Function to register other functions.
