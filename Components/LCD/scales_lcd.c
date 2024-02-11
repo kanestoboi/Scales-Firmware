@@ -8,6 +8,7 @@
 
 #include "scales_lcd.h"
 #include "lvgl/lvgl.h"
+#include "coffee_beans.h"
 
 extern const nrf_lcd_t nrf_lcd_st7735;
 
@@ -85,8 +86,23 @@ void scales_lcd_init()
         p_lcd->p_lcd_cb->state = NRFX_DRV_STATE_INITIALIZED;
     }
 
+    p_lcd->lcd_display_invert(true);
+
+    lv_color_t color = {
+        .blue = 0xFF,
+        .green = 0xFF,
+        .red = 0xFF,
+    };
+
     lv_display_set_flush_cb(display, flush_cb);
     lv_display_set_buffers(display, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+
+    lv_obj_t * coffe_splash_image = lv_image_create(lv_screen_active());
+
+    /*From variable*/
+    lv_image_set_src(coffe_splash_image, &coffee_beans);
+
+    lv_obj_add_flag(coffe_splash_image, LV_OBJ_FLAG_HIDDEN);
 
     weightLabel = lv_label_create( lv_scr_act() );
     lv_obj_align( weightLabel, LV_ALIGN_BOTTOM_MID, 0, 0 );
@@ -95,6 +111,7 @@ void scales_lcd_init()
     batteryLabel = lv_label_create( lv_scr_act() );
     lv_obj_align( batteryLabel, LV_ALIGN_TOP_RIGHT, 0, 0 );
     lv_obj_set_style_text_font(batteryLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
+    // lv_obj_set_style_text_color(batteryLabel, color, 0);
     lv_label_set_text( batteryLabel, "" );
 
 
