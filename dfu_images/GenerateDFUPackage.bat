@@ -1,8 +1,12 @@
 
 @Echo off
 echo Compiling Release
+rm -r ../output
+rm -r ../../Scales-Bootloader/output
+
 emBuild -config "Release" -echo ../Scales_pca10056_s140.emProject
 emBuild -config "Release" -echo ../../Scales-Bootloader/ScalesBootloader_s140_pca10056.emProject
+
 
 set build-configuration=Release
 
