@@ -50,7 +50,7 @@ static void ads123x_timeout_handler(void * p_context)
         case NORMAL:
         {
             ADS123X_getUnits(&scale, &mScaleValue, 1);
-            mFilteredScaleValue = 0.5*mFilteredScaleValue + 0.5 * mScaleValue;
+            mFilteredScaleValue = 0.8*mFilteredScaleValue + 0.2 * mScaleValue;
             break;
         }
         case START_TARING :
