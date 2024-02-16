@@ -58,7 +58,7 @@ ADS123X_ERROR_t ADS123X_read(ADS123X *device, int32_t *value)
     device->calibrateOnNextConversion = false;
   }
 
-  *value &= 0xFFFFFFC0;
+  *value &= 0xFFFFFF80;
   //Bit 23 is the signed bit so shift left and divide by 256
   *value = (readValue << 8) / 256;
 
