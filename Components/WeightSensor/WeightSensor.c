@@ -157,7 +157,7 @@ static void ads123x_timeout_handler(void * p_context)
             }
             else
             {
-                mWeightSensorCurrentState = START_TARING;
+                mWeightSensorCurrentState = START_CALIBRATION;
             }
 
             break;
