@@ -135,9 +135,29 @@ static void ads123x_timeout_handler(void * p_context)
                 NRF_LOG_RAW_INFO("Scale Factor:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(scaleFactor) );
                 ADS123X_setScaleFactor(&scale, scaleFactor);
                 
-                mWeightSensorCurrentState = NORMAL;
+                mWeightSensorCurrentState = VERIFY_CALIBRATION;
+            }
+
+            break;
+        }
+        case VERIFY_CALIBRATION:
+        {    
+            ADS123X_ERROR_t error = ADS123X_getUnits(&scale, &mScaleValue, 1);
+
+            if(error == NoERROR && mScaleValue < 50.02 && mScaleValue > 49.98)
+            {
+                float scaleFactor = ADS123X_getScaleFactor(&scale);
 
                 mCalibrationCompleteCallback(scaleFactor);
+                mWeightSensorCurrentState = NORMAL;
+            }
+            else if (error != NoERROR)
+            {
+                break;
+            }
+            else
+            {
+                mWeightSensorCurrentState = START_TARING;
             }
 
             break;

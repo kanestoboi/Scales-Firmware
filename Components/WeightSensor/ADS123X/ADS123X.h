@@ -77,6 +77,8 @@ ADS123X_ERROR_t ADS123X_tare(ADS123X *device, uint8_t times);
 // set the scaleFactor value; this value is used to convert the raw data to "human readable" data (measure units)
 void ADS123X_setScaleFactor(ADS123X *device, float scaleFactor);
 
+float ADS123X_getScaleFactor(ADS123X *device);
+
 // set OFFSET, the value that's subtracted from the actual reading (tare weight)
 void ADS123X_setOffset(ADS123X *device, float offset);
 
