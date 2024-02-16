@@ -3,6 +3,8 @@
 #include "nrf_log.h"
 #include "app_timer.h"
 
+#include <math.h>
+
 ADS123X scale;
 
 float mScaleValue;
@@ -76,10 +78,29 @@ static void ads123x_timeout_handler(void * p_context)
                 mTaringReadCount++;
             }
 
-            if (mTaringReadCount == 80)
+            if (mTaringReadCount >= 80)
             {
                 ADS123X_setOffset(&scale, mTaringSum/80);
+                mWeightSensorCurrentState = VERIFY_TARE;
+            }
+
+            break;
+        }
+        case VERIFY_TARE:
+        {    
+            ADS123X_ERROR_t error = ADS123X_getUnits(&scale, &mScaleValue, 1);
+
+            if(error == NoERROR && fabs(mScaleValue) < 0.02)
+            {
                 mWeightSensorCurrentState = NORMAL;
+            }
+            else if (error != NoERROR)
+            {
+                break;
+            }
+            else
+            {
+                mWeightSensorCurrentState = START_TARING;
             }
 
             break;

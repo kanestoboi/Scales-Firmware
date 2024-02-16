@@ -11,8 +11,10 @@ typedef enum
     NORMAL,
     START_TARING,
     TARING,
+    VERIFY_TARE,
     START_CALIBRATION,
     CALIBRATING,
+    VERIFY_CALIBRATION,
 } weight_sensor_state_t;
 
 void weight_sensor_init(float scaleFactor);
