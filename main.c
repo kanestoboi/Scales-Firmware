@@ -91,7 +91,7 @@ void set_weigh_mode(uint8_t requestValue)
 
 void set_coffee_weight_callback()
 {
-    float waterWeight = weight_sensor_get_weight_filtered() / (saved_parameters_getCoffeeToWaterRatioNumerator()) * saved_parameters_getCoffeeToWaterRatioDenominator();
+    float waterWeight = roundf(weight_sensor_get_weight_filtered() * 10)/10.0 / (saved_parameters_getCoffeeToWaterRatioNumerator()) * saved_parameters_getCoffeeToWaterRatioDenominator();
     NRF_LOG_RAW_INFO("waterWeight:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(waterWeight) );
     NRF_LOG_INFO("set_coffee_weight_callback - calculated water weight");
     ble_weight_sensor_service_water_weight_update(waterWeight);
