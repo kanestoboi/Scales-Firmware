@@ -247,7 +247,7 @@ void elapsed_time_timeout_handler(void * p_context)
 
 void battery_level_timeout_handler(void * p_context)
 {
-    if (&max17260Sensor.initialised)
+    if (max17260Sensor.initialised)
     {
         float soc;
         float current;
