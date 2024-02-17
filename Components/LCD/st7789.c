@@ -41,7 +41,7 @@
 #include "sdk_common.h"
 
 #ifndef ST7789_DC_PIN
-#define ST7789_DC_PIN 16
+#define ST7789_DC_PIN 40
 #endif
 
 #ifndef ST7789_HEIGHT
@@ -55,28 +55,28 @@
 
 
 #ifndef ST7789_SCK_PIN
-#define ST7789_SCK_PIN 14
+#define ST7789_SCK_PIN 12
 #endif
 
 // <o> ST7789_MISO_PIN - Pin number  <0-47> 
 
 
 #ifndef ST7789_MISO_PIN
-#define ST7789_MISO_PIN 12
+#define ST7789_MISO_PIN 14
 #endif
 
 // <o> ST7789_MOSI_PIN - Pin number  <0-47> 
 
 
 #ifndef ST7789_MOSI_PIN
-#define ST7789_MOSI_PIN 12
+#define ST7789_MOSI_PIN 14
 #endif
 
 // <o> ST7789_SS_PIN - Pin number  <0-47> 
 
 
 #ifndef ST7789_SS_PIN
-#define ST7789_SS_PIN 17
+#define ST7789_SS_PIN 11
 #endif
 
 #ifndef ST7789_C__
@@ -193,26 +193,26 @@ static inline void write_data(uint8_t c)
     spi_write(&c, sizeof(c));
 }
 
-static void set_addr_window(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+static void set_addr_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
     ASSERT(x0 <= x1);
     ASSERT(y0 <= y1);
 
-    x0 += 1;  // Add horizontal offset
-    y0 += 26; // Add vertical offset
-    x1 += 1;
-    y1 += 26;
+    x0 += 0;  // Add horizontal offset
+    y0 += 35; // Add vertical offset
+    x1 += 0;
+    y1 += 35;
     
     write_command(ST7789_CASET);
-    write_data(0x00);                       // For a 128x160 display, it is always 0.
-    write_data(x0);
-    write_data(0x00);                       // For a 128x160 display, it is always 0.
-    write_data(x1);
+    write_data(x0 >> 8);                       
+    write_data(x0 & 0xFF);
+    write_data(x1 >> 8);                       
+    write_data(x1 & 0xFF);
     write_command(ST7789_RASET);
-    write_data(0x00);                       // For a 128x160 display, it is always 0.
-    write_data(y0);
-    write_data(0x00);                       // For a 128x160 display, it is always 0.
-    write_data(y1);
+    write_data(y0 >> 8);                       
+    write_data(y0 & 0xFF);
+    write_data(y1 >> 8);                       
+    write_data(y1 & 0xFF);
     write_command(ST7789_RAMWR);
 }
 
@@ -231,8 +231,8 @@ static void command_list(void)
     write_command(ST7789_CASET);
     write_data(0x00);                       // For a 128x160 display, it is always 0.
     write_data(0x00);
-    write_data(0x00);                       // For a 128x160 display, it is always 0.
-    write_data(240);
+    write_data(240 >> 8);                       // For a 128x160 display, it is always 0.
+    write_data(240 & 0xFF);
 
 
     write_command(ST7789_RASET);
@@ -343,15 +343,11 @@ static void st7789_rect_draw(uint16_t x, uint16_t y, uint16_t width, uint16_t he
     nrf_gpio_pin_clear(ST7789_DC_PIN);
 }
 
-static void st7789_dummy_display(uint8_t * data, uint16_t len, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+static void st7789_dummy_display(uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
-    if(len == 0xFFFF){
-        set_addr_window(x0, y0, x1, y1);
-    }
-    else{
-      //spi_write(&data, len);
-      write_data_buffered(data, len);
-    }
+    set_addr_window(x0, y0, x1, y1);
+
+    write_data_buffered(data, len);
 }
 
 static void st7789_rotation_set(nrf_lcd_rotation_t rotation)

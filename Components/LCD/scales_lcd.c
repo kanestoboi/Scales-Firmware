@@ -11,14 +11,15 @@
 #include "coffee_beans.h"
 
 extern const nrf_lcd_t nrf_lcd_st7735;
+extern const nrf_lcd_t nrf_lcd_st7789;
 
 APP_TIMER_DEF(m_lvgl_timer_id);
 
-#define hor_res 160
-#define ver_res 80
+#define hor_res 320
+#define ver_res 172
 lv_display_t * display;
 
-static const nrf_lcd_t * p_lcd = &nrf_lcd_st7735;
+static const nrf_lcd_t * p_lcd = &nrf_lcd_st7789;
 
 static const uint8_t ST7735_DC_Pin = 16;
 static const uint8_t ST7735_SCK_PIN = 14;
