@@ -15,11 +15,11 @@ extern const nrf_lcd_t nrf_lcd_st7789;
 
 APP_TIMER_DEF(m_lvgl_timer_id);
 
-#define hor_res 160
-#define ver_res 80
+#define hor_res 320
+#define ver_res 172
 lv_display_t * display;
 
-static const nrf_lcd_t * p_lcd = &nrf_lcd_st7735;
+static const nrf_lcd_t * p_lcd = &nrf_lcd_st7789;
 
 static const uint8_t ST7735_DC_Pin = 16;
 static const uint8_t ST7735_SCK_PIN = 14;
@@ -27,7 +27,18 @@ static const uint8_t ST7735_MISO_PIN = 12;
 static const uint8_t ST7735_MOSI_PIN = 12;
 static const uint8_t ST7735_SS_PIN = 17;
 static const uint8_t ST7735_RST_PIN = 15;
-static const uint8_t ST7735_BACKLIGHT_PIN = 45;
+static const uint8_t ST7735_BACKLIGHT_PIN = 7;
+
+
+static const uint8_t ST7789_DC_PIN = 40;
+static const uint8_t ST7789_SCK_PIN = 12;
+static const uint8_t ST7789_MISO_PIN = 14;
+static const uint8_t ST7789_MOSI_PIN = 14;
+static const uint8_t ST7789_SS_PIN = 11;
+static const uint8_t ST7789_RST_PIN = 16;
+static const uint8_t ST7789_EN_PIN = 41;
+static const uint8_t ST7789_BACKLIGHT_PIN = 7;
+
 
 lv_obj_t *weightLabel;
 lv_obj_t *batteryLabel;
@@ -72,15 +83,27 @@ void scales_lcd_init()
     display = lv_display_create(hor_res, ver_res);
 
         // Reset LCD
-    nrf_gpio_cfg_output(ST7735_RST_PIN);
+/*    nrf_gpio_cfg_output(ST7735_RST_PIN);
     nrf_gpio_pin_clear(ST7735_RST_PIN);
     nrf_delay_ms(100);
     nrf_gpio_pin_set(ST7735_RST_PIN);
     // set LCD backlight pin to output
     nrf_gpio_cfg_output(ST7735_BACKLIGHT_PIN);
+*/
+    nrf_gpio_cfg_output(ST7789_EN_PIN);
+    nrf_gpio_pin_clear(ST7789_EN_PIN);
+    nrf_delay_ms(10);
+    nrf_gpio_cfg_output(ST7789_RST_PIN);
+    nrf_gpio_pin_clear(ST7789_RST_PIN);
+    nrf_delay_ms(100);
+    nrf_gpio_pin_set(ST7789_RST_PIN);
+    // set LCD backlight pin to output
+    nrf_gpio_cfg_output(ST7789_BACKLIGHT_PIN);
+
+
     // initialise lcd driver
     err_code = p_lcd->lcd_init();
-    p_lcd->lcd_rotation_set(NRF_LCD_ROTATE_90);
+    p_lcd->lcd_rotation_set(NRF_LCD_ROTATE_270);
 
     if (err_code == NRF_SUCCESS)
     {
@@ -175,12 +198,12 @@ void display_update_battery_label(uint8_t batteryLevel)
 
 void display_turn_backlight_on()
 {
-    nrf_gpio_pin_set(ST7735_BACKLIGHT_PIN);
+    nrf_gpio_pin_clear(ST7789_BACKLIGHT_PIN);
 
 }
 
 void display_turn_backlight_off()
 {
-    nrf_gpio_pin_clear(ST7735_BACKLIGHT_PIN);
+    nrf_gpio_pin_set(ST7789_BACKLIGHT_PIN);
 
 }

@@ -40,47 +40,18 @@
 
 #include "sdk_common.h"
 
-#ifndef ST7789_DC_PIN
-#define ST7789_DC_PIN 40
-#endif
-
-#ifndef ST7789_HEIGHT
-#define ST7789_HEIGHT 172
-#endif
-
-
-#ifndef ST7789_WIDTH
-#define ST7789_WIDTH 320
-#endif
-
-
-#ifndef ST7789_SCK_PIN
-#define ST7789_SCK_PIN 12
-#endif
-
-// <o> ST7789_MISO_PIN - Pin number  <0-47> 
-
-
-#ifndef ST7789_MISO_PIN
-#define ST7789_MISO_PIN 14
-#endif
-
-// <o> ST7789_MOSI_PIN - Pin number  <0-47> 
-
-
-#ifndef ST7789_MOSI_PIN
-#define ST7789_MOSI_PIN 14
-#endif
-
-// <o> ST7789_SS_PIN - Pin number  <0-47> 
-
-
-#ifndef ST7789_SS_PIN
-#define ST7789_SS_PIN 11
-#endif
-
 #ifndef ST7789_C__
 #define ST7789_C__
+
+static const uint8_t ST7789_DC_PIN = 40;
+static const uint8_t ST7789_SCK_PIN = 12;
+static const uint8_t ST7789_MISO_PIN = 14;
+static const uint8_t ST7789_MOSI_PIN = 14;
+static const uint8_t ST7789_SS_PIN = 11;
+static const uint8_t ST7789_RST_PIN = 16;
+
+const uint16_t ST7789_HEIGHT = 172;
+const uint16_t ST7789_WIDTH = 320;
 
 #include "nrf_lcd.h"
 #include "nrfx_spim.h"
@@ -199,9 +170,9 @@ static void set_addr_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
     ASSERT(y0 <= y1);
 
     x0 += 0;  // Add horizontal offset
-    y0 += 35; // Add vertical offset
+    y0 += 34; // Add vertical offset
     x1 += 0;
-    y1 += 35;
+    y1 += 34;
     
     write_command(ST7789_CASET);
     write_data(x0 >> 8);                       
