@@ -511,7 +511,7 @@ static uint32_t st7735_set_addr_window_to_buffer(uint8_t * data, uint8_t x0, uin
     return 11;
 }
 
-static void st7735_dummy_display(uint8_t * data, uint16_t len, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+static void st7735_dummy_display(uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
     set_addr_window(x0, y0, x1, y1);
 

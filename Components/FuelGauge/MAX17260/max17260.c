@@ -67,6 +67,8 @@ bool max17260_init(MAX17260 *sensor, const nrfx_twi_t *m_twi)
        max17260_register_write16(sensor, 0xBA , HibCFG)  ; // Restore Original HibCFGvalue
     }
 
+    sensor->initialised = true;
+
     return true;
 }
 
