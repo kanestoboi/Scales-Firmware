@@ -196,10 +196,15 @@ void set_weigh_mode(uint8_t requestValue)
 
 void set_coffee_weight_callback()
 {
-    float waterWeight = roundf(weight_sensor_get_weight_filtered() * 10)/10.0 / (saved_parameters_getCoffeeToWaterRatioNumerator()) * saved_parameters_getCoffeeToWaterRatioDenominator();
+    float coffeeWeight = roundf(weight_sensor_get_weight_filtered() * 10)/10.0;
+
+    display_update_coffee_weight_label(coffeeWeight);
+
+    float waterWeight = coffeeWeight / (saved_parameters_getCoffeeToWaterRatioNumerator()) * saved_parameters_getCoffeeToWaterRatioDenominator();
     NRF_LOG_RAW_INFO("waterWeight:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(waterWeight) );
     NRF_LOG_INFO("set_coffee_weight_callback - calculated water weight");
     ble_weight_sensor_service_water_weight_update(waterWeight);
+    display_update_water_weight_label(waterWeight);
     NRF_LOG_INFO("set_coffee_weight_callback - exit");
 }      
 
@@ -289,8 +294,7 @@ static void keep_alive_timeout_handler(void * p_context)
         APP_ERROR_CHECK(err_code);
 
         // set LCD backlight to off
-        nrf_gpio_cfg_output(45);
-        nrf_gpio_pin_clear(45);
+        display_turn_backlight_off();
 
         m_last_wakeup_value  = roundedValue;
     }
@@ -317,8 +321,7 @@ static void wakeup_timeout_handler(void * p_context)
     {
         NRF_LOG_INFO("WAKING.");
         // set LCD backlight to on
-        nrf_gpio_cfg_output(45);
-        nrf_gpio_pin_set(45);
+        display_turn_backlight_on();
         display_indicate_tare();
         nrf_delay_ms(2000);
         weight_sensor_tare();

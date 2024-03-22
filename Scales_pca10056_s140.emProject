@@ -881,6 +881,7 @@
           <file file_name="Components/LCD/scales_lcd.h" />
           <file file_name="Components/LCD/st7735.c" />
           <file file_name="Components/LCD/st7789.c" />
+          <file file_name="Components/LCD/water-drops.h" />
         </folder>
         <folder Name="LED">
           <file file_name="Components/LED/nrf_buddy_led.c" />

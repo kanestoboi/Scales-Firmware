@@ -9,6 +9,7 @@
 #include "scales_lcd.h"
 #include "lvgl/lvgl.h"
 #include "coffee_beans.h"
+#include "water-drops.h"
 
 extern const nrf_lcd_t nrf_lcd_st7735;
 extern const nrf_lcd_t nrf_lcd_st7789;
@@ -43,6 +44,8 @@ static const uint8_t ST7789_BACKLIGHT_PIN = 7;
 lv_obj_t *weightLabel;
 lv_obj_t *batteryLabel;
 lv_obj_t *timeLabel;
+lv_obj_t *coffeeWeightLabel;
+lv_obj_t *waterWeightLabel;
 
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
 #define LVGL_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(LVGL_TIMER_INTERVAL_MS)
@@ -120,29 +123,51 @@ void scales_lcd_init()
 
     lv_display_set_flush_cb(display, flush_cb);
     lv_display_set_buffers(display, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x0000), LV_PART_MAIN);
 
     lv_obj_t * coffe_splash_image = lv_image_create(lv_screen_active());
 
     /*From variable*/
     lv_image_set_src(coffe_splash_image, &coffee_beans);
+    lv_obj_align( coffe_splash_image, LV_ALIGN_TOP_LEFT, 0, 0 );
 
-    lv_obj_add_flag(coffe_splash_image, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_t * water_drops_image = lv_image_create(lv_screen_active());
+
+    /*From variable*/
+    lv_image_set_src(water_drops_image, &water_drops);
+    lv_obj_align( water_drops_image, LV_ALIGN_TOP_LEFT, 0, 30 );
+
+    //lv_obj_add_flag(coffe_splash_image, LV_OBJ_FLAG_HIDDEN);
 
     weightLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( weightLabel, LV_ALIGN_BOTTOM_MID, 0, 0 );
+    lv_obj_align( weightLabel, LV_ALIGN_BOTTOM_RIGHT, 0, 0 );
+    lv_obj_set_style_text_font(weightLabel, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(weightLabel, color, 0);
     lv_label_set_text( weightLabel, "" );
 
     batteryLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( batteryLabel, LV_ALIGN_TOP_RIGHT, 0, 0 );
-    lv_obj_set_style_text_font(batteryLabel, &lv_font_montserrat_18, LV_PART_MAIN | LV_STATE_DEFAULT);
-    // lv_obj_set_style_text_color(batteryLabel, color, 0);
+    lv_obj_align( batteryLabel, LV_ALIGN_TOP_RIGHT, -8, 0 );
+    lv_obj_set_style_text_font(batteryLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(batteryLabel, color, 0);
     lv_label_set_text( batteryLabel, "" );
 
-
     timeLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( timeLabel, LV_ALIGN_TOP_LEFT, 0, 0 );
-    lv_obj_set_style_text_font(timeLabel, &lv_font_montserrat_34, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_align( timeLabel, LV_ALIGN_BOTTOM_LEFT, 0, 0 );
+    lv_obj_set_style_text_font(timeLabel, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(timeLabel, color, 0);
     lv_label_set_text( timeLabel, "00:00" );
+
+    coffeeWeightLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( coffeeWeightLabel, LV_ALIGN_TOP_LEFT, 55, 0 );
+    lv_obj_set_style_text_font(coffeeWeightLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(coffeeWeightLabel, color, 0);
+    lv_label_set_text( coffeeWeightLabel, "0.0" );
+
+    waterWeightLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( waterWeightLabel, LV_ALIGN_TOP_LEFT, 55, 30 );
+    lv_obj_set_style_text_font(waterWeightLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(waterWeightLabel, color, 0);
+    lv_label_set_text( waterWeightLabel, "0.0" );
 
     err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
     APP_ERROR_CHECK(err_code);
@@ -194,6 +219,26 @@ void display_update_battery_label(uint8_t batteryLevel)
     sprintf(buffer, "%d%%", batteryLevel);
 
     lv_label_set_text( batteryLabel, buffer);
+}
+
+void display_update_coffee_weight_label(float weight)
+{
+    char buffer[6];
+
+    // Convert float to string
+    sprintf(buffer, "%0.1f", weight);
+
+    lv_label_set_text( coffeeWeightLabel, buffer );
+}
+
+void display_update_water_weight_label(float weight)
+{
+    char buffer[6];
+
+    // Convert float to string
+    sprintf(buffer, "%0.1f", weight);
+
+    lv_label_set_text( waterWeightLabel, buffer );
 }
 
 void display_turn_backlight_on()
