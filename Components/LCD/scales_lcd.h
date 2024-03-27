@@ -17,4 +17,15 @@ void text_print();
 void display_turn_backlight_on();
 void display_turn_backlight_off();
 
+void display_bluetooth_logo_show();
+void display_bluetooth_logo_hide();
+
+void display_power_display_on();
+void display_power_display_off();
+
+void display_reset();
+
+void display_sleep();
+void display_wakeup();
+
 #endif

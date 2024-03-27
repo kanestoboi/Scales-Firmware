@@ -3,6 +3,7 @@
 #include "nrfx_spim.h"
 #include "app_timer.h"
 #include "nrf_lcd.h"
+#include "math.h"
 
 #include <string.h>
 
@@ -10,6 +11,7 @@
 #include "lvgl/lvgl.h"
 #include "coffee_beans.h"
 #include "water-drops.h"
+#include "bluetooth_logo.h"
 
 extern const nrf_lcd_t nrf_lcd_st7735;
 extern const nrf_lcd_t nrf_lcd_st7789;
@@ -42,16 +44,23 @@ static const uint8_t ST7789_BACKLIGHT_PIN = 7;
 
 
 lv_obj_t *weightLabel;
+lv_obj_t *weightDecimalLabel;
 lv_obj_t *batteryLabel;
 lv_obj_t *timeLabel;
 lv_obj_t *coffeeWeightLabel;
 lv_obj_t *waterWeightLabel;
+
+lv_obj_t * bluetooth_logo_image;
 
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
 #define LVGL_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(LVGL_TIMER_INTERVAL_MS)
 //LVGL draw into this buffer, 1/10 screen size usually works well. The size is in bytes
 #define DRAW_BUF_SIZE (hor_res * ver_res * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE/8];
+
+void display_driver_init();
+void display_lvgl_init();
+
 
 static void lvgl_timeout_handler(void * p_context)
 {
@@ -76,44 +85,62 @@ void flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
     lv_display_flush_ready(display);
 }
 
+void start_lvgl_timer()
+{
+    ret_code_t err_code = app_timer_start(m_lvgl_timer_id, LVGL_TIMER_INTERVAL_TICKS, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
+void stop_lvgl_timer()
+{
+    ret_code_t err_code = app_timer_stop(m_lvgl_timer_id);
+    APP_ERROR_CHECK(err_code);
+}
+
 void scales_lcd_init()
 {
-
-    ret_code_t err_code;
     // Initialise LVGL library
     lv_init();
 
     display = lv_display_create(hor_res, ver_res);
 
-        // Reset LCD
-/*    nrf_gpio_cfg_output(ST7735_RST_PIN);
-    nrf_gpio_pin_clear(ST7735_RST_PIN);
-    nrf_delay_ms(100);
-    nrf_gpio_pin_set(ST7735_RST_PIN);
-    // set LCD backlight pin to output
-    nrf_gpio_cfg_output(ST7735_BACKLIGHT_PIN);
-*/
+
+    ret_code_t err_code;
+
+    display_driver_init();
+
+    display_lvgl_init();
+
+    start_lvgl_timer();
+
+    display_turn_backlight_on();
+}
+
+void display_driver_init()
+{
+    // Set LCD pins as outputs
     nrf_gpio_cfg_output(ST7789_EN_PIN);
-    nrf_gpio_pin_clear(ST7789_EN_PIN);
-    nrf_delay_ms(10);
     nrf_gpio_cfg_output(ST7789_RST_PIN);
-    nrf_gpio_pin_clear(ST7789_RST_PIN);
-    nrf_delay_ms(100);
-    nrf_gpio_pin_set(ST7789_RST_PIN);
-    // set LCD backlight pin to output
     nrf_gpio_cfg_output(ST7789_BACKLIGHT_PIN);
 
+    //display_power_display_on();
+    nrf_delay_ms(10);
+    display_reset();
 
     // initialise lcd driver
-    err_code = p_lcd->lcd_init();
-    p_lcd->lcd_rotation_set(NRF_LCD_ROTATE_270);
+    ret_code_t err_code = p_lcd->lcd_init();
 
     if (err_code == NRF_SUCCESS)
     {
         p_lcd->p_lcd_cb->state = NRFX_DRV_STATE_INITIALIZED;
     }
 
+    p_lcd->lcd_rotation_set(NRF_LCD_ROTATE_270);
     p_lcd->lcd_display_invert(true);
+}
+
+void display_lvgl_init()
+{
 
     lv_color_t color = {
         .blue = 0xFF,
@@ -125,25 +152,32 @@ void scales_lcd_init()
     lv_display_set_buffers(display, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x0000), LV_PART_MAIN);
 
-    lv_obj_t * coffe_splash_image = lv_image_create(lv_screen_active());
 
-    /*From variable*/
+    lv_obj_t * coffe_splash_image = lv_image_create(lv_screen_active());
     lv_image_set_src(coffe_splash_image, &coffee_beans);
     lv_obj_align( coffe_splash_image, LV_ALIGN_TOP_LEFT, 0, 0 );
 
     lv_obj_t * water_drops_image = lv_image_create(lv_screen_active());
-
-    /*From variable*/
     lv_image_set_src(water_drops_image, &water_drops);
     lv_obj_align( water_drops_image, LV_ALIGN_TOP_LEFT, 0, 30 );
 
-    //lv_obj_add_flag(coffe_splash_image, LV_OBJ_FLAG_HIDDEN);
+    bluetooth_logo_image = lv_image_create(lv_screen_active());
+    lv_image_set_src(bluetooth_logo_image, &bluetooth_logo);
+    lv_obj_align( bluetooth_logo_image, LV_ALIGN_TOP_RIGHT, -90, 5 );
+
+    display_bluetooth_logo_hide();
 
     weightLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( weightLabel, LV_ALIGN_BOTTOM_RIGHT, 0, 0 );
+    lv_obj_align( weightLabel, LV_ALIGN_BOTTOM_RIGHT, -30, 0 );
     lv_obj_set_style_text_font(weightLabel, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(weightLabel, color, 0);
     lv_label_set_text( weightLabel, "" );
+
+    weightDecimalLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( weightDecimalLabel, LV_ALIGN_BOTTOM_RIGHT, 0, 0 );
+    lv_obj_set_style_text_font(weightDecimalLabel, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(weightDecimalLabel, color, 0);
+    lv_label_set_text( weightDecimalLabel, "" );
 
     batteryLabel = lv_label_create( lv_scr_act() );
     lv_obj_align( batteryLabel, LV_ALIGN_TOP_RIGHT, -8, 0 );
@@ -169,38 +203,63 @@ void scales_lcd_init()
     lv_obj_set_style_text_color(waterWeightLabel, color, 0);
     lv_label_set_text( waterWeightLabel, "0.0" );
 
-    err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
+    ret_code_t err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
     APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_start(m_lvgl_timer_id, LVGL_TIMER_INTERVAL_TICKS, NULL);
-    APP_ERROR_CHECK(err_code);
-
-    display_turn_backlight_on();
 }
-
 
 void display_update_weight_label(float weight)
 {
-    char buffer[6];
+    if (weightLabel == NULL)
+    {
+        return;
+    }
+    char buffer[5]; // Make sure this buffer is large enough to hold the formatted string
 
     // Convert float to string
     sprintf(buffer, "%0.1f", weight);
 
-    lv_label_set_text( weightLabel, buffer );
-}
+    // Find the position of the decimal point
+    char *decimalPointPosition = strchr(buffer, '.');
 
-void text_print(void)
-{
-    lv_label_set_text( weightLabel, "Scales" );
+    if (decimalPointPosition != NULL) {
+        // Split the buffer into two parts
+        *decimalPointPosition = '\0'; // Terminate the first part
+
+        // First buffer contains the whole numbers before the decimal place
+        char wholeNumbers[4];
+        strcpy(wholeNumbers, buffer);
+
+        // Second buffer contains the fractional part of the value
+        char fractionalPart[2];
+        strcpy(fractionalPart, decimalPointPosition + 1);
+
+
+        // Convert float to string
+    sprintf(buffer, "%s.", wholeNumbers);
+    lv_label_set_text( weightLabel, buffer );
+
+    char buffer2[2];
+    sprintf(buffer2, "%s", fractionalPart);
+    lv_label_set_text( weightDecimalLabel, fractionalPart );
+    }
 }
 
 void display_indicate_tare()
 {
+    if (weightLabel == NULL)
+    {
+        return;
+    }
     lv_label_set_text( weightLabel, "Taring");
 }
 
 void display_update_timer_label(uint32_t seconds)
 {
+    if (timeLabel == NULL)
+    {
+        return;
+    }
+
     int hours, minutes, remainingSeconds;
 
     hours = seconds / 3600;
@@ -215,6 +274,10 @@ void display_update_timer_label(uint32_t seconds)
 
 void display_update_battery_label(uint8_t batteryLevel)
 {
+    if (batteryLabel == NULL)
+    {
+        return;
+    }
     char buffer[4];
     sprintf(buffer, "%d%%", batteryLevel);
 
@@ -223,6 +286,11 @@ void display_update_battery_label(uint8_t batteryLevel)
 
 void display_update_coffee_weight_label(float weight)
 {
+    if (coffeeWeightLabel == NULL)
+    {
+        return;
+    }
+
     char buffer[6];
 
     // Convert float to string
@@ -233,6 +301,11 @@ void display_update_coffee_weight_label(float weight)
 
 void display_update_water_weight_label(float weight)
 {
+    if (waterWeightLabel == NULL)
+    {
+        return;
+    }
+
     char buffer[6];
 
     // Convert float to string
@@ -252,3 +325,52 @@ void display_turn_backlight_off()
     nrf_gpio_pin_set(ST7789_BACKLIGHT_PIN);
 
 }
+
+void display_bluetooth_logo_show()
+{
+    lv_obj_remove_flag(bluetooth_logo_image, LV_OBJ_FLAG_HIDDEN);
+
+}
+
+void display_bluetooth_logo_hide()
+{
+    lv_obj_add_flag(bluetooth_logo_image, LV_OBJ_FLAG_HIDDEN);
+}
+
+void display_power_display_on()
+{
+    nrf_gpio_pin_clear(ST7789_EN_PIN);
+}
+
+void display_power_display_off()
+{
+    nrf_gpio_pin_set(ST7789_EN_PIN);
+}
+
+void display_sleep()
+{
+    p_lcd->lcd_sleep();
+    display_turn_backlight_off();
+    display_power_display_off();
+    
+    stop_lvgl_timer();
+}
+
+void display_wakeup()
+{
+    display_turn_backlight_on();
+    display_power_display_on();
+    lv_obj_clean(lv_scr_act());
+    display_lvgl_init();
+    display_driver_init();
+    start_lvgl_timer();
+}
+
+void display_reset()
+{
+    nrf_gpio_pin_clear(ST7789_RST_PIN);
+    nrf_delay_ms(100);
+    nrf_gpio_pin_set(ST7789_RST_PIN);
+}
+
+

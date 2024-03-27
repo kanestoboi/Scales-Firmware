@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "ads123x.h": "c"
+        "ads123x.h": "c",
+        "elapsedtimeservice.h": "c"
     }
 }

@@ -45,10 +45,10 @@ APP_TIMER_DEF(m_battery_level_timer_id);
 #define BUTTON3                  0
 #define BUTTON4                  4
 
-#define TOUCHPAD1_THRESHOLD_1   1750
-#define TOUCHPAD1_THRESHOLD_2   1750
-#define TOUCHPAD1_THRESHOLD_3   1750
-#define TOUCHPAD1_THRESHOLD_4   1750
+#define TOUCHPAD1_THRESHOLD_1   400
+#define TOUCHPAD1_THRESHOLD_2   1000
+#define TOUCHPAD1_THRESHOLD_3   610
+#define TOUCHPAD1_THRESHOLD_4   910
 
 NRF_CSENSE_BUTTON_DEF(m_button1, (BUTTON1, TOUCHPAD1_THRESHOLD_1));
 NRF_CSENSE_BUTTON_DEF(m_button2, (BUTTON2, TOUCHPAD1_THRESHOLD_2));
@@ -80,6 +80,8 @@ bool writeToWeightCharacteristic = false;
 
 
 void start_weight_sensor_timers();
+void set_coffee_weight_callback();
+void start_timer_callback();
 
 
 /**
@@ -92,13 +94,12 @@ void nrf_csense_handler(nrf_csense_evt_t * p_evt)
     switch (p_evt->nrf_csense_evt_type)
     {
         case NRF_CSENSE_BTN_EVT_PRESSED:
-            break;
-        case NRF_CSENSE_BTN_EVT_RELEASED:
             if (p_evt->p_instance == (&m_button1))
             {
                 uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
                 (*btn_cnt)++;
                 NRF_LOG_INFO("Button1 touched %03d times.", (*btn_cnt));
+                start_timer_callback();
             }
             if (p_evt->p_instance == (&m_button2))
             {
@@ -114,10 +115,13 @@ void nrf_csense_handler(nrf_csense_evt_t * p_evt)
             }
             if (p_evt->p_instance == (&m_button4))
             {
+                weight_sensor_tare();
                 uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
                 (*btn_cnt)++;
                 NRF_LOG_INFO("Button4 touched %03d times.", (*btn_cnt));
             }
+            break;
+        case NRF_CSENSE_BTN_EVT_RELEASED:
             break;
         case NRF_CSENSE_SLIDER_EVT_PRESSED:
         break;
@@ -149,22 +153,22 @@ static void csense_start(void)
     err_code = nrf_csense_init(nrf_csense_handler, APP_TIMER_TICKS_TIMEOUT);
     APP_ERROR_CHECK(err_code);
 
-    nrf_csense_instance_context_set(&m_button1, (void*)&touched_counter1);
-    nrf_csense_instance_context_set(&m_button2, (void*)&touched_counter2);
-    nrf_csense_instance_context_set(&m_button3, (void*)&touched_counter3);
-    nrf_csense_instance_context_set(&m_button4, (void*)&touched_counter4);
+    //nrf_csense_instance_context_set(&m_button1, (void*)&touched_counter1);
+    //nrf_csense_instance_context_set(&m_button2, (void*)&touched_counter2);
+    //nrf_csense_instance_context_set(&m_button3, (void*)&touched_counter3);
+    //nrf_csense_instance_context_set(&m_button4, (void*)&touched_counter4);
 
-    err_code = nrf_csense_add(&m_button1);
-    APP_ERROR_CHECK(err_code);
+    //err_code = nrf_csense_add(&m_button1);
+    //APP_ERROR_CHECK(err_code);
 
-    err_code = nrf_csense_add(&m_button2);
-    APP_ERROR_CHECK(err_code);
+    //err_code = nrf_csense_add(&m_button2);
+    //APP_ERROR_CHECK(err_code);
 
-    err_code = nrf_csense_add(&m_button3);
-    APP_ERROR_CHECK(err_code);
+    //err_code = nrf_csense_add(&m_button3);
+    //APP_ERROR_CHECK(err_code);
 
-    err_code = nrf_csense_add(&m_button4);
-    APP_ERROR_CHECK(err_code);
+    //err_code = nrf_csense_add(&m_button4);
+    //APP_ERROR_CHECK(err_code);
 }
 
 static void calibration_complete_callback(float scaleFactor)
@@ -222,11 +226,13 @@ void start_timer_callback()
 
 void enable_write_to_weight_characteristic()
 {
+    display_bluetooth_logo_show();
     writeToWeightCharacteristic = true;
 }
 
 void disable_write_to_weight_characteristic()
 {
+    display_bluetooth_logo_hide();
     writeToWeightCharacteristic = false;
 }
 
@@ -293,8 +299,10 @@ static void keep_alive_timeout_handler(void * p_context)
         err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
         APP_ERROR_CHECK(err_code);
 
+        weight_sensor_sleep();
+
         // set LCD backlight to off
-        display_turn_backlight_off();
+        display_sleep();
 
         m_last_wakeup_value  = roundedValue;
     }
@@ -315,19 +323,22 @@ static void wakeup_timeout_handler(void * p_context)
     UNUSED_PARAMETER(p_context);
     ret_code_t err_code;
 
-    float roundedValue = roundf(weight_sensor_get_weight_filtered() * 10.0);
+    float roundedValue = roundf(weight_sensor_read_weight() * 10.0);
 
-    if (fabs(m_last_wakeup_value - roundedValue) > 5)
+    if (fabs(m_last_wakeup_value - roundedValue) > 50)
     {
-        NRF_LOG_INFO("WAKING.");
-        // set LCD backlight to on
-        display_turn_backlight_on();
-        display_indicate_tare();
-        nrf_delay_ms(2000);
-        weight_sensor_tare();
         err_code = app_timer_stop(m_wakeup_timer_id);
         APP_ERROR_CHECK(err_code);
+
+        NRF_LOG_INFO("WAKING.");
+        // set LCD backlight to on
+        display_wakeup();
+        display_indicate_tare();
+        weight_sensor_wakeup();
+        weight_sensor_tare();
+        
         start_weight_sensor_timers();
+
     }
     else{
         NRF_LOG_INFO("DIDN'T MEET WAKE THRESHOLD.");
@@ -610,19 +621,16 @@ int main(void)
     uint8_t savedWeighMode = saved_parameters_getWeighMode();
     ble_weight_sensor_service_weigh_mode_update(&savedWeighMode, sizeof(savedWeighMode));
 
-    float scaleFactor = saved_parameters_getSavedScaleFactor();
-    weight_sensor_init(scaleFactor);
-
-
-
-
-
     bluetooth_register_connected_callback(enable_write_to_weight_characteristic);
     bluetooth_register_disconnected_callback(disable_write_to_weight_characteristic);
 
     bluetooth_advertising_start(erase_bonds);
     NRF_LOG_INFO("Bluetooth setup complete");
     NRF_LOG_FLUSH();
+
+    
+    float scaleFactor = saved_parameters_getSavedScaleFactor();
+    weight_sensor_init(scaleFactor);
 
     
     if (max17260_init(&max17260Sensor, &m_twi))
@@ -645,7 +653,7 @@ int main(void)
     err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);  
 
-    csense_start();
+    //csense_start();
 
     for (;;)
     {

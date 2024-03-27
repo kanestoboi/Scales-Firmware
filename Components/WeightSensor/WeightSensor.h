@@ -23,4 +23,9 @@ float weight_sensor_get_weight_filtered();
 void weight_sensor_tare();
 void weight_sensor_calibrate(void (*calibrationCompleteCallback)(float scaleFactor ));
 
+void weight_sensor_sleep();
+void weight_sensor_wakeup();
+
+float weight_sensor_read_weight();
+
 #endif

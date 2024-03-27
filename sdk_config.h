@@ -7186,7 +7186,7 @@
 // <i> This is used when capacitive sensor does not use COMP.
 
 #ifndef NRF_CSENSE_OUTPUT_PIN
-#define NRF_CSENSE_OUTPUT_PIN 26
+#define NRF_CSENSE_OUTPUT_PIN 13
 #endif
 
 // </e>

@@ -874,6 +874,7 @@
               <file file_name="Components/LCD/lvgl/src/lvgl_private.h" />
             </folder>
           </folder>
+          <file file_name="Components/LCD/bluetooth_logo.h" />
           <file file_name="Components/LCD/coffee_beans.h" />
           <file file_name="Components/LCD/lv_conf.h" />
           <file file_name="Components/LCD/nrf_lcd.h" />

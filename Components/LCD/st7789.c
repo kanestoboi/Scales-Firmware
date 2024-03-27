@@ -233,7 +233,7 @@ static ret_code_t hardware_init(void)
     spi_config.miso_pin = ST7789_MISO_PIN;
     spi_config.mosi_pin = ST7789_MOSI_PIN;
     spi_config.ss_pin   = ST7789_SS_PIN;
-    spi_config.frequency = SPI_FREQUENCY_FREQUENCY_M8;
+    spi_config.frequency = SPIM_FREQUENCY_FREQUENCY_M32;
 
     err_code = nrfx_spim_init(&spi, &spi_config, NULL, NULL);
     return err_code;
@@ -356,6 +356,19 @@ static void st7789_display_invert(bool invert)
     write_command(invert ? ST7789_INVON : ST7789_INVOFF);
 }
 
+static void st7789_sleep()
+{
+    nrfx_spim_abort(&spi);
+    nrfx_spim_uninit(&spi);
+
+    nrf_gpio_cfg_default(ST7789_DC_PIN);
+    nrf_gpio_cfg_default(ST7789_SCK_PIN);
+    nrf_gpio_cfg_default(ST7789_MISO_PIN);
+    nrf_gpio_cfg_default(ST7789_MOSI_PIN);
+    nrf_gpio_cfg_default(ST7789_SS_PIN);
+    nrf_gpio_cfg_default(ST7789_RST_PIN);
+}
+
 static lcd_cb_t st7789_cb = {
     .height = ST7789_HEIGHT,
     .width = ST7789_WIDTH
@@ -369,6 +382,7 @@ const nrf_lcd_t nrf_lcd_st7789 = {
     .lcd_display = st7789_dummy_display,
     .lcd_rotation_set = st7789_rotation_set,
     .lcd_display_invert = st7789_display_invert,
+    .lcd_sleep = st7789_sleep,
     .p_lcd_cb = &st7789_cb
 };
 

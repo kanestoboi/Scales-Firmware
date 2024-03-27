@@ -33,13 +33,13 @@ APP_TIMER_DEF(m_read_ads123x__timer_id);
 
 
 
-static void start_read_ads123x__timer()
+static void start_read_ads123x_timer()
 {
     ret_code_t err_code = app_timer_start(m_read_ads123x__timer_id, ADS123X_TIMER_INTERVAL_MS, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
-static void stop_read_ads123x__timer()
+static void stop_read_ads123x_timer()
 {
     ret_code_t err_code = app_timer_stop(m_read_ads123x__timer_id);
     APP_ERROR_CHECK(err_code);
@@ -166,9 +166,8 @@ static void ads123x_timeout_handler(void * p_context)
         default:
             break;
     }
-    
 
-    start_read_ads123x__timer();
+    start_read_ads123x_timer();
 }
                                             
 void weight_sensor_init(float scaleFactor)
@@ -188,7 +187,7 @@ void weight_sensor_init(float scaleFactor)
 
     //ADS123X_calibrateOnNextConversion(&scale);
     weight_sensor_tare();
-    start_read_ads123x__timer();    
+    start_read_ads123x_timer();    
 }
 
 void weight_sensor_tare()
@@ -223,4 +222,26 @@ float weight_sensor_get_weight_filtered()
 
         return mFilteredScaleValue;
     } 
+}
+
+float weight_sensor_read_weight()
+{
+    ADS123X_PowerOn(&scale);
+    float readValue;
+    ADS123X_getUnits(&scale, &readValue, 10); 
+    ADS123X_PowerOff(&scale); 
+
+    return readValue;
+}
+
+void weight_sensor_sleep()
+{
+    stop_read_ads123x_timer();
+    ADS123X_PowerOff(&scale);
+}
+
+void weight_sensor_wakeup()
+{
+    ADS123X_PowerOn(&scale);
+    start_read_ads123x_timer();
 }

@@ -135,6 +135,8 @@ typedef struct
 
     uint32_t (* lcd_set_addr_window_to_buffer)(uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 
+    void (* lcd_sleep)();
+
     /**
      * @brief Pointer to the LCD instance control block.
      */

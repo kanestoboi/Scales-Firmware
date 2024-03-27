@@ -42,7 +42,7 @@ typedef struct SavedParameters_t
 
 static SavedParameters_t mSavedParameters = 
 {
-    .scaleFactor = -2243.8,
+    .scaleFactor = 4500.9,
     .coffee_to_water_ratio_numerator = 1,
     .coffee_to_water_ratio_denominator = 16,
     .weighMode = 0,
