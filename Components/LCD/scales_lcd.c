@@ -55,6 +55,11 @@ lv_obj_t *button2CountLabel;
 lv_obj_t *button3CountLabel;
 lv_obj_t *button4CountLabel;
 
+lv_obj_t *button1ThresholdLabel;
+lv_obj_t *button2ThresholdLabel;
+lv_obj_t *button3ThresholdLabel;
+lv_obj_t *button4ThresholdLabel;
+
 lv_obj_t * bluetooth_logo_image;
 
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
@@ -211,30 +216,54 @@ void display_lvgl_init()
 
 
     button1CountLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button1CountLabel, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_obj_align( button1CountLabel, LV_ALIGN_LEFT_MID, 0, -10);
     lv_obj_set_style_text_font(button1CountLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(button1CountLabel, color, 0);
     lv_label_set_text( button1CountLabel, "0" );
     
     button2CountLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button2CountLabel, LV_ALIGN_LEFT_MID, 60, 0);
+    lv_obj_align( button2CountLabel, LV_ALIGN_CENTER, -40, -10);
     lv_obj_set_style_text_font(button2CountLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(button2CountLabel, color, 0);
     lv_label_set_text( button2CountLabel, "0" );
 
     
     button3CountLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button3CountLabel, LV_ALIGN_LEFT_MID, 120, 0);
+    lv_obj_align( button3CountLabel, LV_ALIGN_CENTER, 60, -10);
     lv_obj_set_style_text_font(button3CountLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(button3CountLabel, color, 0);
     lv_label_set_text( button3CountLabel, "0" );
 
     
     button4CountLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button4CountLabel, LV_ALIGN_LEFT_MID, 180, 0);
+    lv_obj_align( button4CountLabel, LV_ALIGN_RIGHT_MID, 0, -10);
     lv_obj_set_style_text_font(button4CountLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(button4CountLabel, color, 0);
     lv_label_set_text( button4CountLabel, "0" );
+
+    button1ThresholdLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( button1ThresholdLabel, LV_ALIGN_LEFT_MID, 0, 15);
+    lv_obj_set_style_text_font(button1ThresholdLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(button1ThresholdLabel, color, 0);
+    lv_label_set_text( button1ThresholdLabel, "0" );
+    
+    button2ThresholdLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( button2ThresholdLabel, LV_ALIGN_CENTER, -40, 15);
+    lv_obj_set_style_text_font(button2ThresholdLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(button2ThresholdLabel, color, 0);
+    lv_label_set_text( button2ThresholdLabel, "0" );
+    
+    button3ThresholdLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( button3ThresholdLabel, LV_ALIGN_CENTER, 60, 15);
+    lv_obj_set_style_text_font(button3ThresholdLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(button3ThresholdLabel, color, 0);
+    lv_label_set_text( button3ThresholdLabel, "0" );
+
+    button4ThresholdLabel = lv_label_create( lv_scr_act() );
+    lv_obj_align( button4ThresholdLabel, LV_ALIGN_RIGHT_MID, 0, 15);
+    lv_obj_set_style_text_font(button4ThresholdLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(button4ThresholdLabel, color, 0);
+    lv_label_set_text( button4ThresholdLabel, "0" );
 
     ret_code_t err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
     APP_ERROR_CHECK(err_code);
@@ -354,7 +383,7 @@ void display_button1_count_label(uint16_t count)
         return;
     }
 
-    char buffer[1];
+    char buffer[4];
 
     // Convert float to string
     sprintf(buffer, "%d", count);
@@ -369,7 +398,7 @@ void display_button2_count_label(uint16_t count)
         return;
     }
 
-    char buffer[1];
+    char buffer[4];
 
     // Convert float to string
     sprintf(buffer, "%d", count);
@@ -384,7 +413,7 @@ void display_button3_count_label(uint16_t count)
         return;
     }
 
-    char buffer[1];
+    char buffer[4];
 
     // Convert float to string
     sprintf(buffer, "%d", count);
@@ -399,12 +428,72 @@ void display_button4_count_label(uint16_t count)
         return;
     }
 
-    char buffer[1];
+    char buffer[4];
 
     // Convert float to string
     sprintf(buffer, "%d", count);
 
     lv_label_set_text( button4CountLabel, buffer );
+}
+
+void display_button1_threshold_label(uint16_t threshold)
+{
+    if (button1ThresholdLabel == NULL)
+    {
+        return;
+    }
+
+    char buffer[4];
+
+    // Convert float to string
+    sprintf(buffer, "%d", threshold);
+
+    lv_label_set_text( button1ThresholdLabel, buffer );
+}
+
+void display_button2_threshold_label(uint16_t threshold)
+{
+    if (button2ThresholdLabel == NULL)
+    {
+        return;
+    }
+
+    char buffer[4];
+
+    // Convert float to string
+    sprintf(buffer, "%d", threshold);
+
+    lv_label_set_text( button2ThresholdLabel, buffer );
+}
+
+void display_button3_threshold_label(uint16_t threshold)
+{
+    if (button3ThresholdLabel == NULL)
+    {
+        return;
+    }
+
+    char buffer[4];
+
+    // Convert float to string
+    sprintf(buffer, "%d", threshold);
+
+    lv_label_set_text( button3ThresholdLabel, buffer );
+}
+
+void display_button4_threshold_label(uint16_t threshold)
+{
+    if (button4ThresholdLabel == NULL)
+    {
+        return;
+    }
+
+    char buffer[4];
+
+    // Convert float to string
+    sprintf(buffer, "%d", threshold);
+
+    lv_label_set_text( button4ThresholdLabel, buffer );
 }
 
 void display_turn_backlight_on()

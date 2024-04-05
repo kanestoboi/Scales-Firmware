@@ -15,8 +15,14 @@ void display_button2_count_label(uint16_t count);
 void display_button3_count_label(uint16_t count);
 void display_button4_count_label(uint16_t count);
 
+void display_button1_threshold_label(uint16_t threshold);
+void display_button2_threshold_label(uint16_t threshold);
+void display_button3_threshold_label(uint16_t threshold);
+void display_button4_threshold_label(uint16_t threshold);
+
 void display_update_timer_label(uint32_t seconds);
 void display_update_battery_label(uint8_t batteryLevel);
+
 void text_print();
 
 void display_turn_backlight_on();

@@ -59,6 +59,8 @@
           <folder Name="Services">
             <file file_name="Components/Bluetooth/Services/BatteryService.c" />
             <file file_name="Components/Bluetooth/Services/BatteryService.h" />
+            <file file_name="Components/Bluetooth/Services/ButtonThresholdService.c" />
+            <file file_name="Components/Bluetooth/Services/ButtonThresholdService.h" />
             <file file_name="Components/Bluetooth/Services/ElapsedTimeService.c" />
             <file file_name="Components/Bluetooth/Services/ElapsedTimeService.h" />
             <file file_name="Components/Bluetooth/Services/WeightSensorService.c" />

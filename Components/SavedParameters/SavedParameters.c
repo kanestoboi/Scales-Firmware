@@ -38,6 +38,10 @@ typedef struct SavedParameters_t
     uint8_t coffee_to_water_ratio_numerator;
     uint8_t coffee_to_water_ratio_denominator;
     uint8_t weighMode;
+    uint16_t button1_csense_threshold;
+    uint16_t button2_csense_threshold;
+    uint16_t button3_csense_threshold;
+    uint16_t button4_csense_threshold;
 } SavedParameters_t;
 
 static SavedParameters_t mSavedParameters = 
@@ -46,6 +50,10 @@ static SavedParameters_t mSavedParameters =
     .coffee_to_water_ratio_numerator = 1,
     .coffee_to_water_ratio_denominator = 16,
     .weighMode = 0,
+    .button1_csense_threshold = 1000,
+    .button2_csense_threshold = 1000,
+    .button3_csense_threshold = 1000,
+    .button4_csense_threshold = 1000,
 };
 
 /* A record containing dummy configuration data. */
@@ -262,6 +270,51 @@ void saved_parameters_setWeighMode(uint8_t mode)
     mSavedParameters.weighMode = mode;
     record_update();
 }
+
+uint16_t saved_parameters_getButton1CSenseThreshold()
+{
+    return mSavedParameters.button1_csense_threshold;
+}
+
+void saved_parameters_setButton1CSenseThreshold(uint16_t threshold)
+{
+    mSavedParameters.button1_csense_threshold = threshold;
+    record_update();
+}
+
+uint16_t saved_parameters_getButton2CSenseThreshold()
+{
+    return mSavedParameters.button2_csense_threshold;
+}
+
+void saved_parameters_setButton2CSenseThreshold(uint16_t threshold)
+{
+    mSavedParameters.button2_csense_threshold = threshold;
+    record_update();
+}
+
+uint16_t saved_parameters_getButton3CSenseThreshold()
+{
+    return mSavedParameters.button3_csense_threshold;
+}
+
+void saved_parameters_setButton3CSenseThreshold(uint16_t threshold)
+{
+    mSavedParameters.button3_csense_threshold = threshold;
+    record_update();
+}
+
+uint16_t saved_parameters_getButton4CSenseThreshold()
+{
+    return mSavedParameters.button4_csense_threshold;
+}
+
+void saved_parameters_setButton4CSenseThreshold(uint16_t threshold)
+{
+    mSavedParameters.button4_csense_threshold = threshold;
+    record_update();
+}
+
 
 static void record_update()
 {

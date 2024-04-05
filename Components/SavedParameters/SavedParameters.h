@@ -20,6 +20,15 @@ void saved_parameters_setCoffeeToWaterRatioNumerator(uint8_t numerator);
 uint8_t saved_parameters_getCoffeeToWaterRatioDenominator();
 void saved_parameters_setCoffeeToWaterRatioDenominator(uint8_t denominator);
 
+uint16_t saved_parameters_getButton1CSenseThreshold();
+void saved_parameters_setButton1CSenseThreshold(uint16_t threshold);
+uint16_t saved_parameters_getButton2CSenseThreshold();
+void saved_parameters_setButton2CSenseThreshold(uint16_t threshold);
+uint16_t saved_parameters_getButton3CSenseThreshold();
+void saved_parameters_setButton3CSenseThreshold(uint16_t threshold);
+uint16_t saved_parameters_getButton4CSenseThreshold();
+void saved_parameters_setButton4CSenseThreshold(uint16_t threshold);
+
 uint8_t saved_parameters_getWeighMode();
 void saved_parameters_setWeighMode(uint8_t mode);
 
