@@ -45,10 +45,10 @@ APP_TIMER_DEF(m_battery_level_timer_id);
 #define BUTTON3                  0
 #define BUTTON4                  4
 
-#define TOUCHPAD1_THRESHOLD_1   400
-#define TOUCHPAD1_THRESHOLD_2   1000
-#define TOUCHPAD1_THRESHOLD_3   610
-#define TOUCHPAD1_THRESHOLD_4   910
+#define TOUCHPAD1_THRESHOLD_1   900
+#define TOUCHPAD1_THRESHOLD_2   600
+#define TOUCHPAD1_THRESHOLD_3   900
+#define TOUCHPAD1_THRESHOLD_4   900
 
 NRF_CSENSE_BUTTON_DEF(m_button1, (BUTTON1, TOUCHPAD1_THRESHOLD_1));
 NRF_CSENSE_BUTTON_DEF(m_button2, (BUTTON2, TOUCHPAD1_THRESHOLD_2));
@@ -78,11 +78,12 @@ MAX17260 max17260Sensor;
 
 bool writeToWeightCharacteristic = false;
 
-
 void start_weight_sensor_timers();
 void set_coffee_weight_callback();
 void start_timer_callback();
 
+void prepare_to_sleep();
+void wakeup_from_sleep();
 
 /**
  * @brief Event handler for Capacitive Sensor High module.
@@ -99,26 +100,32 @@ void nrf_csense_handler(nrf_csense_evt_t * p_evt)
                 uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
                 (*btn_cnt)++;
                 NRF_LOG_INFO("Button1 touched %03d times.", (*btn_cnt));
-                start_timer_callback();
+                display_button1_count_label(*btn_cnt);
+                
             }
             if (p_evt->p_instance == (&m_button2))
             {
+                start_timer_callback();
                 uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
                 (*btn_cnt)++;
                 NRF_LOG_INFO("Button2 touched %03d times.", (*btn_cnt));
+                display_button2_count_label(*btn_cnt);
             }
             if (p_evt->p_instance == (&m_button3))
-            {
-                uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
-                (*btn_cnt)++;
-                NRF_LOG_INFO("Button3 touched %03d times.", (*btn_cnt));
-            }
-            if (p_evt->p_instance == (&m_button4))
             {
                 weight_sensor_tare();
                 uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
                 (*btn_cnt)++;
+                NRF_LOG_INFO("Button3 touched %03d times.", (*btn_cnt));
+                display_button3_count_label(*btn_cnt);
+            }
+            if (p_evt->p_instance == (&m_button4))
+            {
+                //weight_sensor_tare();
+                uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
+                (*btn_cnt)++;
                 NRF_LOG_INFO("Button4 touched %03d times.", (*btn_cnt));
+                display_button4_count_label(*btn_cnt);
             }
             break;
         case NRF_CSENSE_BTN_EVT_RELEASED:
@@ -153,22 +160,22 @@ static void csense_start(void)
     err_code = nrf_csense_init(nrf_csense_handler, APP_TIMER_TICKS_TIMEOUT);
     APP_ERROR_CHECK(err_code);
 
-    //nrf_csense_instance_context_set(&m_button1, (void*)&touched_counter1);
-    //nrf_csense_instance_context_set(&m_button2, (void*)&touched_counter2);
-    //nrf_csense_instance_context_set(&m_button3, (void*)&touched_counter3);
-    //nrf_csense_instance_context_set(&m_button4, (void*)&touched_counter4);
+    nrf_csense_instance_context_set(&m_button1, (void*)&touched_counter1);
+    nrf_csense_instance_context_set(&m_button2, (void*)&touched_counter2);
+    nrf_csense_instance_context_set(&m_button3, (void*)&touched_counter3);
+    nrf_csense_instance_context_set(&m_button4, (void*)&touched_counter4);
 
-    //err_code = nrf_csense_add(&m_button1);
+    err_code = nrf_csense_add(&m_button1);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = nrf_csense_add(&m_button2);
     //APP_ERROR_CHECK(err_code);
 
-    //err_code = nrf_csense_add(&m_button2);
-    //APP_ERROR_CHECK(err_code);
+    err_code = nrf_csense_add(&m_button3);
+    APP_ERROR_CHECK(err_code);
 
-    //err_code = nrf_csense_add(&m_button3);
-    //APP_ERROR_CHECK(err_code);
-
-    //err_code = nrf_csense_add(&m_button4);
-    //APP_ERROR_CHECK(err_code);
+    err_code = nrf_csense_add(&m_button4);
+    APP_ERROR_CHECK(err_code);
 }
 
 static void calibration_complete_callback(float scaleFactor)
@@ -241,8 +248,8 @@ void start_weight_sensor_timers()
     ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_start(m_display_timer_id, DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS, NULL);
-    APP_ERROR_CHECK(err_code);
+    //err_code = app_timer_start(m_display_timer_id, DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS, NULL);
+    //APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
@@ -266,6 +273,8 @@ static void read_weight_timeout_handler(void * p_context)
     {
         ble_weight_sensor_service_sensor_data_update((uint8_t*)&scaleValue, sizeof(float));
     }
+
+    display_update_weight_label(scaleValue);
 
     ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -293,16 +302,8 @@ static void keep_alive_timeout_handler(void * p_context)
     if (fabs(m_last_keep_alive_value - roundedValue) < 5 && !writeToWeightCharacteristic)
     {
         NRF_LOG_INFO("SLEEPING");
-        err_code = app_timer_stop(m_read_weight_timer_id);
-        APP_ERROR_CHECK(err_code);
 
-        err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
-        APP_ERROR_CHECK(err_code);
-
-        weight_sensor_sleep();
-
-        // set LCD backlight to off
-        display_sleep();
+        prepare_to_sleep();
 
         m_last_wakeup_value  = roundedValue;
     }
@@ -313,8 +314,6 @@ static void keep_alive_timeout_handler(void * p_context)
     }
 
     m_last_keep_alive_value = roundedValue;
-
-
 }
 
 
@@ -331,14 +330,8 @@ static void wakeup_timeout_handler(void * p_context)
         APP_ERROR_CHECK(err_code);
 
         NRF_LOG_INFO("WAKING.");
-        // set LCD backlight to on
-        display_wakeup();
-        display_indicate_tare();
-        weight_sensor_wakeup();
-        weight_sensor_tare();
-        
-        start_weight_sensor_timers();
 
+        wakeup_from_sleep();
     }
     else{
         NRF_LOG_INFO("DIDN'T MEET WAKE THRESHOLD.");
@@ -459,7 +452,7 @@ void bluetooth_advertising_timeout_callback(void)
 #ifdef DEBUG_NRF
     // When in debug, this will put the device in a simulated sleep mode, still allowing the debugger to work
     sd_power_system_off();
-    NRF_LOG_INFO("Powered off");
+    NRF_LOG_INFO("Powered off - simulated");
     while(1);
 #else
     // Go to system-off mode (this function will not return; wakeup will cause a reset).
@@ -561,6 +554,66 @@ void twi_master_init(void)
     nrfx_twi_enable(&m_twi);
 }
 
+//Initialize the TWI as Master device
+void twi_master_uninit(void)
+{
+    ret_code_t err_code;
+
+        //Enable the TWI Communication
+    nrfx_twi_disable(&m_twi);
+
+    //A function to initialize the twi communication
+    nrfx_twi_uninit(&m_twi);
+
+    nrf_gpio_cfg_default(TWI_SCL_M);
+    nrf_gpio_cfg_default(TWI_SDA_M);
+}
+
+void prepare_to_sleep()
+{
+    ret_code_t err_code;
+
+    err_code = app_timer_stop(m_read_weight_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_battery_level_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+
+    weight_sensor_sleep();
+
+    twi_master_uninit();
+
+    display_sleep();
+}
+
+void wakeup_from_sleep()
+{
+    twi_master_init();
+
+    display_wakeup();
+    weight_sensor_wakeup();
+
+    display_indicate_tare();
+    if (bluetooth_is_connected())
+    {
+        display_bluetooth_logo_show();
+    }
+    else
+    {
+        display_bluetooth_logo_hide();
+    }
+        
+    weight_sensor_tare();
+
+    start_weight_sensor_timers();
+
+    ret_code_t err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
 
 /**@brief Function for application main en
 try.
@@ -586,7 +639,7 @@ int main(void)
     timers_init();                      // Initialise nRF5 timers library
     nrf_buddy_leds_init();              // initialise nRF52 buddy leds library
     power_management_init();            // initialise the nRF5 power management library
-    scales_lcd_init();
+    display_init();
 
     bluetooth_init();
     if (ble_weight_sensor_service_init() != NRF_SUCCESS)
@@ -603,7 +656,6 @@ int main(void)
     {
         NRF_LOG_INFO("Error Initialing battery service");
     }
-    
 
     ble_weight_sensor_set_tare_callback(weight_sensor_tare);
     ble_weight_sensor_set_calibration_callback(weight_sensor_service_calibration_callback);
@@ -653,7 +705,7 @@ int main(void)
     err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);  
 
-    //csense_start();
+    csense_start();
 
     for (;;)
     {

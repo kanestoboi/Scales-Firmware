@@ -73,6 +73,7 @@
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
+static bool mBluetoothConnected = false;
 
 // Maximum number of registered functions.
 #define MAX_FUNCTIONS 10
@@ -317,7 +318,6 @@ static void services_init(void)
     ret_code_t         err_code;
     nrf_ble_qwr_init_t qwr_init = {0};
 
-
     // Initialize Queued Write Module.
     qwr_init.error_handler = nrf_qwr_error_handler;
 
@@ -350,8 +350,6 @@ static void services_init(void)
     dis_init.dis_char_rd_sec = SEC_OPEN;
     APP_ERROR_CHECK(ble_dis_init(&dis_init));
     #endif
-    
-
 }
 
 /**@brief Function for handling the Connection Parameters Module.
@@ -426,7 +424,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
             break;
 
         case BLE_ADV_EVT_IDLE:
-            NRF_LOG_INFO("Sleeping on event.");
+            NRF_LOG_INFO("Advertiving is now Idle");
             NRF_LOG_FLUSH();
             bluetooth_advertising_timeout_callback();
             break;
@@ -450,6 +448,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_INFO("Disconnected.");
             bluetooth_call_disconnected_callback_registered_functions();
+            mBluetoothConnected = false;
 
             break;
 
@@ -460,6 +459,8 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
             bluetooth_call_connected_callback_registered_functions();
+            mBluetoothConnected = true;
+
 
             break;
 
@@ -624,8 +625,16 @@ void bluetooth_advertising_start(bool erase_bonds)
     }
 }
 
+/**@brief Function for starting advertising.
+ */
+void bluetooth_advertising_stop()
+{
+    ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_IDLE);
+}
+
 // Function to register other functions.
-void bluetooth_register_connected_callback(ConnectedCallbackFunctionPointer func) {
+void bluetooth_register_connected_callback(ConnectedCallbackFunctionPointer func) 
+{
     if (numRegisteredConnectedCallbackFunctions < MAX_FUNCTIONS) {
         connectedCallbackFunctionRegistry[numRegisteredConnectedCallbackFunctions] = func;
         numRegisteredConnectedCallbackFunctions++;
@@ -635,7 +644,8 @@ void bluetooth_register_connected_callback(ConnectedCallbackFunctionPointer func
 }
 
 // Function to register other functions.
-void bluetooth_register_disconnected_callback(DisconnectedCallbackFunctionPointer func) {
+void bluetooth_register_disconnected_callback(DisconnectedCallbackFunctionPointer func) 
+{
     if (numRegisteredDisconnectedCallbackFunctions < MAX_FUNCTIONS) {
         disconnectedCallbackFunctionRegistry[numRegisteredDisconnectedCallbackFunctions] = func;
         numRegisteredDisconnectedCallbackFunctions++;
@@ -645,7 +655,8 @@ void bluetooth_register_disconnected_callback(DisconnectedCallbackFunctionPointe
 }
 
 // Function to call all registered functions.
-void bluetooth_call_connected_callback_registered_functions() {
+void bluetooth_call_connected_callback_registered_functions() 
+{
     for (int i = 0; i < numRegisteredConnectedCallbackFunctions; i++) {
         ConnectedCallbackFunctionPointer func = connectedCallbackFunctionRegistry[i];
         func();
@@ -653,9 +664,15 @@ void bluetooth_call_connected_callback_registered_functions() {
 }
 
 // Function to call all registered functions.
-void bluetooth_call_disconnected_callback_registered_functions() {
+void bluetooth_call_disconnected_callback_registered_functions() 
+{
     for (int i = 0; i < numRegisteredDisconnectedCallbackFunctions; i++) {
         DisconnectedCallbackFunctionPointer func = disconnectedCallbackFunctionRegistry[i];
         func();
     }
+}
+
+bool bluetooth_is_connected()
+{
+    return mBluetoothConnected;
 }

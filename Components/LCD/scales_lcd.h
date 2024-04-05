@@ -1,7 +1,7 @@
 #ifndef SCALES_LCD_H__
 #define SCALES_LCD_H__
 
-void scales_lcd_init();
+void display_init();
 
 void screen_clear(void);
 void display_indicate_tare();
@@ -9,6 +9,11 @@ void display_update_weight_label(float weight);
 
 void display_update_coffee_weight_label(float weight);
 void display_update_water_weight_label(float weight);
+
+void display_button1_count_label(uint16_t count);
+void display_button2_count_label(uint16_t count);
+void display_button3_count_label(uint16_t count);
+void display_button4_count_label(uint16_t count);
 
 void display_update_timer_label(uint32_t seconds);
 void display_update_battery_label(uint8_t batteryLevel);
