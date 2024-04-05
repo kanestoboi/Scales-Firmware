@@ -28,6 +28,7 @@
 #include "Components/Bluetooth/Services/WeightSensorService.h"
 #include "Components/Bluetooth/Services/ElapsedTimeService.h"
 #include "Components/Bluetooth/Services/BatteryService.h"
+#include "Components/Bluetooth/Services/ButtonThresholdService.h"
 #include "Components/SavedParameters/SavedParameters.h"
 
 APP_TIMER_DEF(m_read_weight_timer_id);
@@ -64,10 +65,10 @@ uint32_t currentElapsedTime = 0;
 #define TWI_SCL_M           6         //I2C SCL Pin
 #define TWI_SDA_M           8        //I2C SDA Pin
 
-#define READ_WEIGHT_SENSOR_TICKS_INTERVAL           APP_TIMER_TICKS(40)   
-#define DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS           APP_TIMER_TICKS(40)  
-#define KEEP_ALIVE_INTERVAL_TICKS           APP_TIMER_TICKS(180000)
-#define WAKEUP_NOTIFICATION_INTERVAL           APP_TIMER_TICKS(500) 
+#define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(40)   
+#define DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS    APP_TIMER_TICKS(40)  
+#define KEEP_ALIVE_INTERVAL_TICKS               APP_TIMER_TICKS(180000)
+#define WAKEUP_NOTIFICATION_INTERVAL            APP_TIMER_TICKS(500) 
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
 
@@ -150,6 +151,8 @@ void nrf_csense_handler(nrf_csense_evt_t * p_evt)
  */
 static void csense_start(void)
 {
+
+
     ret_code_t err_code;
 
     static uint16_t touched_counter1 = 0;
@@ -164,6 +167,11 @@ static void csense_start(void)
     nrf_csense_instance_context_set(&m_button2, (void*)&touched_counter2);
     nrf_csense_instance_context_set(&m_button3, (void*)&touched_counter3);
     nrf_csense_instance_context_set(&m_button4, (void*)&touched_counter4);
+
+    m_button1.p_nrf_csense_pad->threshold = saved_parameters_getButton1CSenseThreshold();
+    m_button2.p_nrf_csense_pad->threshold = saved_parameters_getButton2CSenseThreshold();
+    m_button3.p_nrf_csense_pad->threshold = saved_parameters_getButton3CSenseThreshold();
+    m_button4.p_nrf_csense_pad->threshold = saved_parameters_getButton4CSenseThreshold();
 
     err_code = nrf_csense_add(&m_button1);
     APP_ERROR_CHECK(err_code);
@@ -228,6 +236,38 @@ void start_timer_callback()
 
     err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);   
+}
+
+void button1_threshold_received_callback(uint16_t threshold)
+{
+    m_button1.p_nrf_csense_pad->threshold = threshold;
+    NRF_LOG_INFO("Button 1 threshold updated to %d", threshold);
+    saved_parameters_setButton1CSenseThreshold(threshold);
+    display_button1_threshold_label(threshold);
+}
+
+void button2_threshold_received_callback(uint16_t threshold)
+{
+    m_button2.p_nrf_csense_pad->threshold = threshold;
+    NRF_LOG_INFO("Button 2 threshold updated to %d", threshold);
+    saved_parameters_setButton2CSenseThreshold(threshold);
+    display_button2_threshold_label(threshold);
+}
+
+void button3_threshold_received_callback(uint16_t threshold)
+{
+    m_button3.p_nrf_csense_pad->threshold = threshold;
+    NRF_LOG_INFO("Button 3 threshold updated to %d", threshold);
+    saved_parameters_setButton3CSenseThreshold(threshold);
+    display_button3_threshold_label(threshold);
+}
+
+void button4_threshold_received_callback(uint16_t threshold)
+{
+    m_button4.p_nrf_csense_pad->threshold = threshold;
+    NRF_LOG_INFO("Button 4 threshold updated to %d", threshold);
+    saved_parameters_setButton4CSenseThreshold(threshold);
+    display_button4_threshold_label(threshold);
 }
 
 
@@ -657,12 +697,29 @@ int main(void)
         NRF_LOG_INFO("Error Initialing battery service");
     }
 
+    if (button_threshold_service_init() != NRF_SUCCESS)
+    {
+        NRF_LOG_INFO("Error Initialing button threshold service");
+    }
+
+    
+
     ble_weight_sensor_set_tare_callback(weight_sensor_tare);
     ble_weight_sensor_set_calibration_callback(weight_sensor_service_calibration_callback);
     ble_weight_sensor_set_coffee_to_water_ratio_callback(set_coffee_to_water_ratio);
     ble_weight_sensor_set_weigh_mode_callback(set_weigh_mode);
     ble_weight_sensor_set_coffee_weight_callback(set_coffee_weight_callback);
     ble_weight_sensor_set_start_timer_callback(start_timer_callback);
+
+    button_threshold_service_button1_threshold_received_callback(button1_threshold_received_callback);
+    button_threshold_service_button2_threshold_received_callback(button2_threshold_received_callback);
+    button_threshold_service_button3_threshold_received_callback(button3_threshold_received_callback);
+    button_threshold_service_button4_threshold_received_callback(button4_threshold_received_callback);
+
+    display_button1_threshold_label(saved_parameters_getButton1CSenseThreshold());
+    display_button2_threshold_label(saved_parameters_getButton2CSenseThreshold());
+    display_button3_threshold_label(saved_parameters_getButton3CSenseThreshold());
+    display_button4_threshold_label(saved_parameters_getButton4CSenseThreshold());
 
     saved_parameters_setCoffeeToWaterRatioNumerator(1);
     saved_parameters_setCoffeeToWaterRatioDenominator(16);
