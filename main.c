@@ -106,15 +106,14 @@ void nrf_csense_handler(nrf_csense_evt_t * p_evt)
             }
             if (p_evt->p_instance == (&m_button2))
             {
-                start_timer_callback();
+                //start_timer_callback();
                 uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
                 (*btn_cnt)++;
                 NRF_LOG_INFO("Button2 touched %03d times.", (*btn_cnt));
                 display_button2_count_label(*btn_cnt);
             }
             if (p_evt->p_instance == (&m_button3))
-            {
-                weight_sensor_tare();
+            { 
                 uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
                 (*btn_cnt)++;
                 NRF_LOG_INFO("Button3 touched %03d times.", (*btn_cnt));
@@ -122,7 +121,7 @@ void nrf_csense_handler(nrf_csense_evt_t * p_evt)
             }
             if (p_evt->p_instance == (&m_button4))
             {
-                //weight_sensor_tare();
+                weight_sensor_tare();
                 uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
                 (*btn_cnt)++;
                 NRF_LOG_INFO("Button4 touched %03d times.", (*btn_cnt));
@@ -425,14 +424,14 @@ void battery_level_timeout_handler(void * p_context)
 
         if (current > 0)
         {
-            battery_time_status.flags = 0x02;
+            battery_time_status.flags = 0x01;
             battery_time_status.time_uintil_recharged_bytes[0] = ttf_minutes & 0xFF;
             battery_time_status.time_uintil_recharged_bytes[1] = ttf_minutes >> 8 & 0xFF;
             battery_time_status.time_uintil_recharged_bytes[2] = ttf_minutes >> 16 & 0xFF;
         }
         else
         {
-            battery_time_status.flags = 0x02;
+            battery_time_status.flags = 0x00;
         }
 
         battery_service_battery_time_status_update(battery_time_status, BLE_CONN_HANDLE_ALL);
@@ -702,8 +701,6 @@ int main(void)
         NRF_LOG_INFO("Error Initialing button threshold service");
     }
 
-    
-
     ble_weight_sensor_set_tare_callback(weight_sensor_tare);
     ble_weight_sensor_set_calibration_callback(weight_sensor_service_calibration_callback);
     ble_weight_sensor_set_coffee_to_water_ratio_callback(set_coffee_to_water_ratio);
@@ -715,6 +712,11 @@ int main(void)
     button_threshold_service_button2_threshold_received_callback(button2_threshold_received_callback);
     button_threshold_service_button3_threshold_received_callback(button3_threshold_received_callback);
     button_threshold_service_button4_threshold_received_callback(button4_threshold_received_callback);
+
+    //button_threshold_service_button1_threshold_update(saved_parameters_getButton1CSenseThreshold(), BLE_CONN_HANDLE_ALL);
+    button_threshold_service_button2_threshold_update(saved_parameters_getButton2CSenseThreshold(), BLE_CONN_HANDLE_ALL);
+    button_threshold_service_button3_threshold_update(saved_parameters_getButton3CSenseThreshold(), BLE_CONN_HANDLE_ALL);
+    button_threshold_service_button4_threshold_update(saved_parameters_getButton4CSenseThreshold(), BLE_CONN_HANDLE_ALL);
 
     display_button1_threshold_label(saved_parameters_getButton1CSenseThreshold());
     display_button2_threshold_label(saved_parameters_getButton2CSenseThreshold());

@@ -5,8 +5,6 @@
 #include "ble_conn_state.h"
 #include "nrf_log.h"
 
-#define INVALID_BATTERY_LEVEL 255
-
 void (*mButton1ThresholdReceivedCallback)(uint16_t threshold) = NULL;
 void (*mButton2ThresholdReceivedCallback)(uint16_t threshold) = NULL;
 void (*mButton3ThresholdReceivedCallback)(uint16_t threshold) = NULL;
@@ -401,6 +399,9 @@ ret_code_t button_threshold_service_init()
     button_threshold_service_init.support_notification = true;
     button_threshold_service_init.p_report_ref         = NULL;
     button_threshold_service_init.initial_button1_threshold   = 0xffff;
+    button_threshold_service_init.initial_button2_threshold   = 0xffff;
+    button_threshold_service_init.initial_button3_threshold   = 0xffff;
+    button_threshold_service_init.initial_button4_threshold   = 0xffff;
 
     ret_code_t err_code;
     ble_uuid_t ble_uuid;
@@ -477,8 +478,6 @@ static ret_code_t button_threshold_service_battery_notification_send(ble_gatts_h
     return err_code;
 }
 
-
-
 ret_code_t button_threshold_service_button1_threshold_update(uint16_t threshold, uint16_t conn_handle)
 {
     ret_code_t         err_code = NRF_SUCCESS;
@@ -519,6 +518,252 @@ ret_code_t button_threshold_service_button1_threshold_update(uint16_t threshold,
             memset(&hvx_params, 0, sizeof(hvx_params));
 
             hvx_params.handle = m_button_threshold_service.button1_threshold_handles.value_handle;
+            hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+            hvx_params.offset = gatts_value.offset;
+            hvx_params.p_len  = &gatts_value.len;
+            hvx_params.p_data = gatts_value.p_value;
+
+            if (conn_handle == BLE_CONN_HANDLE_ALL)
+            {
+                ble_conn_state_conn_handle_list_t conn_handles = ble_conn_state_conn_handles();
+
+                // Try sending notifications to all valid connection handles.
+                for (uint32_t i = 0; i < conn_handles.len; i++)
+                {
+                    if (ble_conn_state_status(conn_handles.conn_handles[i]) == BLE_CONN_STATUS_CONNECTED)
+                    {
+                        if (err_code == NRF_SUCCESS)
+                        {
+                            err_code = button_threshold_service_battery_notification_send(&hvx_params,
+                                                                 conn_handles.conn_handles[i]);
+                        }
+                        else
+                        {
+                            // Preserve the first non-zero error code
+                            UNUSED_RETURN_VALUE(button_threshold_service_battery_notification_send(&hvx_params,
+                                                                          conn_handles.conn_handles[i]));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                err_code = button_threshold_service_battery_notification_send(&hvx_params, conn_handle);
+            }
+        }
+        else
+        {
+            err_code = NRF_ERROR_INVALID_STATE;
+        }
+    }
+
+    return err_code;
+}
+
+ret_code_t button_threshold_service_button2_threshold_update(uint16_t threshold, uint16_t conn_handle)
+{
+    ret_code_t         err_code = NRF_SUCCESS;
+    ble_gatts_value_t  gatts_value;
+
+    if (threshold != m_button_threshold_service.threshold_last)
+    {
+        // Initialize value struct.
+        memset(&gatts_value, 0, sizeof(gatts_value));
+
+        gatts_value.len     = sizeof(uint16_t);
+        gatts_value.offset  = 0;
+        gatts_value.p_value = (uint8_t*)&threshold;
+
+        // Update database.
+        err_code = sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID,
+                                          m_button_threshold_service.button2_threshold_handles.value_handle,
+                                          &gatts_value);
+        if (err_code == NRF_SUCCESS)
+        {
+            //NRF_LOG_INFO("Battery level has been updated: %d%%", battery_level)
+
+            // Save new battery value.
+            m_button_threshold_service.threshold_last = threshold;
+        }
+        else
+        {
+            NRF_LOG_DEBUG("Error during battery level update: 0x%08X", err_code)
+
+            return err_code;
+        }
+
+        // Send value if connected and notifying.
+        if (m_button_threshold_service.is_notification_supported)
+        {
+            ble_gatts_hvx_params_t hvx_params;
+
+            memset(&hvx_params, 0, sizeof(hvx_params));
+
+            hvx_params.handle = m_button_threshold_service.button2_threshold_handles.value_handle;
+            hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+            hvx_params.offset = gatts_value.offset;
+            hvx_params.p_len  = &gatts_value.len;
+            hvx_params.p_data = gatts_value.p_value;
+
+            if (conn_handle == BLE_CONN_HANDLE_ALL)
+            {
+                ble_conn_state_conn_handle_list_t conn_handles = ble_conn_state_conn_handles();
+
+                // Try sending notifications to all valid connection handles.
+                for (uint32_t i = 0; i < conn_handles.len; i++)
+                {
+                    if (ble_conn_state_status(conn_handles.conn_handles[i]) == BLE_CONN_STATUS_CONNECTED)
+                    {
+                        if (err_code == NRF_SUCCESS)
+                        {
+                            err_code = button_threshold_service_battery_notification_send(&hvx_params,
+                                                                 conn_handles.conn_handles[i]);
+                        }
+                        else
+                        {
+                            // Preserve the first non-zero error code
+                            UNUSED_RETURN_VALUE(button_threshold_service_battery_notification_send(&hvx_params,
+                                                                          conn_handles.conn_handles[i]));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                err_code = button_threshold_service_battery_notification_send(&hvx_params, conn_handle);
+            }
+        }
+        else
+        {
+            err_code = NRF_ERROR_INVALID_STATE;
+        }
+    }
+
+    return err_code;
+}
+
+ret_code_t button_threshold_service_button3_threshold_update(uint16_t threshold, uint16_t conn_handle)
+{
+    ret_code_t         err_code = NRF_SUCCESS;
+    ble_gatts_value_t  gatts_value;
+
+    if (threshold != m_button_threshold_service.threshold_last)
+    {
+        // Initialize value struct.
+        memset(&gatts_value, 0, sizeof(gatts_value));
+
+        gatts_value.len     = sizeof(uint16_t);
+        gatts_value.offset  = 0;
+        gatts_value.p_value = (uint8_t*)&threshold;
+
+        // Update database.
+        err_code = sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID,
+                                          m_button_threshold_service.button3_threshold_handles.value_handle,
+                                          &gatts_value);
+        if (err_code == NRF_SUCCESS)
+        {
+            //NRF_LOG_INFO("Battery level has been updated: %d%%", battery_level)
+
+            // Save new battery value.
+            m_button_threshold_service.threshold_last = threshold;
+        }
+        else
+        {
+            NRF_LOG_DEBUG("Error during battery level update: 0x%08X", err_code)
+
+            return err_code;
+        }
+
+        // Send value if connected and notifying.
+        if (m_button_threshold_service.is_notification_supported)
+        {
+            ble_gatts_hvx_params_t hvx_params;
+
+            memset(&hvx_params, 0, sizeof(hvx_params));
+
+            hvx_params.handle = m_button_threshold_service.button3_threshold_handles.value_handle;
+            hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+            hvx_params.offset = gatts_value.offset;
+            hvx_params.p_len  = &gatts_value.len;
+            hvx_params.p_data = gatts_value.p_value;
+
+            if (conn_handle == BLE_CONN_HANDLE_ALL)
+            {
+                ble_conn_state_conn_handle_list_t conn_handles = ble_conn_state_conn_handles();
+
+                // Try sending notifications to all valid connection handles.
+                for (uint32_t i = 0; i < conn_handles.len; i++)
+                {
+                    if (ble_conn_state_status(conn_handles.conn_handles[i]) == BLE_CONN_STATUS_CONNECTED)
+                    {
+                        if (err_code == NRF_SUCCESS)
+                        {
+                            err_code = button_threshold_service_battery_notification_send(&hvx_params,
+                                                                 conn_handles.conn_handles[i]);
+                        }
+                        else
+                        {
+                            // Preserve the first non-zero error code
+                            UNUSED_RETURN_VALUE(button_threshold_service_battery_notification_send(&hvx_params,
+                                                                          conn_handles.conn_handles[i]));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                err_code = button_threshold_service_battery_notification_send(&hvx_params, conn_handle);
+            }
+        }
+        else
+        {
+            err_code = NRF_ERROR_INVALID_STATE;
+        }
+    }
+
+    return err_code;
+}
+
+ret_code_t button_threshold_service_button4_threshold_update(uint16_t threshold, uint16_t conn_handle)
+{
+    ret_code_t         err_code = NRF_SUCCESS;
+    ble_gatts_value_t  gatts_value;
+
+    if (threshold != m_button_threshold_service.threshold_last)
+    {
+        // Initialize value struct.
+        memset(&gatts_value, 0, sizeof(gatts_value));
+
+        gatts_value.len     = sizeof(uint16_t);
+        gatts_value.offset  = 0;
+        gatts_value.p_value = (uint8_t*)&threshold;
+
+        // Update database.
+        err_code = sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID,
+                                          m_button_threshold_service.button4_threshold_handles.value_handle,
+                                          &gatts_value);
+        if (err_code == NRF_SUCCESS)
+        {
+            //NRF_LOG_INFO("Battery level has been updated: %d%%", battery_level)
+
+            // Save new battery value.
+            m_button_threshold_service.threshold_last = threshold;
+        }
+        else
+        {
+            NRF_LOG_DEBUG("Error during battery level update: 0x%08X", err_code)
+
+            return err_code;
+        }
+
+        // Send value if connected and notifying.
+        if (m_button_threshold_service.is_notification_supported)
+        {
+            ble_gatts_hvx_params_t hvx_params;
+
+            memset(&hvx_params, 0, sizeof(hvx_params));
+
+            hvx_params.handle = m_button_threshold_service.button4_threshold_handles.value_handle;
             hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
             hvx_params.offset = gatts_value.offset;
             hvx_params.p_len  = &gatts_value.len;

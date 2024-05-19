@@ -143,20 +143,11 @@ ret_code_t button_threshold_service_init();
 void button_threshold_service_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
 
 
-/**@brief Function for updating the battery level.
- *
- * @details The application calls this function after having performed a battery measurement.
- *          The battery level characteristic will only be sent to the clients which have
- *          enabled notifications. \ref BLE_CONN_HANDLE_ALL can be used as a connection handle
- *          to send notifications to all connected devices.
- *
- * @param[in]   p_bas          Battery Service structure.
- * @param[in]   battery_level  New battery measurement value (in percent of full capacity).
- * @param[in]   conn_handle    Connection handle.
- *
- * @return      NRF_SUCCESS on success, otherwise an error code.
- */
-ret_code_t button_threshold_service_battery_level_update(uint8_t battery_level, uint16_t conn_handle);
+
+ret_code_t button_threshold_service_button1_threshold_update(uint16_t threshold, uint16_t conn_handle);
+ret_code_t button_threshold_service_button2_threshold_update(uint16_t threshold, uint16_t conn_handle);
+ret_code_t button_threshold_service_button3_threshold_update(uint16_t threshold, uint16_t conn_handle);
+ret_code_t button_threshold_service_button4_threshold_update(uint16_t threshold, uint16_t conn_handle);
 
 
 /**@brief Function for sending the last battery level when bonded client reconnects.

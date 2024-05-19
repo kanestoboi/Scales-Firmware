@@ -10,7 +10,7 @@
 #include "scales_lcd.h"
 #include "lvgl/lvgl.h"
 #include "coffee_beans.h"
-#include "water-drops.h"
+#include "water_droplet.h"
 #include "bluetooth_logo.h"
 
 extern const nrf_lcd_t nrf_lcd_st7735;
@@ -168,7 +168,7 @@ void display_lvgl_init()
     lv_obj_align( coffe_splash_image, LV_ALIGN_TOP_LEFT, 0, 0 );
 
     lv_obj_t * water_drops_image = lv_image_create(lv_screen_active());
-    lv_image_set_src(water_drops_image, &water_drops);
+    lv_image_set_src(water_drops_image, &water_droplet);
     lv_obj_align( water_drops_image, LV_ALIGN_TOP_LEFT, 0, 30 );
 
     bluetooth_logo_image = lv_image_create(lv_screen_active());
@@ -254,7 +254,7 @@ void display_lvgl_init()
     lv_label_set_text( button2ThresholdLabel, "0" );
     
     button3ThresholdLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button3ThresholdLabel, LV_ALIGN_CENTER, 60, 15);
+    lv_obj_align( button3ThresholdLabel, LV_ALIGN_CENTER, 40, 15);
     lv_obj_set_style_text_font(button3ThresholdLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(button3ThresholdLabel, color, 0);
     lv_label_set_text( button3ThresholdLabel, "0" );

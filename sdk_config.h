@@ -7159,7 +7159,7 @@
 #endif
 // <o> NRF_CSENSE_PAD_HYSTERESIS - Minimum value of change required to determine that a pad was touched. 
 #ifndef NRF_CSENSE_PAD_HYSTERESIS
-#define NRF_CSENSE_PAD_HYSTERESIS 15
+#define NRF_CSENSE_PAD_HYSTERESIS 100
 #endif
 
 // <o> NRF_CSENSE_PAD_DEVIATION - Minimum value measured on a pad required to take it into account while calculating the step. 
