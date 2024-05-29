@@ -54,6 +54,9 @@ extern "C" {
                          &_name)
 
 #define BLE_UUID_BATTERY_TIME_STATUS_CHAR                              0x2BEE     /**< Battery Level characteristic UUID. */
+#define BLE_UUID_BATTERY_ENERGY_STATUS_CHAR                            0x2BF0
+
+#define BLE_BATTERY_SERVICE_BATTERY_ENERGY_STATUS_MAX_LENGTH            13U
 
 /**@brief Battery Service event type. */
 typedef enum
@@ -61,6 +64,14 @@ typedef enum
     BATTERY_SERVICE_EVT_NOTIFICATION_ENABLED, /**< Battery value notification enabled event. */
     BATTERY_SERVICE_EVT_NOTIFICATION_DISABLED /**< Battery value notification disabled event. */
 } battery_service_evt_type_t;
+
+/**@brief SFLOAT format (IEEE-11073 16-bit FLOAT, defined as a 16-bit vlue with 12-bit mantissa and
+ *        4-bit exponent. */
+typedef struct
+{
+  int8_t  exponent;                                                         /**< Base 10 exponent, only 4 bits */
+  int16_t mantissa;                                                         /**< Mantissa, only 12 bits */
+} ieee_float16_t;
 
 /**@brief Battery Service event. */
 typedef struct
@@ -95,6 +106,7 @@ struct battery_service_s
     uint16_t                        service_handle;             /**< Handle of Battery Service (as provided by the BLE stack). */
     ble_gatts_char_handles_t        battery_level_handles;      /**< Handles related to the Battery Level characteristic. */
     ble_gatts_char_handles_t        battery_time_status_handles;/**< Handles related to the Battery time status characteristic. */
+    ble_gatts_char_handles_t        battery_energy_status_handles;/**< Handles related to the Battery time status characteristic. */
     uint16_t                        report_ref_handle;          /**< Handle of the Report Reference descriptor. */
     uint8_t                         battery_level_last;         /**< Last Battery Level measurement passed to the Battery Service. */
     bool                            is_notification_supported;  /**< TRUE if notification of Battery Level is supported. */
@@ -108,6 +120,18 @@ typedef struct
     uint8_t time_uintil_recharged_bytes[3];
 } battery_time_status_t;
 
+typedef struct
+{
+    uint8_t flags;
+    ieee_float16_t external_power_source;
+    ieee_float16_t present_voltage;
+    ieee_float16_t available_energy;
+    ieee_float16_t available_battery_charge;
+    ieee_float16_t charge_rate;
+    ieee_float16_t available_energy_at_last_charge;
+} battery_energy_status_t;
+
+ieee_float16_t float32_to_float16(float f);
 
 /**@brief Function for initializing the Battery Service.
  *
@@ -174,7 +198,7 @@ ret_code_t battery_service_battery_lvl_on_reconnection_update(battery_service_t 
 
 ret_code_t battery_service_battery_time_status_update(battery_time_status_t battery_time_status, uint16_t conn_handle);
 
-extern battery_service_t m_battery_service;
+ret_code_t battery_service_battery_energy_status_update(battery_energy_status_t battery_energy_status, uint16_t conn_handle);
 
 #ifdef __cplusplus
 }

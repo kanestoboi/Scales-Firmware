@@ -404,11 +404,17 @@ void battery_level_timeout_handler(void * p_context)
         float current;
         float ttf;
         float tte;
+        float voltage;
+        float external_source_power = 0;
+        float remaining_capacity = 0;
 
         max17260_getStateOfCharge(&max17260Sensor, &soc);
         max17260_getAvgCurrent(&max17260Sensor, &current);
         max17260_getTimeToFull(&max17260Sensor, &ttf);
         max17260_getTimeToEmpty(&max17260Sensor, &tte);
+        max17260_getCellVoltage(&max17260Sensor, &voltage);
+        max17260_getRemainingCapacity(&max17260Sensor, &remaining_capacity);
+
         battery_service_battery_level_update((uint8_t)roundf(soc), BLE_CONN_HANDLE_ALL);
 
         battery_time_status_t battery_time_status;
@@ -428,6 +434,8 @@ void battery_level_timeout_handler(void * p_context)
             battery_time_status.time_uintil_recharged_bytes[0] = ttf_minutes & 0xFF;
             battery_time_status.time_uintil_recharged_bytes[1] = ttf_minutes >> 8 & 0xFF;
             battery_time_status.time_uintil_recharged_bytes[2] = ttf_minutes >> 16 & 0xFF;
+
+            external_source_power = voltage * current;
         }
         else
         {
@@ -435,6 +443,18 @@ void battery_level_timeout_handler(void * p_context)
         }
 
         battery_service_battery_time_status_update(battery_time_status, BLE_CONN_HANDLE_ALL);
+
+        battery_energy_status_t battery_energy_status = {
+            .external_power_source = float32_to_float16(external_source_power),
+            .present_voltage = float32_to_float16(voltage),
+            .available_energy = float32_to_float16(remaining_capacity),
+
+        };
+
+        battery_service_battery_energy_status_update(battery_energy_status, BLE_CONN_HANDLE_ALL);
+
+        NRF_LOG_RAW_INFO("Cell Voltage:%s%d.%01d mA\n" , NRF_LOG_FLOAT_SCALES(voltage) );
+
 
         display_update_battery_label((uint8_t)roundf(soc));
 
@@ -764,7 +784,7 @@ int main(void)
     err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);  
 
-    csense_start();
+    //csense_start();
 
     for (;;)
     {

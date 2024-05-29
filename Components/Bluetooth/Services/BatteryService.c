@@ -7,7 +7,55 @@
 
 #define INVALID_BATTERY_LEVEL 255
 
+
+#define BATTERY_ENERGY_MEASUREMENT_EXTERNAL_POWER_PRESENT_MASK                      0x00
+#define BATTERY_ENERGY_MEASUREMENT_PRESENT_VOLTAGE_PRESENT_MASK                     0x02
+#define BATTERY_ENERGY_MEASUREMENT_AVAILABLE_ENERGY_PRESENT_MASK                    0x04
+#define BATTERY_ENERGY_MEASUREMENT_AVAILABLE_BATTERY_CAPACITY_PRESENT_MASK          0x08
+#define BATTERY_ENERGY_MEASUREMENT_CHARGE_RATE_PRESENT_MASK                         0x16
+#define BATTERY_ENERGY_MEASUREMENT_AVAILABLE_ENERGY_AT_LAST_CHARGE_PRESENT_MASK     0x32
+
 BATTERY_SERVICE_DEF(m_battery_service);
+
+#define DATA_SIZE 2052
+
+static uint8_t battery_energy_measurement_encode(battery_energy_status_t* battery_energy_status, uint8_t* battery_energy_status_encoded_buffer)
+{
+    uint8_t  flags = 0;
+    uint8_t  len   = 1;
+    uint16_t encoded_sfloat;
+
+    // Set measurement units flag
+/*    if (p_bps_meas->blood_pressure_units_in_kpa)
+    {
+        flags |= BPS_MEAS_BLOOD_PRESSURE_UNITS_FLAG_BIT;
+    }
+*/
+    // Blood Pressure Measurement - Systolic
+    encoded_sfloat = ((battery_energy_status->external_power_source.exponent << 12) & 0xF000) |
+                     ((battery_energy_status->external_power_source.mantissa <<  0) & 0x0FFF);
+                     
+    NRF_LOG_INFO("Encoded external_power_source %X", encoded_sfloat);             
+
+    len += uint16_encode(encoded_sfloat, &battery_energy_status_encoded_buffer[len]);
+    
+    encoded_sfloat = ((battery_energy_status->present_voltage.exponent << 12) & 0xF000) |
+                     ((battery_energy_status->present_voltage.mantissa <<  0) & 0x0FFF);
+
+
+    NRF_LOG_INFO("Encoded Voltage exponent %d", battery_energy_status->present_voltage.exponent);
+    NRF_LOG_INFO("Encoded Voltage mantissa %d", battery_energy_status->present_voltage.mantissa);
+
+    NRF_LOG_INFO("Encoded Voltage Present %X", encoded_sfloat);
+
+    len += uint16_encode(encoded_sfloat, &battery_energy_status_encoded_buffer[len]);
+
+    
+    encoded_sfloat = ((battery_energy_status->available_energy.exponent << 12) & 0xF000) |
+                     ((battery_energy_status->available_energy.mantissa <<  0) & 0x0FFF);
+    
+    len += uint16_encode(encoded_sfloat, &battery_energy_status_encoded_buffer[len]);
+}
 
 /**@brief Function for handling the Write event.
  *
@@ -197,6 +245,68 @@ static ret_code_t battery_service_battery_time_status_char_add(const battery_ser
 }
 
 
+/**@brief Function for adding the Battery Level characteristic.
+ *
+ * @param[in]   p_bas        Battery Service structure.
+ * @param[in]   p_bas_init   Information needed to initialize the service.
+ *
+ * @return      NRF_SUCCESS on success, otherwise an error code.
+ */
+static ret_code_t battery_service_battery_energy_status_char_add(const battery_service_init_t * p_battery_service_init)
+{
+    ret_code_t                  err_code;
+    ble_add_char_params_t       add_char_params;
+    ble_add_descr_params_t      add_descr_params;
+    uint8_t                     initial_battery_energy_status_encoded[BLE_BATTERY_SERVICE_BATTERY_ENERGY_STATUS_MAX_LENGTH];
+    uint8_t                     init_len;
+    uint8_t                     encoded_report_ref[BLE_SRV_ENCODED_REPORT_REF_LEN];
+
+    // Add battery level characteristic
+    memset(&initial_battery_energy_status_encoded, 0, sizeof(initial_battery_energy_status_encoded));
+
+    memset(&add_char_params, 0, sizeof(add_char_params));
+    add_char_params.uuid              = BLE_UUID_BATTERY_ENERGY_STATUS_CHAR;
+    add_char_params.max_len           = BLE_BATTERY_SERVICE_BATTERY_ENERGY_STATUS_MAX_LENGTH;
+    add_char_params.init_len          = BLE_BATTERY_SERVICE_BATTERY_ENERGY_STATUS_MAX_LENGTH;
+    add_char_params.p_init_value      = (uint8_t*)initial_battery_energy_status_encoded;
+    add_char_params.char_props.notify = m_battery_service.is_notification_supported;
+    add_char_params.char_props.read   = 1;
+    add_char_params.cccd_write_access = p_battery_service_init->bl_cccd_wr_sec;
+    add_char_params.read_access       = p_battery_service_init->bl_rd_sec;
+
+    err_code = characteristic_add(m_battery_service.service_handle,
+                                  &add_char_params,
+                                  &(m_battery_service.battery_energy_status_handles));
+    if (err_code != NRF_SUCCESS)
+    {
+        return err_code;
+    }
+
+    if (p_battery_service_init->p_report_ref != NULL)
+    {
+        // Add Report Reference descriptor
+        init_len = ble_srv_report_ref_encode(encoded_report_ref, p_battery_service_init->p_report_ref);
+
+        memset(&add_descr_params, 0, sizeof(add_descr_params));
+        add_descr_params.uuid        = BLE_UUID_REPORT_REF_DESCR;
+        add_descr_params.read_access = p_battery_service_init->bl_report_rd_sec;
+        add_descr_params.init_len    = init_len;
+        add_descr_params.max_len     = add_descr_params.init_len;
+        add_descr_params.p_value     = encoded_report_ref;
+
+        err_code = descriptor_add(m_battery_service.battery_energy_status_handles.value_handle,
+                                  &add_descr_params,
+                                  &m_battery_service.report_ref_handle);
+        return err_code;
+    }
+    else
+    {
+        m_battery_service.report_ref_handle = BLE_GATT_HANDLE_INVALID;
+    }
+
+    return NRF_SUCCESS;
+}
+
 ret_code_t battery_service_init()
 {
     // Initialize Battery Service.
@@ -234,7 +344,13 @@ ret_code_t battery_service_init()
         return err_code;
     }
 
-    battery_service_battery_time_status_char_add(&battery_service_init);
+    err_code = battery_service_battery_time_status_char_add(&battery_service_init);
+    if (err_code != NRF_SUCCESS)
+    {
+        return err_code;
+    }
+
+    err_code = battery_service_battery_energy_status_char_add(&battery_service_init);
     if (err_code != NRF_SUCCESS)
     {
         return err_code;
@@ -388,6 +504,86 @@ ret_code_t battery_service_battery_time_status_update(battery_time_status_t batt
         memset(&hvx_params, 0, sizeof(hvx_params));
 
         hvx_params.handle = m_battery_service.battery_time_status_handles.value_handle;
+        hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+        hvx_params.offset = gatts_value.offset;
+        hvx_params.p_len  = &gatts_value.len;
+        hvx_params.p_data = gatts_value.p_value;
+
+        if (conn_handle == BLE_CONN_HANDLE_ALL)
+        {
+            ble_conn_state_conn_handle_list_t conn_handles = ble_conn_state_conn_handles();
+
+            // Try sending notifications to all valid connection handles.
+            for (uint32_t i = 0; i < conn_handles.len; i++)
+            {
+                if (ble_conn_state_status(conn_handles.conn_handles[i]) == BLE_CONN_STATUS_CONNECTED)
+                {
+                    if (err_code == NRF_SUCCESS)
+                    {
+                        err_code = battery_service_battery_notification_send(&hvx_params,
+                                                             conn_handles.conn_handles[i]);
+                    }
+                    else
+                    {
+                        // Preserve the first non-zero error code
+                        UNUSED_RETURN_VALUE(battery_service_battery_notification_send(&hvx_params,
+                                                                      conn_handles.conn_handles[i]));
+                    }
+                }
+            }
+        }
+        else
+        {
+            err_code = battery_service_battery_notification_send(&hvx_params, conn_handle);
+        }
+    }
+    else
+    {
+        err_code = NRF_ERROR_INVALID_STATE;
+    }
+    
+
+    return err_code;
+}
+
+ret_code_t battery_service_battery_energy_status_update(battery_energy_status_t battery_energy_status, uint16_t conn_handle)
+{
+    ret_code_t         err_code = NRF_SUCCESS;
+    ble_gatts_value_t  gatts_value;
+    uint8_t battery_energy_status_encoded_buffer[BLE_BATTERY_SERVICE_BATTERY_ENERGY_STATUS_MAX_LENGTH] = {0};
+
+    // Initialize value struct.
+    memset(&gatts_value, 0, sizeof(gatts_value));
+
+    battery_energy_measurement_encode(&battery_energy_status, battery_energy_status_encoded_buffer);
+
+    gatts_value.len     = BLE_BATTERY_SERVICE_BATTERY_ENERGY_STATUS_MAX_LENGTH;
+    gatts_value.offset  = 0;
+    gatts_value.p_value = battery_energy_status_encoded_buffer;
+
+    // Update database.
+    err_code = sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID,
+                                      m_battery_service.battery_energy_status_handles.value_handle,
+                                      &gatts_value);
+    if (err_code == NRF_SUCCESS)
+    {
+        NRF_LOG_INFO(" battery energy status has been updated:")
+    }
+    else
+    {
+        NRF_LOG_DEBUG("Error during battery energy status update: 0x%08X", err_code)
+
+        return err_code;
+    }
+
+    // Send value if connected and notifying.
+    if (m_battery_service.is_notification_supported)
+    {
+        ble_gatts_hvx_params_t hvx_params;
+
+        memset(&hvx_params, 0, sizeof(hvx_params));
+
+        hvx_params.handle = m_battery_service.battery_energy_status_handles.value_handle;
         hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
         hvx_params.offset = gatts_value.offset;
         hvx_params.p_len  = &gatts_value.len;

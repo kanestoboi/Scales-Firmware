@@ -905,6 +905,10 @@
           <file file_name="Components/WeightSensor/WeightSensor.h" />
         </folder>
       </folder>
+      <folder Name="libraries">
+        <file file_name="libraries/sfloat/sfloat.c" />
+        <file file_name="libraries/sfloat/sfloat.h" />
+      </folder>
       <file file_name="main.c" />
       <file file_name="sdk_config.h" />
     </folder>
