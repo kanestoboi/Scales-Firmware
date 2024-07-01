@@ -2,6 +2,8 @@
 #include "WeightSensor.h"
 #include "nrf_log.h"
 #include "app_timer.h"
+#include "nrf_gpio.h"
+
 
 #include <math.h>
 
@@ -175,6 +177,10 @@ void weight_sensor_init(float scaleFactor)
     ret_code_t err_code = app_timer_create(&m_read_ads123x__timer_id, APP_TIMER_MODE_SINGLE_SHOT, ads123x_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
+    nrf_gpio_cfg_output(4);
+    nrf_gpio_pin_clear(4);
+
+
     ADS123X_Init(&scale, pin_DOUT, pin_SCLK, pin_PWDN, pin_GAIN0, pin_GAIN1, pin_SPEED);
     
     ADS123X_PowerOff(&scale);
@@ -226,10 +232,12 @@ float weight_sensor_get_weight_filtered()
 
 float weight_sensor_read_weight()
 {
+    nrf_gpio_pin_clear(4);
     ADS123X_PowerOn(&scale);
     float readValue;
     ADS123X_getUnits(&scale, &readValue, 10); 
     ADS123X_PowerOff(&scale); 
+    nrf_gpio_pin_set(4);
 
     return readValue;
 }
@@ -238,10 +246,12 @@ void weight_sensor_sleep()
 {
     stop_read_ads123x_timer();
     ADS123X_PowerOff(&scale);
+    nrf_gpio_pin_set(4);
 }
 
 void weight_sensor_wakeup()
 {
+    nrf_gpio_pin_clear(4);
     ADS123X_PowerOn(&scale);
     start_read_ads123x_timer();
 }

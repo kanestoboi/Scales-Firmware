@@ -18,8 +18,6 @@ void bluetooth_update_battery_level(uint8_t batteryLevel);
 void bluetooth_register_connected_callback(ConnectedCallbackFunctionPointer func);
 void bluetooth_register_disconnected_callback(ConnectedCallbackFunctionPointer func);
 
-extern void bluetooth_advertising_timeout_callback();
-
 bool bluetooth_is_connected();
 
 #ifdef __cplusplus

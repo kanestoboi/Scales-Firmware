@@ -420,13 +420,13 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
         case BLE_ADV_EVT_FAST:
             NRF_LOG_INFO("Fast advertising.");
             err_code = nrf_buddy_led_indication(NRF_BUDDY_INDICATE_ADVERTISING);
-            //APP_ERROR_CHECK(err_code);
+            APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_ADV_EVT_IDLE:
             NRF_LOG_INFO("Advertiving is now Idle");
             NRF_LOG_FLUSH();
-            bluetooth_advertising_timeout_callback();
+            err_code = nrf_buddy_led_indication(NRF_BUDDY_INDICATE_IDLE);
             break;
 
         default:
@@ -630,6 +630,7 @@ void bluetooth_advertising_start(bool erase_bonds)
 void bluetooth_advertising_stop()
 {
     ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_IDLE);
+    sd_ble_gap_adv_stop(m_advertising.adv_handle);
 }
 
 // Function to register other functions.

@@ -43,8 +43,8 @@ APP_TIMER_DEF(m_battery_level_timer_id);
 
 #define BUTTON1                  6
 #define BUTTON2                  1
-#define BUTTON3                  0
-#define BUTTON4                  4
+#define BUTTON3                  2
+#define BUTTON4                  28
 
 #define TOUCHPAD1_THRESHOLD_1   900
 #define TOUCHPAD1_THRESHOLD_2   600
@@ -314,6 +314,7 @@ static void read_weight_timeout_handler(void * p_context)
     }
 
     display_update_weight_label(scaleValue);
+    //NRF_LOG_RAW_INFO("weight:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(scaleValue) );
 
     ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
@@ -369,14 +370,18 @@ static void wakeup_timeout_handler(void * p_context)
         APP_ERROR_CHECK(err_code);
 
         NRF_LOG_INFO("WAKING.");
+        NRF_LOG_FLUSH();
 
         wakeup_from_sleep();
     }
-    else{
+    else
+    {
         NRF_LOG_INFO("DIDN'T MEET WAKE THRESHOLD.");
+        NRF_LOG_FLUSH();
+        weight_sensor_sleep();
         err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
         APP_ERROR_CHECK(err_code);
-        m_last_wakeup_value = roundedValue;
+        m_last_wakeup_value = roundedValue; 
     } 
 }
 
@@ -638,14 +643,19 @@ void prepare_to_sleep()
     err_code = app_timer_stop(m_battery_level_timer_id);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
-
     weight_sensor_sleep();
 
     twi_master_uninit();
 
     display_sleep();
+
+    err_code = app_timer_stop(m_elapsed_time_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    bluetooth_advertising_stop();
+
+    err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
 }
 
 void wakeup_from_sleep()
@@ -698,9 +708,9 @@ int main(void)
     timers_init();                      // Initialise nRF5 timers library
     nrf_buddy_leds_init();              // initialise nRF52 buddy leds library
     power_management_init();            // initialise the nRF5 power management library
+    bluetooth_init();
     display_init();
 
-    bluetooth_init();
     if (ble_weight_sensor_service_init() != NRF_SUCCESS)
     {
         NRF_LOG_INFO("Error Initialing weight sensor service");
@@ -791,8 +801,3 @@ int main(void)
         bluetooth_idle_state_handle();
     }
 }
-
-float map(int32_t value, int32_t low1, int32_t high1, int32_t low2, int32_t high2) {
-    return low2 + ((float)(high2 - low2) * (value - low1) / (high1 - low1));
-}
-
