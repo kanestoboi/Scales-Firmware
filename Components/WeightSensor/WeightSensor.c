@@ -33,8 +33,6 @@ APP_TIMER_DEF(m_read_ads123x__timer_id);
 #define ADS123X_TIMER_INTERVAL_MS              12   // 12ms
 #define ADS123X_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(ADS123X_TIMER_INTERVAL_MS)
 
-
-
 static void start_read_ads123x_timer()
 {
     ret_code_t err_code = app_timer_start(m_read_ads123x__timer_id, ADS123X_TIMER_INTERVAL_MS, NULL);

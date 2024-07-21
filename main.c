@@ -86,6 +86,7 @@ void start_timer_callback();
 void prepare_to_sleep();
 void wakeup_from_sleep();
 
+
 /**
  * @brief Event handler for Capacitive Sensor High module.
  *
@@ -678,6 +679,8 @@ void wakeup_from_sleep()
     weight_sensor_tare();
 
     start_weight_sensor_timers();
+
+    bluetooth_advertising_start(false);
 
     ret_code_t err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
