@@ -38,22 +38,8 @@ APP_TIMER_DEF(m_elapsed_time_timer_id);
 APP_TIMER_DEF(m_battery_level_timer_id);
 
 /* Time between RTC interrupts. */
-#define APP_TIMER_TICKS_TIMEOUT APP_TIMER_TICKS(50)
+#define APP_TIMER_TICKS_TIMEOUT APP_TIMER_TICKS(100)
 
-#define BUTTON1                  6
-#define BUTTON2                  1
-#define BUTTON3                  2
-#define BUTTON4                  28
-
-#define TOUCHPAD1_THRESHOLD_1   900
-#define TOUCHPAD1_THRESHOLD_2   600
-#define TOUCHPAD1_THRESHOLD_3   900
-#define TOUCHPAD1_THRESHOLD_4   900
-
-NRF_CSENSE_BUTTON_DEF(m_button1, (BUTTON1, TOUCHPAD1_THRESHOLD_1));
-NRF_CSENSE_BUTTON_DEF(m_button2, (BUTTON2, TOUCHPAD1_THRESHOLD_2));
-NRF_CSENSE_BUTTON_DEF(m_button3, (BUTTON3, TOUCHPAD1_THRESHOLD_3));
-NRF_CSENSE_BUTTON_DEF(m_button4, (BUTTON4, TOUCHPAD1_THRESHOLD_4));
 
 uint32_t currentElapsedTime = 0;
 

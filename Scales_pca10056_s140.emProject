@@ -979,8 +979,6 @@
       <file file_name="../nRF5_SDK_current/components/libraries/atomic_flags/nrf_atflags.c" />
       <file file_name="../nRF5_SDK_current/components/libraries/atomic/nrf_atomic.c" />
       <file file_name="../nRF5_SDK_current/components/libraries/balloc/nrf_balloc.c" />
-      <file file_name="../nRF5_SDK_Current/components/libraries/csense/nrf_csense.c" />
-      <file file_name="../nRF5_SDK_Current/components/libraries/csense_drv/nrf_drv_csense.c" />
       <file file_name="../nRF5_SDK_current/external/fprintf/nrf_fprintf.c" />
       <file file_name="../nRF5_SDK_current/external/fprintf/nrf_fprintf_format.c" />
       <file file_name="../nRF5_SDK_current/components/libraries/fstorage/nrf_fstorage.c" />
