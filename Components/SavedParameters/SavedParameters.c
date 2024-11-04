@@ -50,10 +50,6 @@ static SavedParameters_t mSavedParameters =
     .coffee_to_water_ratio_numerator = 1,
     .coffee_to_water_ratio_denominator = 16,
     .weighMode = 0,
-    .button1_csense_threshold = 400,
-    .button2_csense_threshold = 400,
-    .button3_csense_threshold = 400,
-    .button4_csense_threshold = 400,
 };
 
 /* A record containing dummy configuration data. */

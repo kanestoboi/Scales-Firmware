@@ -17,7 +17,6 @@
 #include "nrf_log_default_backends.h"
 #include "nrfx_twi.h"
 #include "nrf_delay.h"
-#include "nrf_csense.h"
 
 #include "Components/LCD/scales_lcd.h"
 
@@ -87,105 +86,6 @@ void prepare_to_sleep();
 void wakeup_from_sleep();
 
 
-/**
- * @brief Event handler for Capacitive Sensor High module.
- *
- * @param [in] p_evt_type                    Pointer to event data structure.
- */
-void nrf_csense_handler(nrf_csense_evt_t * p_evt)
-{
-    switch (p_evt->nrf_csense_evt_type)
-    {
-        case NRF_CSENSE_BTN_EVT_PRESSED:
-            if (p_evt->p_instance == (&m_button1))
-            {
-                uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
-                (*btn_cnt)++;
-                NRF_LOG_INFO("Button1 touched %03d times.", (*btn_cnt));
-                display_button1_count_label(*btn_cnt);
-                
-            }
-            if (p_evt->p_instance == (&m_button2))
-            {
-                //start_timer_callback();
-                uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
-                (*btn_cnt)++;
-                NRF_LOG_INFO("Button2 touched %03d times.", (*btn_cnt));
-                display_button2_count_label(*btn_cnt);
-            }
-            if (p_evt->p_instance == (&m_button3))
-            { 
-                uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
-                (*btn_cnt)++;
-                NRF_LOG_INFO("Button3 touched %03d times.", (*btn_cnt));
-                display_button3_count_label(*btn_cnt);
-            }
-            if (p_evt->p_instance == (&m_button4))
-            {
-                weight_sensor_tare();
-                uint16_t * btn_cnt = ((uint16_t *)p_evt->p_instance->p_context);
-                (*btn_cnt)++;
-                NRF_LOG_INFO("Button4 touched %03d times.", (*btn_cnt));
-                display_button4_count_label(*btn_cnt);
-            }
-            break;
-        case NRF_CSENSE_BTN_EVT_RELEASED:
-            break;
-        case NRF_CSENSE_SLIDER_EVT_PRESSED:
-        break;
-        case NRF_CSENSE_SLIDER_EVT_RELEASED:
-            break;
-        case NRF_CSENSE_SLIDER_EVT_DRAGGED:
-            break;
-        default:
-            NRF_LOG_WARNING("Unknown event.");
-            break;
-    }
-}
-
-
-/**
- * @brief Function for starting Capacitive Sensor High module.
- *
- * Function enables one slider and one button.
- */
-static void csense_start(void)
-{
-
-
-    ret_code_t err_code;
-
-    static uint16_t touched_counter1 = 0;
-    static uint16_t touched_counter2 = 0;
-    static uint16_t touched_counter3 = 0;
-    static uint16_t touched_counter4 = 0;
-
-    err_code = nrf_csense_init(nrf_csense_handler, APP_TIMER_TICKS_TIMEOUT);
-    APP_ERROR_CHECK(err_code);
-
-    nrf_csense_instance_context_set(&m_button1, (void*)&touched_counter1);
-    nrf_csense_instance_context_set(&m_button2, (void*)&touched_counter2);
-    nrf_csense_instance_context_set(&m_button3, (void*)&touched_counter3);
-    nrf_csense_instance_context_set(&m_button4, (void*)&touched_counter4);
-
-    m_button1.p_nrf_csense_pad->threshold = saved_parameters_getButton1CSenseThreshold();
-    m_button2.p_nrf_csense_pad->threshold = saved_parameters_getButton2CSenseThreshold();
-    m_button3.p_nrf_csense_pad->threshold = saved_parameters_getButton3CSenseThreshold();
-    m_button4.p_nrf_csense_pad->threshold = saved_parameters_getButton4CSenseThreshold();
-
-    err_code = nrf_csense_add(&m_button1);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = nrf_csense_add(&m_button2);
-    //APP_ERROR_CHECK(err_code);
-
-    err_code = nrf_csense_add(&m_button3);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = nrf_csense_add(&m_button4);
-    APP_ERROR_CHECK(err_code);
-}
-
 static void calibration_complete_callback(float scaleFactor)
 {
     NRF_LOG_INFO("calibration_complete_callback entered.");
@@ -237,39 +137,6 @@ void start_timer_callback()
     err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);   
 }
-
-void button1_threshold_received_callback(uint16_t threshold)
-{
-    m_button1.p_nrf_csense_pad->threshold = threshold;
-    NRF_LOG_INFO("Button 1 threshold updated to %d", threshold);
-    saved_parameters_setButton1CSenseThreshold(threshold);
-    display_button1_threshold_label(threshold);
-}
-
-void button2_threshold_received_callback(uint16_t threshold)
-{
-    m_button2.p_nrf_csense_pad->threshold = threshold;
-    NRF_LOG_INFO("Button 2 threshold updated to %d", threshold);
-    saved_parameters_setButton2CSenseThreshold(threshold);
-    display_button2_threshold_label(threshold);
-}
-
-void button3_threshold_received_callback(uint16_t threshold)
-{
-    m_button3.p_nrf_csense_pad->threshold = threshold;
-    NRF_LOG_INFO("Button 3 threshold updated to %d", threshold);
-    saved_parameters_setButton3CSenseThreshold(threshold);
-    display_button3_threshold_label(threshold);
-}
-
-void button4_threshold_received_callback(uint16_t threshold)
-{
-    m_button4.p_nrf_csense_pad->threshold = threshold;
-    NRF_LOG_INFO("Button 4 threshold updated to %d", threshold);
-    saved_parameters_setButton4CSenseThreshold(threshold);
-    display_button4_threshold_label(threshold);
-}
-
 
 void enable_write_to_weight_characteristic()
 {
@@ -741,21 +608,6 @@ int main(void)
     ble_weight_sensor_set_coffee_weight_callback(set_coffee_weight_callback);
     ble_weight_sensor_set_start_timer_callback(start_timer_callback);
 
-    button_threshold_service_button1_threshold_received_callback(button1_threshold_received_callback);
-    button_threshold_service_button2_threshold_received_callback(button2_threshold_received_callback);
-    button_threshold_service_button3_threshold_received_callback(button3_threshold_received_callback);
-    button_threshold_service_button4_threshold_received_callback(button4_threshold_received_callback);
-
-    //button_threshold_service_button1_threshold_update(saved_parameters_getButton1CSenseThreshold(), BLE_CONN_HANDLE_ALL);
-    button_threshold_service_button2_threshold_update(saved_parameters_getButton2CSenseThreshold(), BLE_CONN_HANDLE_ALL);
-    button_threshold_service_button3_threshold_update(saved_parameters_getButton3CSenseThreshold(), BLE_CONN_HANDLE_ALL);
-    button_threshold_service_button4_threshold_update(saved_parameters_getButton4CSenseThreshold(), BLE_CONN_HANDLE_ALL);
-
-    display_button1_threshold_label(saved_parameters_getButton1CSenseThreshold());
-    display_button2_threshold_label(saved_parameters_getButton2CSenseThreshold());
-    display_button3_threshold_label(saved_parameters_getButton3CSenseThreshold());
-    display_button4_threshold_label(saved_parameters_getButton4CSenseThreshold());
-
     saved_parameters_setCoffeeToWaterRatioNumerator(1);
     saved_parameters_setCoffeeToWaterRatioDenominator(16);
 
@@ -793,11 +645,6 @@ int main(void)
     NRF_LOG_FLUSH();
 
     start_weight_sensor_timers(); 
-    
-    err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);  
-
-    //csense_start();
 
     for (;;)
     {
