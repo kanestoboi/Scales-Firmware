@@ -400,55 +400,6 @@ static void power_management_init(void)
     APP_ERROR_CHECK(err_code);
 }
 
-//Event Handler for TWI events
-void twi_handler(nrfx_twi_evt_t const * p_event, void * p_context)
-{
-    //Check the event to see what type of event occurred
-    switch (p_event->type)
-    {
-              //If data transmission or receiving is finished
-      	case NRFX_TWI_EVT_DONE:
-            switch (p_event->xfer_desc.address)
-            {
-                case MAX17260_ADDRESS:
-                    max17260Sensor.mTransferDone = true;
-                    break;
-
-                default:
-                    // do nothing
-                    break;
-            }
-            break;
-
-        case NRFX_TWI_EVT_ADDRESS_NACK:
-           switch (p_event->xfer_desc.address)
-            {
-                case MAX17260_ADDRESS:
-                    max17260Sensor.mTransferDone = true;
-                    break;
-
-                default:
-                    // do nothing
-                    break;
-            }
-            break;
-
-        case NRFX_TWI_EVT_DATA_NACK:
-            switch (p_event->xfer_desc.address)
-            {
-                 case MAX17260_ADDRESS:
-                    max17260Sensor.mTransferDone = true;
-                    break;
-
-                default:
-                    // do nothing
-                    break;
-            }
-            break;
-    }
-
-    NRF_LOG_FLUSH();
-}
 
 //Initialize the TWI as Master device
 void twi_master_init(void)
@@ -465,7 +416,7 @@ void twi_master_init(void)
     };
 
     //A function to initialize the twi communication
-    err_code = nrfx_twi_init(&m_twi, &twi_config, twi_handler, NULL);
+    err_code = nrfx_twi_init(&m_twi, &twi_config, NULL, NULL);
     APP_ERROR_CHECK(err_code);
     
     //Enable the TWI Communication
