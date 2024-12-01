@@ -622,6 +622,9 @@ int main(void)
         NRF_LOG_INFO("MAX17260 not found");
     }
 
+    
+    //iqs227d_init(&touchSensor4, &m_twi_secondary);
+
     NRF_LOG_FLUSH();
 
     weight_sensor_wakeup();
