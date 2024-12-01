@@ -1,6 +1,24 @@
 #ifndef SCALES_LCD_H__
 #define SCALES_LCD_H__
 
+#include "lvgl/lvgl.h"
+
+typedef struct Scales_Display_t
+{
+    const uint8_t dc_pin;
+    const uint8_t rst_pin;
+    const uint8_t en_pin;
+    const uint8_t backlight_pin;
+
+    const uint16_t height;
+    const uint16_t width;
+
+    const uint16_t x_start_offset;
+    const uint16_t y_start_offset;
+
+} Scales_Display_t;
+
+
 void display_init();
 
 void screen_clear(void);

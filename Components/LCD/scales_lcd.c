@@ -83,7 +83,6 @@ void flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
     uint16_t length = ((area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1))*2;
     lv_draw_sw_rgb565_swap(px_map, length/2);
     
-    //p_lcd->lcd_display(0, 0xFFFF, area->x1, area->y1, area->x2, area->y2);
     p_lcd->lcd_display(px_map, length, area->x1, area->y1, area->x2, area->y2);
     // IMPORTANT!!!
     // Inform LVGL that you are ready with the flushing and buf is not used anymore
@@ -116,9 +115,7 @@ void display_init()
 
     display_lvgl_init();
 
-    start_lvgl_timer();
-
-    display_turn_backlight_on();
+    display_sleep();
 }
 
 void display_driver_init()
@@ -128,7 +125,9 @@ void display_driver_init()
     nrf_gpio_cfg_output(ST7789_RST_PIN);
     nrf_gpio_cfg_output(ST7789_BACKLIGHT_PIN);
 
-    //display_power_display_on();
+    display_turn_backlight_off();
+
+    display_power_display_on();
     nrf_delay_ms(10);
     display_reset();
 
@@ -207,8 +206,6 @@ void display_lvgl_init()
     lv_obj_set_style_text_font(waterWeightLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(waterWeightLabel, color, 0);
     lv_label_set_text( waterWeightLabel, "0.0" );
-
-
 
     button1CountLabel = lv_label_create( lv_scr_act() );
     lv_obj_align( button1CountLabel, LV_ALIGN_LEFT_MID, 0, -10);
@@ -448,12 +445,13 @@ void display_sleep()
 
 void display_wakeup()
 {
-    display_turn_backlight_on();
     display_power_display_on();
     lv_obj_clean(lv_scr_act());
     display_lvgl_init();
     display_driver_init();
     start_lvgl_timer();
+    lvgl_timeout_handler(NULL);
+    display_turn_backlight_on();
 }
 
 void display_reset()
