@@ -75,6 +75,12 @@
             <file file_name="Components/FuelGauge/MAX17260/max17260.h" />
           </folder>
         </folder>
+        <folder
+          Name="IQS227D"
+          exclude=""
+          filter="*.*"
+          path="Components/IQS227D"
+          recurse="No" />
         <folder Name="LCD">
           <folder Name="lvgl">
             <folder Name="src">
@@ -866,8 +872,8 @@
                   <file file_name="Components/LCD/lvgl/src/widgets/win/lv_win.c" />
                   <file file_name="Components/LCD/lvgl/src/widgets/win/lv_win.h" />
                 </folder>
+                <file file_name="Components/LCD/lvgl/src/lv_api_map.h" />
               </folder>
-              <file file_name="Components/LCD/lvgl/src/lv_api_map.h" />
               <file file_name="Components/LCD/lvgl/src/lv_conf_internal.h" />
               <file file_name="Components/LCD/lvgl/src/lv_conf_kconfig.h" />
               <file file_name="Components/LCD/lvgl/src/lv_init.c" />
