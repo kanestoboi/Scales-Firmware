@@ -111,8 +111,6 @@
 typedef struct MAX17260 
 {
   const nrfx_twi_t *mHandle;
-
-  bool mTransferDone;
   bool initialised;
 } MAX17260;
 

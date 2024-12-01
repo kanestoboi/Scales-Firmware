@@ -15,7 +15,6 @@ float VEmpty = 2.9;     // 2.9V
 bool max17260_init(MAX17260 *sensor, const nrfx_twi_t *m_twi)
 {   
     sensor->mHandle = m_twi;
-    sensor->mTransferDone = false;
     sensor->initialised = false;
 
     uint16_t statusRegisterValue;
@@ -81,9 +80,6 @@ bool max17260_register_write(MAX17260 *sensor, uint8_t register_address, uint8_t
     tx_buf[0] = register_address;
     tx_buf[1] = value;
 
-    //Set the flag to false to show the transmission is not yet completed
-    sensor->mTransferDone = false;
-    
     //Transmit the data over TWI Bus
     err_code = nrfx_twi_tx(sensor->mHandle, MAX17260_ADDRESS, tx_buf, MAX17260_ADDRESS_LEN+1, false);
     APP_ERROR_CHECK(err_code);
@@ -93,11 +89,6 @@ bool max17260_register_write(MAX17260 *sensor, uint8_t register_address, uint8_t
     {
         return false;
     }
-    
-    //Wait until the transmission of the data is finished
-    while (sensor->mTransferDone == false) {}
-
-    
     
     return true;	
 }
@@ -111,26 +102,17 @@ bool max17260_register_write16(MAX17260 *sensor, uint8_t register_address, uint1
     tx_buf[0] = register_address;
     tx_buf[1] = (uint8_t)(value & 0xFF);
     tx_buf[2] = (uint8_t)(value >> 8);
-
-
-    //Set the flag to false to show the transmission is not yet completed
-    sensor->mTransferDone = false;
     
     //Transmit the data over TWI Bus
     err_code = nrfx_twi_tx(sensor->mHandle, MAX17260_ADDRESS, tx_buf, MAX17260_ADDRESS_LEN+2, false);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     // if there is no error then return true else return false
     if (NRF_SUCCESS != err_code)
     {
         return false;
     }
-    
-    //Wait until the transmission of the data is finished
-    while (sensor->mTransferDone == false) {}
 
-    
-    
     return true;	
 }
 
@@ -139,25 +121,17 @@ bool max17260_register_read(MAX17260 *sensor, uint8_t register_address, uint8_t 
 {
     ret_code_t err_code;
 
-    //Set the flag to false to show the receiving is not yet completed
-    sensor->mTransferDone = false;
-    
     // Send the Register address where we want to write the data
     err_code = nrfx_twi_tx(sensor->mHandle, MAX17260_ADDRESS, &register_address, 1, true);
     APP_ERROR_CHECK(err_code);
 
     //Wait for the transmission to get completed
-    //while (sensor->mTransferDone == false){}
-    
+
     while(nrfx_twi_is_busy(sensor->mHandle)){}
-
-
-    //set the flag again so that we can read data from the MAX17260's internal register
-    sensor->mTransferDone = false;
 	  
     // Receive the data from the MAX17260
     err_code = nrfx_twi_rx(sensor->mHandle, MAX17260_ADDRESS, destination, number_of_bytes);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 
     if (err_code != NRF_SUCCESS) {
         // Handle the error here
@@ -165,9 +139,6 @@ bool max17260_register_read(MAX17260 *sensor, uint8_t register_address, uint8_t 
         // NRF_LOG_INFO("Error code: %d\n", err_code);
         return false;
     }
-
-    //wait until the transmission is completed
-    while (sensor->mTransferDone == false){}
 	
     // if data was successfully read, return true else return false
     if (NRF_SUCCESS != err_code)
