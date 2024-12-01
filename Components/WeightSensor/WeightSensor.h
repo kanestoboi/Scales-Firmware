@@ -17,6 +17,12 @@ typedef enum
     VERIFY_CALIBRATION,
 } weight_sensor_state_t;
 
+typedef enum  
+{
+    NOT_SENSING,
+    SENSING_WEIGHT_CHANGE
+} weight_sensor_sense_state_t;
+
 void weight_sensor_init(float scaleFactor);
 float weight_sensor_get_weight();
 float weight_sensor_get_weight_filtered();
@@ -27,5 +33,7 @@ void weight_sensor_sleep();
 void weight_sensor_wakeup();
 
 float weight_sensor_read_weight();
+
+void weight_sensor_enable_weight_change_sense(void (*weightSenseTriggeredCallback)(void));
 
 #endif

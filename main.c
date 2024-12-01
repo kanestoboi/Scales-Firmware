@@ -46,11 +46,28 @@ APP_TIMER_DEF(m_battery_level_timer_id);
 uint32_t currentElapsedTime = 0;
 
 //Initializing TWI0 instance
-#define TWI_INSTANCE_ID     0
+#define TWI_INSTANCE_ID                 0
+#define TWI_SECONDARY_INSTANCE_ID       1
 
 //I2C Pins Settings, you change them to any other pins
 #define TWI_SCL_M           6         //I2C SCL Pin
 #define TWI_SDA_M           8        //I2C SDA Pin
+
+#define SPI3_DC_PIN 40
+#define SPI3_SCK_PIN 12
+#define SPI3_MISO_PIN 14
+#define SPI3_MOSI_PIN 14
+#define ST7789_SS_PIN 11
+#define ST7789_RST_PIN 16
+#define ST7789_EN_PIN 41
+#define ST7789_BACKLIGHT_PIN 7;
+
+// Create a Handle for the twi communication
+const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
+const nrfx_twi_t m_twi_secondary = NRFX_TWI_INSTANCE(TWI_SECONDARY_INSTANCE_ID);
+
+//#define ST7789_SPI_INSTANCE 3
+//static const nrfx_spim_t spi = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< SPI instance. */
 
 #define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(40)   
 #define DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS    APP_TIMER_TICKS(40)  
@@ -88,6 +105,13 @@ IQS227D  touchSensor4 =    {
                             .poutChangedFcn = touchSensor4POutChanged,
                            };
 
+
+Scales_Display_t display1 = {
+    .dc_pin = 40,
+    .rst_pin = 16,
+    .en_pin = 41,
+    .backlight_pin = 7,
+};
 
 bool writeToWeightCharacteristic = false;
 
@@ -467,6 +491,28 @@ void twi_master_init(void)
 }
 
 //Initialize the TWI as Master device
+void twi_master_secondary_init(void)
+{
+    ret_code_t err_code;
+
+    // Configure the settings for twi communication
+    const nrfx_twi_config_t twi_config = {
+       .scl                = 17,  //SCL Pin
+       .sda                = 19,  //SDA Pin
+       .frequency          = NRF_TWI_FREQ_400K, //Communication Speed
+       .interrupt_priority = APP_IRQ_PRIORITY_HIGH, //Interrupt Priority(Note: if using Bluetooth then select priority carefully)
+       .hold_bus_uninit     = true, //automatically clear bus
+    };
+
+    //A function to initialize the twi communication
+    err_code = nrfx_twi_init(&m_twi_secondary, &twi_config, NULL, NULL);
+    APP_ERROR_CHECK(err_code);
+    
+    //Enable the TWI Communication
+    nrfx_twi_enable(&m_twi_secondary);
+}
+
+//Initialize the TWI as Master device
 void twi_master_uninit(void)
 {
     ret_code_t err_code;
@@ -480,6 +526,26 @@ void twi_master_uninit(void)
     nrf_gpio_cfg_default(TWI_SCL_M);
     nrf_gpio_cfg_default(TWI_SDA_M);
 }
+
+/*
+static ret_code_t spi3_master_init()
+{
+    ret_code_t err_code;
+
+    nrf_gpio_cfg_output(SPI3_DC_PIN);
+
+    nrfx_spim_config_t spi_config = NRFX_SPIM_DEFAULT_CONFIG;
+
+    spi_config.sck_pin  = SPI3_MISO_PIN;
+    spi_config.miso_pin = SPI3_MISO_PIN;
+    spi_config.mosi_pin = SPI3_MOSI_PIN;
+    spi_config.ss_pin   = SPI3_DC_PIN;
+    spi_config.frequency = SPIM_FREQUENCY_FREQUENCY_M32;
+
+    err_code = nrfx_spim_init(&spi, &spi_config, NULL, NULL);
+    return err_code;
+}
+*/
 
 void prepare_to_sleep()
 {
@@ -539,7 +605,7 @@ try.
  */
 int main(void)
 {
-    bool erase_bonds;
+    bool erase_bonds = false;
 
     ret_code_t err_code;
 
@@ -555,6 +621,7 @@ int main(void)
     NRF_LOG_FLUSH();
 
     twi_master_init();                  // initialize nRF5 the twi library 
+    //twi_master_secondary_init();
     timers_init();                      // Initialise nRF5 timers library
     nrf_buddy_leds_init();              // initialise nRF52 buddy leds library
     power_management_init();            // initialise the nRF5 power management library
