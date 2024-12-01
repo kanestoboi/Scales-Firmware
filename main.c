@@ -111,7 +111,26 @@ void set_coffee_weight_callback()
     ble_weight_sensor_service_water_weight_update(waterWeight);
     display_update_water_weight_label(waterWeight);
     NRF_LOG_INFO("set_coffee_weight_callback - exit");
-}      
+}
+
+void begin_timer_on_weight_change()
+{
+    ret_code_t err_code = app_timer_stop(m_elapsed_time_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    ble_elapsed_time_t elapsed_time = 
+    {
+        .flags = 0b00000001, // Time value is counter
+        .elapsed_time_lsb = 0 & 0xFF,
+        .elapsed_time_5sb = 0 >> 8 & 0xFF
+    };
+
+    ble_elapsed_time_service_elapsed_time_update(elapsed_time);
+
+    display_update_timer_label(0);
+
+    weight_sensor_enable_weight_change_sense(start_timer_callback);
+}
 
 void start_timer_callback()
 {
@@ -140,9 +159,6 @@ void start_weight_sensor_timers()
 {    
     ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
-
-    //err_code = app_timer_start(m_display_timer_id, DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS, NULL);
-    //APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
@@ -359,7 +375,7 @@ static void timers_init(void)
  *
  * @note This function will not return.
  */
-void bluetooth_advertising_timeout_callback(void)
+void system_off(void)
 {
     ret_code_t err_code;
 
@@ -543,7 +559,7 @@ int main(void)
     ble_weight_sensor_set_coffee_to_water_ratio_callback(set_coffee_to_water_ratio);
     ble_weight_sensor_set_weigh_mode_callback(set_weigh_mode);
     ble_weight_sensor_set_coffee_weight_callback(set_coffee_weight_callback);
-    ble_weight_sensor_set_start_timer_callback(start_timer_callback);
+    ble_weight_sensor_set_start_timer_callback(begin_timer_on_weight_change);
 
     saved_parameters_setCoffeeToWaterRatioNumerator(1);
     saved_parameters_setCoffeeToWaterRatioDenominator(16);

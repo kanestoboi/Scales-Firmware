@@ -12,12 +12,15 @@ ADS123X scale;
 float mScaleValue;
 float mFilteredScaleValue = 0;
 float mRoundedValue;
+float mSenseThresholdValue = 0.0;
+
 int32_t mTaringSum = 0;
 int32_t mTaringReadCount = 0;
 int32_t mCalibrationSum = 0;
 int32_t mCalibrationReadCount = 0;
 
 weight_sensor_state_t mWeightSensorCurrentState = NORMAL;
+weight_sensor_sense_state_t mWeightSensorSenseState = NOT_SENSING;
 
 const uint8_t pin_DOUT = 33;
 const uint8_t pin_SCLK = 35;
@@ -25,8 +28,10 @@ const uint8_t pin_PWDN = 37;
 const uint8_t pin_GAIN0 = 36;
 const uint8_t pin_GAIN1 = 38;
 const uint8_t pin_SPEED = 39;
+const uint8_t pin_APWR = 4; // analogue power pin
 
 void (*mCalibrationCompleteCallback)(float scaleFactor) = NULL;
+void (*mWeightMovedFromZeroCallback)() = NULL;
 
 APP_TIMER_DEF(m_read_ads123x__timer_id);
 
@@ -53,6 +58,12 @@ static void ads123x_timeout_handler(void * p_context)
         {
             ADS123X_getUnits(&scale, &mScaleValue, 1);
             mFilteredScaleValue = 0.6*mFilteredScaleValue + 0.4 * mScaleValue;
+
+            if (mWeightSensorSenseState == SENSING_WEIGHT_CHANGE && mFilteredScaleValue >= mSenseThresholdValue)
+            {
+                mWeightMovedFromZeroCallback();
+                mWeightSensorSenseState = NOT_SENSING;
+            }
             break;
         }
         case START_TARING :
@@ -175,8 +186,8 @@ void weight_sensor_init(float scaleFactor)
     ret_code_t err_code = app_timer_create(&m_read_ads123x__timer_id, APP_TIMER_MODE_SINGLE_SHOT, ads123x_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
-    nrf_gpio_cfg_output(4);
-    nrf_gpio_pin_clear(4);
+    nrf_gpio_cfg_output(pin_APWR);
+    nrf_gpio_pin_clear(pin_APWR);
 
 
     ADS123X_Init(&scale, pin_DOUT, pin_SCLK, pin_PWDN, pin_GAIN0, pin_GAIN1, pin_SPEED);
@@ -184,14 +195,9 @@ void weight_sensor_init(float scaleFactor)
     ADS123X_PowerOff(&scale);
     ADS123X_setGain(&scale, GAIN_128);
     ADS123X_setSpeed(&scale, SPEED_80SPS);
-
-    ADS123X_PowerOn(&scale);
-
     ADS123X_setScaleFactor(&scale, scaleFactor);
 
-    //ADS123X_calibrateOnNextConversion(&scale);
-    weight_sensor_tare();
-    start_read_ads123x_timer();    
+    weight_sensor_sleep(&scale);
 }
 
 void weight_sensor_tare()
@@ -230,12 +236,12 @@ float weight_sensor_get_weight_filtered()
 
 float weight_sensor_read_weight()
 {
-    nrf_gpio_pin_clear(4);
+    nrf_gpio_pin_clear(pin_APWR);
     ADS123X_PowerOn(&scale);
     float readValue;
-    ADS123X_getUnits(&scale, &readValue, 10); 
+    ADS123X_getUnits(&scale, &readValue, 1); 
     ADS123X_PowerOff(&scale); 
-    nrf_gpio_pin_set(4);
+    nrf_gpio_pin_set(pin_APWR);
 
     return readValue;
 }
@@ -244,12 +250,21 @@ void weight_sensor_sleep()
 {
     stop_read_ads123x_timer();
     ADS123X_PowerOff(&scale);
-    nrf_gpio_pin_set(4);
+    nrf_gpio_pin_set(pin_APWR);
 }
 
 void weight_sensor_wakeup()
 {
-    nrf_gpio_pin_clear(4);
+    nrf_gpio_pin_clear(pin_APWR);
     ADS123X_PowerOn(&scale);
     start_read_ads123x_timer();
+
+    mWeightSensorCurrentState = START_TARING;
+}
+
+void weight_sensor_enable_weight_change_sense(void (*weightSenseTriggeredCallback)(void))
+{
+    mWeightSensorSenseState = SENSING_WEIGHT_CHANGE;
+    mSenseThresholdValue = mFilteredScaleValue + 0.5;
+    mWeightMovedFromZeroCallback = weightSenseTriggeredCallback;
 }
