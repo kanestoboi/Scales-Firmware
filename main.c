@@ -16,6 +16,7 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 #include "nrfx_twi.h"
+#include "nrfx_spim.h"
 #include "nrf_delay.h"
 
 #include "Components/LCD/scales_lcd.h"
@@ -29,6 +30,7 @@
 #include "Components/Bluetooth/Services/BatteryService.h"
 #include "Components/Bluetooth/Services/ButtonThresholdService.h"
 #include "Components/SavedParameters/SavedParameters.h"
+#include "Components/IQS227D/iqs227d.h"
 
 APP_TIMER_DEF(m_read_weight_timer_id);
 APP_TIMER_DEF(m_display_timer_id);
@@ -57,10 +59,35 @@ uint32_t currentElapsedTime = 0;
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
 
-// Create a Handle for the twi communication
-const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
-
 MAX17260 max17260Sensor;
+
+void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    
+    if (nrf_gpio_pin_read(pin) == 0U)
+    {
+        NRF_LOG_INFO("Tout Touched.");
+    }
+    else
+    {
+        NRF_LOG_INFO("Tout released.");
+        weight_sensor_tare();
+    }
+}
+
+void touchSensor4POutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    NRF_LOG_INFO("Pout Changed.");
+}
+
+IQS227D  touchSensor4 =    {
+                            .pin_POUT = 46,
+                            .pin_TOUT = 45,
+                            .pin_VCC = 47,
+                            .toutChangedFcn = touchSensor4TOutChanged,
+                            .poutChangedFcn = touchSensor4POutChanged,
+                           };
+
 
 bool writeToWeightCharacteristic = false;
 
@@ -596,6 +623,10 @@ int main(void)
     }
 
     NRF_LOG_FLUSH();
+
+    weight_sensor_wakeup();
+    display_wakeup();
+
 
     start_weight_sensor_timers(); 
 
