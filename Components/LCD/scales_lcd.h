@@ -16,6 +16,8 @@ typedef struct Scales_Display_t
     const uint16_t x_start_offset;
     const uint16_t y_start_offset;
 
+    const nrfx_spim_t * spim_instance;
+
 } Scales_Display_t;
 
 

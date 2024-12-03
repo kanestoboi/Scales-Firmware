@@ -42,6 +42,7 @@
 #define NRF_LCD_H__
 
 #include <nrfx.h>
+#include "nrfx_spim.h"
 
 /** @file
  *
@@ -67,10 +68,27 @@ typedef enum{
  */
 typedef struct
 {
+    uint8_t dc_pin;
+    uint8_t sck_pin;
+    uint8_t miso_pin;
+    uint8_t mosi_pin;
+    uint8_t ss_pin;
+    uint8_t rst_pin;
+    uint8_t en_pin;
+    uint8_t backlight_pin;
+}lcd_pins_t;
+
+/**
+ * @brief LCD instance control block.
+ */
+typedef struct
+{
     nrfx_drv_state_t state;         /**< State of LCD instance. */
     uint16_t height;                /**< LCD height. */
     uint16_t width;                 /**< LCD width. */
     nrf_lcd_rotation_t rotation;    /**< LCD rotation. */
+    const nrfx_spim_t * spim_instance;
+    lcd_pins_t pins;
 }lcd_cb_t;
 
 /**
@@ -83,7 +101,7 @@ typedef struct
     /**
      * @brief Function for initializing the LCD controller.
      */
-    ret_code_t (* lcd_init)(void);
+    ret_code_t (* lcd_init)(const nrfx_spim_t * spim, uint8_t dc_pin);
 
     /**
      * @brief Function for uninitializing the LCD controller.
@@ -97,7 +115,7 @@ typedef struct
      * @param[in] y             Vertical coordinate of the pixel.
      * @param[in] color         Color of the pixel in LCD accepted format.
      */
-    void (* lcd_pixel_draw)(uint16_t x, uint16_t y, uint32_t color);
+    void (* lcd_pixel_draw)(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x, uint16_t y, uint32_t color);
 
     /**
      * @brief Function for drawing a filled rectangle.
@@ -108,7 +126,7 @@ typedef struct
      * @param[in] height        Height of the image.
      * @param[in] color         Color with which to fill the rectangle in LCD accepted format.
      */
-    void (* lcd_rect_draw)(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color);
+    void (* lcd_rect_draw)(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color);
 
     /**
      * @brief Function for displaying data from an internal frame buffer.
@@ -117,23 +135,23 @@ typedef struct
      * LCD but to an internal frame buffer. It could be implemented to write data from this
      * buffer to LCD.
     */
-    void (* lcd_display)(uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+    void (* lcd_display)(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
     /**
      * @brief Function for rotating the screen.
      *
      * @param[in] rotation      Rotation as enumerated value.
      */
-    void (* lcd_rotation_set)(nrf_lcd_rotation_t rotation);
+    void (* lcd_rotation_set)(const nrfx_spim_t * spim, uint8_t dc_pin, nrf_lcd_rotation_t rotation);
 
     /**
      * @brief Function for setting inversion of colors on the screen.
      *
      * @param[in] invert        If true, inversion will be set.
      */
-    void (* lcd_display_invert)(bool invert);
+    void (* lcd_display_invert)(const nrfx_spim_t * spim, uint8_t dc_pin, bool invert);
 
-    uint32_t (* lcd_set_addr_window_to_buffer)(uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+    uint32_t (* lcd_set_addr_window_to_buffer)(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 
     void (* lcd_sleep)();
 

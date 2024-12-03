@@ -43,16 +43,6 @@
 #ifndef ST7789_C__
 #define ST7789_C__
 
-static const uint8_t ST7789_DC_PIN = 40;
-static const uint8_t ST7789_SCK_PIN = 12;
-static const uint8_t ST7789_MISO_PIN = 14;
-static const uint8_t ST7789_MOSI_PIN = 14;
-static const uint8_t ST7789_SS_PIN = 11;
-static const uint8_t ST7789_RST_PIN = 16;
-
-const uint16_t ST7789_HEIGHT = 172;
-const uint16_t ST7789_WIDTH = 320;
-
 #include "nrf_lcd.h"
 #include "nrfx_spim.h"
 #include "nrf_delay.h"
@@ -117,9 +107,6 @@ const uint16_t ST7789_WIDTH = 320;
 
 #define RGB2BGR(x)      (x << 11) | (x & 0x07E0) | (x >> 11)
 
-#define ST7789_SPI_INSTANCE 3
-
-static const nrfx_spim_t spi = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< SPI instance. */
 
 /**
  * @brief Structure holding ST7789 controller basic parameters.
@@ -133,7 +120,7 @@ typedef struct
 static st7789_t m_st7789;
 
 
-static inline void spi_write(const void * data, size_t size)
+static inline void st7789_spi_write(const nrfx_spim_t * spim, const void * data, size_t size)
 {
     nrfx_spim_xfer_desc_t desc;
 
@@ -142,29 +129,29 @@ static inline void spi_write(const void * data, size_t size)
     desc.p_rx_buffer = NULL;
     desc.rx_length = 0;
 
-    APP_ERROR_CHECK(nrfx_spim_xfer(&spi, &desc, 0));
+    APP_ERROR_CHECK(nrfx_spim_xfer(spim, &desc, 0));
 }
 
-static inline void write_data_buffered(uint8_t * c, uint16_t len)
+static inline void st7789_write_data_buffered(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * c, uint16_t len)
 {
-    nrf_gpio_pin_set(ST7789_DC_PIN);
+    nrf_gpio_pin_set(dc_pin);
 
-    spi_write(c, len);
+    st7789_spi_write(spim, c, len);
 }
 
-static inline void write_command(uint8_t c)
+static inline void st7789_write_command(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t c)
 {
-    nrf_gpio_pin_clear(ST7789_DC_PIN);
-    spi_write(&c, sizeof(c));
+    nrf_gpio_pin_clear(dc_pin);
+    st7789_spi_write(spim, &c, sizeof(c));
 }
 
-static inline void write_data(uint8_t c)
+static inline void st7789_write_data(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t c)
 {
-    nrf_gpio_pin_set(ST7789_DC_PIN);
-    spi_write(&c, sizeof(c));
+    nrf_gpio_pin_set(dc_pin);
+    st7789_spi_write(spim, &c, sizeof(c));
 }
 
-static void set_addr_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+static void st7789_set_addr_window(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
     ASSERT(x0 <= x1);
     ASSERT(y0 <= y1);
@@ -174,115 +161,88 @@ static void set_addr_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
     x1 += 0;
     y1 += 34;
     
-    write_command(ST7789_CASET);
-    write_data(x0 >> 8);                       
-    write_data(x0 & 0xFF);
-    write_data(x1 >> 8);                       
-    write_data(x1 & 0xFF);
-    write_command(ST7789_RASET);
-    write_data(y0 >> 8);                       
-    write_data(y0 & 0xFF);
-    write_data(y1 >> 8);                       
-    write_data(y1 & 0xFF);
-    write_command(ST7789_RAMWR);
+    st7789_write_command(spim, dc_pin, ST7789_CASET);
+    st7789_write_data(spim, dc_pin, x0 >> 8);                       
+    st7789_write_data(spim, dc_pin, x0 & 0xFF);
+    st7789_write_data(spim, dc_pin, x1 >> 8);                       
+    st7789_write_data(spim, dc_pin, x1 & 0xFF);
+    st7789_write_command(spim, dc_pin, ST7789_RASET);
+    st7789_write_data(spim, dc_pin, y0 >> 8);                       
+    st7789_write_data(spim, dc_pin, y0 & 0xFF);
+    st7789_write_data(spim, dc_pin, y1 >> 8);                       
+    st7789_write_data(spim, dc_pin, y1 & 0xFF);
+    st7789_write_command(spim, dc_pin, ST7789_RAMWR);
 }
 
-static void command_list(void)
+static void st7789_send_setup_command_list(const nrfx_spim_t * spim, uint8_t dc_pin)
 {
-    write_command(ST7789_SWRESET);
+    st7789_write_command(spim, dc_pin, ST7789_SWRESET);
     nrf_delay_ms(150);
-    write_command(ST7789_SLPOUT);
+    st7789_write_command(spim, dc_pin, ST7789_SLPOUT);
     nrf_delay_ms(500);
 
-    write_command(ST7789_COLMOD);
-    write_data(0x55);               //     16-bit color
-    write_command(ST7789_MADCTL);
-    write_data(0x08);
+    st7789_write_command(spim, dc_pin, ST7789_COLMOD);
+    st7789_write_data(spim, dc_pin, 0x55);               //     16-bit color
+    st7789_write_command(spim, dc_pin, ST7789_MADCTL);
+    st7789_write_data(spim, dc_pin, 0x08);
 
-    write_command(ST7789_CASET);
-    write_data(0x00);                       // For a 128x160 display, it is always 0.
-    write_data(0x00);
-    write_data(240 >> 8);                       // For a 128x160 display, it is always 0.
-    write_data(240 & 0xFF);
+    st7789_write_command(spim, dc_pin, ST7789_CASET);
+    st7789_write_data(spim, dc_pin, 0x00);                       // For a 128x160 display, it is always 0.
+    st7789_write_data(spim, dc_pin, 0x00);
+    st7789_write_data(spim, dc_pin, 240 >> 8);                       // For a 128x160 display, it is always 0.
+    st7789_write_data(spim, dc_pin, 240 & 0xFF);
 
 
-    write_command(ST7789_RASET);
-    write_data(0x00);                       // For a 128x160 display, it is always 0.
-    write_data(0);
-    write_data(320>>8);                       // For a 128x160 display, it is always 0.
-    write_data(320 & 0xFF);
+    st7789_write_command(spim, dc_pin, ST7789_RASET);
+    st7789_write_data(spim, dc_pin, 0x00);                       // For a 128x160 display, it is always 0.
+    st7789_write_data(spim, dc_pin, 0);
+    st7789_write_data(spim, dc_pin, 320>>8);                       // For a 128x160 display, it is always 0.
+    st7789_write_data(spim, dc_pin, 320 & 0xFF);
 
-    write_command(ST7789_INVON);
+    st7789_write_command(spim, dc_pin, ST7789_INVON);
 
-    write_command(ST7789_NORON);
+    st7789_write_command(spim, dc_pin, ST7789_NORON);
     nrf_delay_ms(10);
-    write_command(ST7789_DISPON);
+    st7789_write_command(spim, dc_pin, ST7789_DISPON);
     nrf_delay_ms(100);
 }
 
 
-static ret_code_t hardware_init(void)
+
+static ret_code_t st7789_init(const nrfx_spim_t * spim, uint8_t dc_pin)
 {
-    ret_code_t err_code;
-
-    nrf_gpio_cfg_output(ST7789_DC_PIN);
-
-    nrfx_spim_config_t spi_config = NRFX_SPIM_DEFAULT_CONFIG;
-
-    spi_config.sck_pin  = ST7789_SCK_PIN;
-    spi_config.miso_pin = ST7789_MISO_PIN;
-    spi_config.mosi_pin = ST7789_MOSI_PIN;
-    spi_config.ss_pin   = ST7789_SS_PIN;
-    spi_config.frequency = SPIM_FREQUENCY_FREQUENCY_M32;
-
-    err_code = nrfx_spim_init(&spi, &spi_config, NULL, NULL);
-    return err_code;
+    st7789_send_setup_command_list(spim, dc_pin);
 }
 
-static ret_code_t st7789_init(void)
+static void st7789_uninit()
 {
-    ret_code_t err_code;
 
-    err_code = hardware_init();
-    if (err_code != NRF_SUCCESS)
-    {
-        return err_code;
-    }
-
-    command_list();
-
-    return err_code;
 }
 
-static void st7789_uninit(void)
+static void st7789_pixel_draw(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x, uint16_t y, uint32_t color)
 {
-    nrfx_spim_uninit(&spi);
-}
-
-static void st7789_pixel_draw(uint16_t x, uint16_t y, uint32_t color)
-{
-    set_addr_window(x, y, x, y);
+    st7789_set_addr_window(spim, dc_pin, x, y, x, y);
 
     color = RGB2BGR(color);
 
     const uint8_t data[2] = {color >> 8, color};
 
-    nrf_gpio_pin_set(ST7789_DC_PIN);
+    nrf_gpio_pin_set(dc_pin);
 
-    spi_write(data, sizeof(data));
+    st7789_spi_write(spim, data, sizeof(data));
 
-    nrf_gpio_pin_clear(ST7789_DC_PIN);
+    nrf_gpio_pin_clear(dc_pin);
 }
 
-static void st7789_rect_draw(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color)
+static void st7789_rect_draw(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color)
 {
-    set_addr_window(x, y, x + width - 1, y + height - 1);
+    st7789_set_addr_window(spim, dc_pin, x, y, x + width - 1, y + height - 1);
 
     color = RGB2BGR(color);
 
     const uint8_t data[2] = {color >> 8, color};
 
-    nrf_gpio_pin_set(ST7789_DC_PIN);
+    nrf_gpio_pin_set(dc_pin);
 
     // Duff's device algorithm for optimizing loop.
     uint32_t i = (height * width + 7) / 8;
@@ -291,58 +251,58 @@ static void st7789_rect_draw(uint16_t x, uint16_t y, uint16_t width, uint16_t he
     switch ((height * width) % 8) {
         case 0:
             do {
-                spi_write(data, sizeof(data));
+                st7789_spi_write(spim, data, sizeof(data));
         case 7:
-                spi_write(data, sizeof(data));
+                st7789_spi_write(spim, data, sizeof(data));
         case 6:
-                spi_write(data, sizeof(data));
+                st7789_spi_write(spim, data, sizeof(data));
         case 5:
-                spi_write(data, sizeof(data));
+                st7789_spi_write(spim, data, sizeof(data));
         case 4:
-                spi_write(data, sizeof(data));
+                st7789_spi_write(spim, data, sizeof(data));
         case 3:
-                spi_write(data, sizeof(data));
+                st7789_spi_write(spim, data, sizeof(data));
         case 2:
-                spi_write(data, sizeof(data));
+                st7789_spi_write(spim, data, sizeof(data));
         case 1:
-                spi_write(data, sizeof(data));
+                st7789_spi_write(spim, data, sizeof(data));
             } while (--i > 0);
         default:
             break;
     }
 /*lint -restore */
-    nrf_gpio_pin_clear(ST7789_DC_PIN);
+    nrf_gpio_pin_clear(dc_pin);
 }
 
-static void st7789_dummy_display(uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+static void st7789_display(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
-    set_addr_window(x0, y0, x1, y1);
+    st7789_set_addr_window(spim, dc_pin, x0, y0, x1, y1);
 
-    write_data_buffered(data, len);
+    st7789_write_data_buffered(spim, dc_pin, data, len);
 }
 
-static void st7789_rotation_set(nrf_lcd_rotation_t rotation)
+static void st7789_rotation_set(const nrfx_spim_t * spim, uint8_t dc_pin, nrf_lcd_rotation_t rotation)
 {
-    write_command(ST7789_MADCTL);
+    st7789_write_command(spim, dc_pin, ST7789_MADCTL);
     switch (rotation) {
         case NRF_LCD_ROTATE_0:
 
-            write_data(ST7789_MADCTL_MX | ST7789_MADCTL_MY | ST7789_MADCTL_RGB);
+            st7789_write_data(spim, dc_pin, ST7789_MADCTL_MX | ST7789_MADCTL_MY | ST7789_MADCTL_RGB);
             
             break;
         case NRF_LCD_ROTATE_90:
 
-            write_data(ST7789_MADCTL_MY | ST7789_MADCTL_MV | ST7789_MADCTL_RGB);
+            st7789_write_data(spim, dc_pin, ST7789_MADCTL_MY | ST7789_MADCTL_MV | ST7789_MADCTL_RGB);
 
             break;
         case NRF_LCD_ROTATE_180:
 
-            write_data(ST7789_MADCTL_RGB);
+            st7789_write_data(spim, dc_pin, ST7789_MADCTL_RGB);
 
             break;
         case NRF_LCD_ROTATE_270:
 
-            write_data(ST7789_MADCTL_MX | ST7789_MADCTL_MV | ST7789_MADCTL_RGB);
+            st7789_write_data(spim, dc_pin, ST7789_MADCTL_MX | ST7789_MADCTL_MV | ST7789_MADCTL_RGB);
 
             break;
         default:
@@ -351,39 +311,26 @@ static void st7789_rotation_set(nrf_lcd_rotation_t rotation)
 }
 
 
-static void st7789_display_invert(bool invert)
+static void st7789_display_invert(const nrfx_spim_t * spim, uint8_t dc_pin, bool invert)
 {
-    write_command(invert ? ST7789_INVON : ST7789_INVOFF);
+    st7789_write_command(spim, dc_pin, invert ? ST7789_INVON : ST7789_INVOFF);
 }
 
 static void st7789_sleep()
 {
-    nrfx_spim_abort(&spi);
-    nrfx_spim_uninit(&spi);
 
-    nrf_gpio_cfg_default(ST7789_DC_PIN);
-    nrf_gpio_cfg_default(ST7789_SCK_PIN);
-    nrf_gpio_cfg_default(ST7789_MISO_PIN);
-    nrf_gpio_cfg_default(ST7789_MOSI_PIN);
-    nrf_gpio_cfg_default(ST7789_SS_PIN);
-    nrf_gpio_cfg_default(ST7789_RST_PIN);
 }
-
-static lcd_cb_t st7789_cb = {
-    .height = ST7789_HEIGHT,
-    .width = ST7789_WIDTH
-};
 
 const nrf_lcd_t nrf_lcd_st7789 = {
     .lcd_init = st7789_init,
     .lcd_uninit = st7789_uninit,
     .lcd_pixel_draw = st7789_pixel_draw,
     .lcd_rect_draw = st7789_rect_draw,
-    .lcd_display = st7789_dummy_display,
+    .lcd_display = st7789_display,
     .lcd_rotation_set = st7789_rotation_set,
     .lcd_display_invert = st7789_display_invert,
     .lcd_sleep = st7789_sleep,
-    .p_lcd_cb = &st7789_cb
+
 };
 
 
