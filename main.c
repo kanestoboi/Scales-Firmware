@@ -707,7 +707,9 @@ int main(void)
 
     NRF_LOG_FLUSH();
 
+
     weight_sensor_wakeup();
+    spi3_master_init();
     display_wakeup();
 
 
