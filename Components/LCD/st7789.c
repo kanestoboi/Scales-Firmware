@@ -212,6 +212,8 @@ static void st7789_send_setup_command_list(const nrfx_spim_t * spim, uint8_t dc_
 static ret_code_t st7789_init(const nrfx_spim_t * spim, uint8_t dc_pin)
 {
     st7789_send_setup_command_list(spim, dc_pin);
+
+    return NRF_SUCCESS;
 }
 
 static void st7789_uninit()

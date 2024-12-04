@@ -100,6 +100,8 @@ void display_init(Scales_Display_t * scales_display)
 
     ret_code_t err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
     APP_ERROR_CHECK(err_code);
+
+    display_sleep();
 }
 
 void display_driver_init()
@@ -406,7 +408,6 @@ void display_power_display_off()
 
 void display_sleep()
 {
-    p_nrf_lcd_driver->lcd_sleep();
     display_turn_backlight_off();
     display_power_display_off();
     
@@ -416,9 +417,11 @@ void display_sleep()
 void display_wakeup()
 {
     display_power_display_on();
-    nrf_delay_ms(10);
+    lv_obj_clean(lv_scr_act());
+    display_lvgl_init();
     display_reset();
-    
+    display_driver_init();
+
     lvgl_timeout_handler(NULL);
 
     start_lvgl_timer();

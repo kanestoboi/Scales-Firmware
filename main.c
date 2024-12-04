@@ -53,11 +53,12 @@ uint32_t currentElapsedTime = 0;
 #define TWI_SCL_M           6         //I2C SCL Pin
 #define TWI_SDA_M           8        //I2C SDA Pin
 
-#define SPI3_DC_PIN 40
 #define SPI3_SCK_PIN 12
 #define SPI3_MISO_PIN 14
 #define SPI3_MOSI_PIN 14
-#define ST7789_SS_PIN 11
+#define SPI3_SS_PIN 11
+
+#define ST7789_DC_PIN 40
 #define ST7789_RST_PIN 16
 #define ST7789_EN_PIN 41
 #define ST7789_BACKLIGHT_PIN 7;
@@ -535,14 +536,12 @@ static ret_code_t spi3_master_init()
 {
     ret_code_t err_code;
 
-    nrf_gpio_cfg_output(SPI3_DC_PIN);
-
     nrfx_spim_config_t spi_config = NRFX_SPIM_DEFAULT_CONFIG;
 
     spi_config.sck_pin  = SPI3_SCK_PIN;
     spi_config.miso_pin = SPI3_MISO_PIN;
     spi_config.mosi_pin = SPI3_MOSI_PIN;
-    spi_config.ss_pin   = NRFX_SPIM_PIN_NOT_USED;
+    spi_config.ss_pin   = SPI3_SS_PIN;
     spi_config.frequency = SPIM_FREQUENCY_FREQUENCY_M32;
 
     err_code = nrfx_spim_init(&spim3, &spi_config, NULL, NULL);
@@ -713,7 +712,7 @@ int main(void)
     display_wakeup();
 
 
-    //start_weight_sensor_timers(); 
+    start_weight_sensor_timers(); 
 
     for (;;)
     {
