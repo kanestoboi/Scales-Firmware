@@ -53,11 +53,12 @@ uint32_t currentElapsedTime = 0;
 #define TWI_SCL_M           6         //I2C SCL Pin
 #define TWI_SDA_M           8        //I2C SDA Pin
 
-#define SPI3_DC_PIN 40
 #define SPI3_SCK_PIN 12
 #define SPI3_MISO_PIN 14
 #define SPI3_MOSI_PIN 14
-#define ST7789_SS_PIN 11
+#define SPI3_SS_PIN 11
+
+#define ST7789_DC_PIN 40
 #define ST7789_RST_PIN 16
 #define ST7789_EN_PIN 41
 #define ST7789_BACKLIGHT_PIN 7;
@@ -66,8 +67,8 @@ uint32_t currentElapsedTime = 0;
 const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
 const nrfx_twi_t m_twi_secondary = NRFX_TWI_INSTANCE(TWI_SECONDARY_INSTANCE_ID);
 
-//#define ST7789_SPI_INSTANCE 3
-//static const nrfx_spim_t spi = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< SPI instance. */
+#define ST7789_SPI_INSTANCE 3
+static const nrfx_spim_t spim3 = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< SPI instance. */
 
 #define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(40)   
 #define DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS    APP_TIMER_TICKS(40)  
@@ -111,6 +112,11 @@ Scales_Display_t display1 = {
     .rst_pin = 16,
     .en_pin = 41,
     .backlight_pin = 7,
+    .height = 172,
+    .width = 320,
+    .x_start_offset = 34,
+    .y_start_offset = 34,
+    .spim_instance = &spim3,
 };
 
 bool writeToWeightCharacteristic = false;
@@ -515,9 +521,7 @@ void twi_master_secondary_init(void)
 //Initialize the TWI as Master device
 void twi_master_uninit(void)
 {
-    ret_code_t err_code;
-
-        //Enable the TWI Communication
+    //disable the TWI Communication
     nrfx_twi_disable(&m_twi);
 
     //A function to initialize the twi communication
@@ -527,25 +531,33 @@ void twi_master_uninit(void)
     nrf_gpio_cfg_default(TWI_SDA_M);
 }
 
-/*
+
 static ret_code_t spi3_master_init()
 {
     ret_code_t err_code;
 
-    nrf_gpio_cfg_output(SPI3_DC_PIN);
-
     nrfx_spim_config_t spi_config = NRFX_SPIM_DEFAULT_CONFIG;
 
-    spi_config.sck_pin  = SPI3_MISO_PIN;
+    spi_config.sck_pin  = SPI3_SCK_PIN;
     spi_config.miso_pin = SPI3_MISO_PIN;
     spi_config.mosi_pin = SPI3_MOSI_PIN;
-    spi_config.ss_pin   = SPI3_DC_PIN;
+    spi_config.ss_pin   = SPI3_SS_PIN;
     spi_config.frequency = SPIM_FREQUENCY_FREQUENCY_M32;
 
-    err_code = nrfx_spim_init(&spi, &spi_config, NULL, NULL);
+    err_code = nrfx_spim_init(&spim3, &spi_config, NULL, NULL);
     return err_code;
 }
-*/
+
+static void spi3_master_uninit()
+{
+    nrfx_spim_abort(&spim3);
+    nrfx_spim_uninit(&spim3);
+
+    nrf_gpio_cfg_default(SPI3_SCK_PIN);
+    nrf_gpio_cfg_default(SPI3_MISO_PIN);
+    nrf_gpio_cfg_default(SPI3_MOSI_PIN);
+}
+
 
 void prepare_to_sleep()
 {
@@ -626,7 +638,7 @@ int main(void)
     nrf_buddy_leds_init();              // initialise nRF52 buddy leds library
     power_management_init();            // initialise the nRF5 power management library
     bluetooth_init();
-    display_init();
+    display_init(&display1);
 
     if (ble_weight_sensor_service_init() != NRF_SUCCESS)
     {
@@ -694,7 +706,9 @@ int main(void)
 
     NRF_LOG_FLUSH();
 
+
     weight_sensor_wakeup();
+    spi3_master_init();
     display_wakeup();
 
 

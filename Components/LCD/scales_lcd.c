@@ -19,30 +19,14 @@ extern const nrf_lcd_t nrf_lcd_st7789;
 
 APP_TIMER_DEF(m_lvgl_timer_id);
 
+
+lv_display_t * p_lv_display1;
+Scales_Display_t * p_scales_display1;
+
+static const nrf_lcd_t * p_nrf_lcd_driver = &nrf_lcd_st7789;
+
 #define hor_res 320
 #define ver_res 172
-lv_display_t * display;
-
-static const nrf_lcd_t * p_lcd = &nrf_lcd_st7789;
-
-static const uint8_t ST7735_DC_Pin = 16;
-static const uint8_t ST7735_SCK_PIN = 14;
-static const uint8_t ST7735_MISO_PIN = 12;
-static const uint8_t ST7735_MOSI_PIN = 12;
-static const uint8_t ST7735_SS_PIN = 17;
-static const uint8_t ST7735_RST_PIN = 15;
-static const uint8_t ST7735_BACKLIGHT_PIN = 7;
-
-
-static const uint8_t ST7789_DC_PIN = 40;
-static const uint8_t ST7789_SCK_PIN = 12;
-static const uint8_t ST7789_MISO_PIN = 14;
-static const uint8_t ST7789_MOSI_PIN = 14;
-static const uint8_t ST7789_SS_PIN = 11;
-static const uint8_t ST7789_RST_PIN = 16;
-static const uint8_t ST7789_EN_PIN = 41;
-static const uint8_t ST7789_BACKLIGHT_PIN = 7;
-
 
 lv_obj_t * bluetooth_logo_image;
 
@@ -62,17 +46,15 @@ static void lvgl_timeout_handler(void * p_context)
     lv_tick_inc(LVGL_TIMER_INTERVAL_MS); // tell LVGL how much time has passed 
 }
 
-
 void flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
 {
-    //The most simple case (but also the slowest) to put all pixels to the screen one-by-one
-    //`put_px` is just an example, it needs to be implemented by you.
-    uint16_t * buf16 = (uint16_t *)px_map; // Let's say it's a 16 bit (RGB565) display
+    uint16_t * buf16 = (uint16_t *)px_map; // 16 bit (RGB565) display. cast pixel map to uint16_t pointer
 
-    uint16_t length = ((area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1))*2;
-    lv_draw_sw_rgb565_swap(px_map, length/2);
+    // length is area to write (in pixels) multiplied by 2 since each pixel is 2 bytes
+    uint16_t length = ((area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)) * 2; 
+    lv_draw_sw_rgb565_swap(px_map, length / 2);
     
-    p_lcd->lcd_display(px_map, length, area->x1, area->y1, area->x2, area->y2);
+    p_nrf_lcd_driver->lcd_display(p_scales_display1->spim_instance, p_scales_display1->dc_pin, px_map, length, area->x1, area->y1, area->x2, area->y2);
     // IMPORTANT!!!
     // Inform LVGL that you are ready with the flushing and buf is not used anymore
     lv_display_flush_ready(display);
@@ -90,46 +72,39 @@ void stop_lvgl_timer()
     APP_ERROR_CHECK(err_code);
 }
 
-void display_init()
+void display_init(Scales_Display_t * scales_display)
 {
     // Initialise LVGL library
     lv_init();
 
-    display = lv_display_create(hor_res, ver_res);
+    p_lv_display1 = lv_display_create(hor_res, ver_res);
+    
+    p_scales_display1 = scales_display;
 
+        // Set LCD pins as outputs
+    nrf_gpio_cfg_output(p_scales_display1->en_pin);
+    nrf_gpio_cfg_output(p_scales_display1->rst_pin);
+    nrf_gpio_cfg_output(p_scales_display1->backlight_pin);
+    nrf_gpio_cfg_output(p_scales_display1->dc_pin);
 
-    ret_code_t err_code;
-
-    display_driver_init();
-
-    display_lvgl_init();
+    ret_code_t err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
+    APP_ERROR_CHECK(err_code);
 
     display_sleep();
 }
 
 void display_driver_init()
 {
-    // Set LCD pins as outputs
-    nrf_gpio_cfg_output(ST7789_EN_PIN);
-    nrf_gpio_cfg_output(ST7789_RST_PIN);
-    nrf_gpio_cfg_output(ST7789_BACKLIGHT_PIN);
-
-    display_turn_backlight_off();
-
-    display_power_display_on();
-    nrf_delay_ms(10);
-    display_reset();
-
     // initialise lcd driver
-    ret_code_t err_code = p_lcd->lcd_init();
+    ret_code_t err_code = p_nrf_lcd_driver->lcd_init(p_scales_display1->spim_instance, p_scales_display1->dc_pin);
 
     if (err_code == NRF_SUCCESS)
     {
-        p_lcd->p_lcd_cb->state = NRFX_DRV_STATE_INITIALIZED;
+        p_nrf_lcd_driver->p_lcd_cb->state = NRFX_DRV_STATE_INITIALIZED;
     }
 
-    p_lcd->lcd_rotation_set(NRF_LCD_ROTATE_270);
-    p_lcd->lcd_display_invert(true);
+    p_nrf_lcd_driver->lcd_rotation_set(p_scales_display1->spim_instance, p_scales_display1->dc_pin, NRF_LCD_ROTATE_270);
+    p_nrf_lcd_driver->lcd_display_invert(p_scales_display1->spim_instance, p_scales_display1->dc_pin, true);
 }
 
 void display_lvgl_init()
@@ -141,13 +116,11 @@ void display_lvgl_init()
         .red = 0xFF,
     };
 
-    lv_display_set_flush_cb(display, flush_cb);
-    lv_display_set_buffers(display, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_set_flush_cb(p_lv_display1, flush_cb);
+    lv_display_set_buffers(p_lv_display1, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x0000), LV_PART_MAIN);
 
 
-    ret_code_t err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
-    APP_ERROR_CHECK(err_code);
 }
 
 void display_update_weight_label(float weight)
@@ -179,12 +152,14 @@ void display_update_weight_label(float weight)
 
 
         // Convert float to string
+
     sprintf(buffer, "%s", wholeNumbers);
     lv_label_set_text( objects.label_weight_integer, buffer );
 
     char buffer2[2];
     sprintf(buffer2, "%s", fractionalPart);
     lv_label_set_text( objects.label_weight_fraction, fractionalPart );
+
     }
 }
 
@@ -307,13 +282,13 @@ void display_button4_count_label(uint16_t count)
 
 void display_turn_backlight_on()
 {
-    nrf_gpio_pin_clear(ST7789_BACKLIGHT_PIN);
+    nrf_gpio_pin_clear(p_scales_display1->backlight_pin);
 
 }
 
 void display_turn_backlight_off()
 {
-    nrf_gpio_pin_set(ST7789_BACKLIGHT_PIN);
+    nrf_gpio_pin_set(p_scales_display1->backlight_pin);
 
 }
 
@@ -329,17 +304,16 @@ void display_bluetooth_logo_hide()
 
 void display_power_display_on()
 {
-    nrf_gpio_pin_clear(ST7789_EN_PIN);
+    nrf_gpio_pin_clear(p_scales_display1->en_pin);
 }
 
 void display_power_display_off()
 {
-    nrf_gpio_pin_set(ST7789_EN_PIN);
+    nrf_gpio_pin_set(p_scales_display1->en_pin);
 }
 
 void display_sleep()
 {
-    p_lcd->lcd_sleep();
     display_turn_backlight_off();
     display_power_display_off();
     
@@ -351,18 +325,21 @@ void display_wakeup()
     display_power_display_on();
     lv_obj_clean(lv_scr_act());
     display_lvgl_init();
+    display_reset();
     ui_init();
     display_driver_init();
-    start_lvgl_timer();
+
     lvgl_timeout_handler(NULL);
+
+    start_lvgl_timer();
     display_turn_backlight_on();
 }
 
 void display_reset()
 {
-    nrf_gpio_pin_clear(ST7789_RST_PIN);
+    nrf_gpio_pin_clear(p_scales_display1->rst_pin);
     nrf_delay_ms(100);
-    nrf_gpio_pin_set(ST7789_RST_PIN);
+    nrf_gpio_pin_set(p_scales_display1->rst_pin);
 }
 
 
