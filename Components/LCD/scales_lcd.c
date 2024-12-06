@@ -9,6 +9,7 @@
 
 #include "scales_lcd.h"
 #include "lvgl/lvgl.h"
+#include "ui/ui.h"
 #include "coffee_beans.h"
 #include "water_droplet.h"
 #include "bluetooth_logo.h"
@@ -26,18 +27,6 @@ static const nrf_lcd_t * p_nrf_lcd_driver = &nrf_lcd_st7789;
 
 #define hor_res 320
 #define ver_res 172
-
-lv_obj_t *weightLabel;
-lv_obj_t *weightDecimalLabel;
-lv_obj_t *batteryLabel;
-lv_obj_t *timeLabel;
-lv_obj_t *coffeeWeightLabel;
-lv_obj_t *waterWeightLabel;
-
-lv_obj_t *button1CountLabel;
-lv_obj_t *button2CountLabel;
-lv_obj_t *button3CountLabel;
-lv_obj_t *button4CountLabel;
 
 lv_obj_t * bluetooth_logo_image;
 
@@ -132,87 +121,15 @@ void display_lvgl_init()
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x0000), LV_PART_MAIN);
 
 
-    lv_obj_t * coffe_splash_image = lv_image_create(lv_screen_active());
-    lv_image_set_src(coffe_splash_image, &coffee_beans);
-    lv_obj_align( coffe_splash_image, LV_ALIGN_TOP_LEFT, 0, 0 );
-
-    lv_obj_t * water_drops_image = lv_image_create(lv_screen_active());
-    lv_image_set_src(water_drops_image, &water_droplet);
-    lv_obj_align( water_drops_image, LV_ALIGN_TOP_LEFT, 0, 30 );
-
-    bluetooth_logo_image = lv_image_create(lv_screen_active());
-    lv_image_set_src(bluetooth_logo_image, &bluetooth_logo);
-    lv_obj_align( bluetooth_logo_image, LV_ALIGN_TOP_RIGHT, -90, 5 );
-
-    display_bluetooth_logo_hide();
-
-    weightLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( weightLabel, LV_ALIGN_BOTTOM_RIGHT, -30, 0 );
-    lv_obj_set_style_text_font(weightLabel, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(weightLabel, color, 0);
-    lv_label_set_text( weightLabel, "" );
-
-    weightDecimalLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( weightDecimalLabel, LV_ALIGN_BOTTOM_RIGHT, 0, 0 );
-    lv_obj_set_style_text_font(weightDecimalLabel, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(weightDecimalLabel, color, 0);
-    lv_label_set_text( weightDecimalLabel, "" );
-
-    batteryLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( batteryLabel, LV_ALIGN_TOP_RIGHT, -8, 0 );
-    lv_obj_set_style_text_font(batteryLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(batteryLabel, color, 0);
-    lv_label_set_text( batteryLabel, "" );
-
-    timeLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( timeLabel, LV_ALIGN_BOTTOM_LEFT, 0, 0 );
-    lv_obj_set_style_text_font(timeLabel, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(timeLabel, color, 0);
-    lv_label_set_text( timeLabel, "00:00" );
-
-    coffeeWeightLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( coffeeWeightLabel, LV_ALIGN_TOP_LEFT, 55, 0 );
-    lv_obj_set_style_text_font(coffeeWeightLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(coffeeWeightLabel, color, 0);
-    lv_label_set_text( coffeeWeightLabel, "0.0" );
-
-    waterWeightLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( waterWeightLabel, LV_ALIGN_TOP_LEFT, 55, 30 );
-    lv_obj_set_style_text_font(waterWeightLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(waterWeightLabel, color, 0);
-    lv_label_set_text( waterWeightLabel, "0.0" );
-
-    button1CountLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button1CountLabel, LV_ALIGN_LEFT_MID, 0, -10);
-    lv_obj_set_style_text_font(button1CountLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(button1CountLabel, color, 0);
-    lv_label_set_text( button1CountLabel, "0" );
-    
-    button2CountLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button2CountLabel, LV_ALIGN_CENTER, -40, -10);
-    lv_obj_set_style_text_font(button2CountLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(button2CountLabel, color, 0);
-    lv_label_set_text( button2CountLabel, "0" );
-
-    button3CountLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button3CountLabel, LV_ALIGN_CENTER, 60, -10);
-    lv_obj_set_style_text_font(button3CountLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(button3CountLabel, color, 0);
-    lv_label_set_text( button3CountLabel, "0" );
-    
-    button4CountLabel = lv_label_create( lv_scr_act() );
-    lv_obj_align( button4CountLabel, LV_ALIGN_RIGHT_MID, 0, -10);
-    lv_obj_set_style_text_font(button4CountLabel, &lv_font_montserrat_30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(button4CountLabel, color, 0);
-    lv_label_set_text( button4CountLabel, "0" );
 }
 
 void display_update_weight_label(float weight)
 {
-    if (weightLabel == NULL)
+    if (objects.label_weight_integer == NULL)
     {
         return;
     }
+
     char buffer[5]; // Make sure this buffer is large enough to hold the formatted string
 
     // Convert float to string
@@ -235,27 +152,29 @@ void display_update_weight_label(float weight)
 
 
         // Convert float to string
-        sprintf(buffer, "%s.", wholeNumbers);
-        lv_label_set_text( weightLabel, buffer );
 
-        char buffer2[2];
-        sprintf(buffer2, "%s", fractionalPart);
-        lv_label_set_text( weightDecimalLabel, fractionalPart );
+    sprintf(buffer, "%s", wholeNumbers);
+    lv_label_set_text( objects.label_weight_integer, buffer );
+
+    char buffer2[2];
+    sprintf(buffer2, "%s", fractionalPart);
+    lv_label_set_text( objects.label_weight_fraction, fractionalPart );
+
     }
 }
 
 void display_indicate_tare()
 {
-    if (weightLabel == NULL)
+    if (objects.label_weight_integer == NULL)
     {
         return;
     }
-    lv_label_set_text( weightLabel, "Taring");
+    lv_label_set_text( objects.label_weight_integer, "Taring");
 }
 
 void display_update_timer_label(uint32_t seconds)
 {
-    if (timeLabel == NULL)
+    if (objects.label_timer == NULL)
     {
         return;
     }
@@ -269,24 +188,24 @@ void display_update_timer_label(uint32_t seconds)
     char buffer[9];
     sprintf(buffer, "%02d:%02d", minutes, remainingSeconds);
 
-    lv_label_set_text( timeLabel, buffer);
+    lv_label_set_text( objects.label_timer, buffer);
 }
 
 void display_update_battery_label(uint8_t batteryLevel)
 {
-    if (batteryLabel == NULL)
+    if (objects.label_battery_percentage == NULL)
     {
         return;
     }
     char buffer[4];
     sprintf(buffer, "%d%%", batteryLevel);
 
-    lv_label_set_text( batteryLabel, buffer);
+    lv_label_set_text( objects.label_battery_percentage, buffer);
 }
 
 void display_update_coffee_weight_label(float weight)
 {
-    if (coffeeWeightLabel == NULL)
+    if (objects.label_coffee_weight == NULL)
     {
         return;
     }
@@ -296,12 +215,12 @@ void display_update_coffee_weight_label(float weight)
     // Convert float to string
     sprintf(buffer, "%0.1f", weight);
 
-    lv_label_set_text( coffeeWeightLabel, buffer );
+    lv_label_set_text( objects.label_coffee_weight, buffer );
 }
 
 void display_update_water_weight_label(float weight)
 {
-    if (waterWeightLabel == NULL)
+    if (objects.label_water_weight == NULL)
     {
         return;
     }
@@ -311,67 +230,54 @@ void display_update_water_weight_label(float weight)
     // Convert float to string
     sprintf(buffer, "%0.1f", weight);
 
-    lv_label_set_text( waterWeightLabel, buffer );
+    lv_label_set_text( objects.label_water_weight, buffer );
 }
 
 void display_button1_count_label(uint16_t count)
 {
-    if (button1CountLabel == NULL)
-    {
-        return;
-    }
+
 
     char buffer[4];
 
     // Convert float to string
     sprintf(buffer, "%d", count);
 
-    lv_label_set_text( button1CountLabel, buffer );
+    //lv_label_set_text( button1CountLabel, buffer );
 }
 
 void display_button2_count_label(uint16_t count)
 {
-    if (button1CountLabel == NULL)
-    {
-        return;
-    }
 
     char buffer[4];
 
     // Convert float to string
     sprintf(buffer, "%d", count);
 
-    lv_label_set_text( button2CountLabel, buffer );
+    //lv_label_set_text( button2CountLabel, buffer );
 }
 
 void display_button3_count_label(uint16_t count)
 {
-    if (button1CountLabel == NULL)
-    {
-        return;
-    }
+
 
     char buffer[4];
 
     // Convert float to string
     sprintf(buffer, "%d", count);
 
-    lv_label_set_text( button3CountLabel, buffer );
+    //lv_label_set_text( button3CountLabel, buffer );
 }
 
 void display_button4_count_label(uint16_t count)
 {
-    if (button1CountLabel == NULL)
-    {
-        return;
-    }
+
 
     char buffer[4];
 
     // Convert float to string
     sprintf(buffer, "%d", count);
 
-    lv_label_set_text( button4CountLabel, buffer );
+    //lv_label_set_text( button4CountLabel, buffer );
 }
 
 void display_turn_backlight_on()
@@ -388,12 +294,12 @@ void display_turn_backlight_off()
 
 void display_bluetooth_logo_show()
 {
-    lv_obj_remove_flag(bluetooth_logo_image, LV_OBJ_FLAG_HIDDEN);
+    // lv_obj_remove_flag(bluetooth_logo_image, LV_OBJ_FLAG_HIDDEN);
 }
 
 void display_bluetooth_logo_hide()
 {
-    lv_obj_add_flag(bluetooth_logo_image, LV_OBJ_FLAG_HIDDEN);
+    // lv_obj_add_flag(bluetooth_logo_image, LV_OBJ_FLAG_HIDDEN);
 }
 
 void display_power_display_on()
@@ -420,6 +326,7 @@ void display_wakeup()
     lv_obj_clean(lv_scr_act());
     display_lvgl_init();
     display_reset();
+    ui_init();
     display_driver_init();
 
     lvgl_timeout_handler(NULL);
