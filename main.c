@@ -64,7 +64,7 @@ uint32_t currentElapsedTime = 0;
 #define ST7789_BACKLIGHT_PIN 7;
 
 // Create a Handle for the twi communication
-const nrfx_twi_t m_twi = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
+const nrfx_twi_t m_twi0 = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
 const nrfx_twi_t m_twi_secondary = NRFX_TWI_INSTANCE(TWI_SECONDARY_INSTANCE_ID);
 
 #define ST7789_SPI_INSTANCE 3
@@ -211,16 +211,6 @@ void disable_write_to_weight_characteristic()
     display_bluetooth_logo_hide();
     writeToWeightCharacteristic = false;
 }
-
-void start_weight_sensor_timers()
-{    
-    ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_INTERVAL_TICKS, NULL);
-    APP_ERROR_CHECK(err_code);
-}
-
 
 /**@brief Function for handling the weight measurement timer timeout.
  *
@@ -385,7 +375,7 @@ void battery_level_timeout_handler(void * p_context)
 
         battery_service_battery_energy_status_update(battery_energy_status, BLE_CONN_HANDLE_ALL);
 
-        NRF_LOG_RAW_INFO("Cell Voltage:%s%d.%01d mA\n" , NRF_LOG_FLOAT_SCALES(voltage) );
+        NRF_LOG_RAW_INFO("Cell Voltage:%s%d.%01d V\n" , NRF_LOG_FLOAT_SCALES(voltage) );
 
 
         display_update_battery_label((uint8_t)roundf(soc));
@@ -425,6 +415,43 @@ static void timers_init(void)
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_battery_level_timer_id, APP_TIMER_MODE_SINGLE_SHOT, battery_level_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+}
+
+void timers_start()
+{
+    ret_code_t err_code;
+
+    err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_INTERVAL_TICKS, NULL);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
+void timers_stop()
+{
+    ret_code_t err_code;
+
+    err_code = app_timer_stop(m_read_weight_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_display_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_wakeup_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_keep_alive_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_elapsed_time_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_battery_level_timer_id);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -475,7 +502,7 @@ static void power_management_init(void)
 
 
 //Initialize the TWI as Master device
-void twi_master_init(void)
+void twi0_master_init(void)
 {
     ret_code_t err_code;
 
@@ -489,11 +516,11 @@ void twi_master_init(void)
     };
 
     //A function to initialize the twi communication
-    err_code = nrfx_twi_init(&m_twi, &twi_config, NULL, NULL);
+    err_code = nrfx_twi_init(&m_twi0, &twi_config, NULL, NULL);
     APP_ERROR_CHECK(err_code);
     
     //Enable the TWI Communication
-    nrfx_twi_enable(&m_twi);
+    nrfx_twi_enable(&m_twi0);
 }
 
 //Initialize the TWI as Master device
@@ -519,13 +546,13 @@ void twi_master_secondary_init(void)
 }
 
 //Initialize the TWI as Master device
-void twi_master_uninit(void)
+void twi0_master_uninit(void)
 {
     //disable the TWI Communication
-    nrfx_twi_disable(&m_twi);
+    nrfx_twi_disable(&m_twi0);
 
     //A function to initialize the twi communication
-    nrfx_twi_uninit(&m_twi);
+    nrfx_twi_uninit(&m_twi0);
 
     nrf_gpio_cfg_default(TWI_SCL_M);
     nrf_gpio_cfg_default(TWI_SDA_M);
@@ -561,33 +588,25 @@ static void spi3_master_uninit()
 
 void prepare_to_sleep()
 {
-    ret_code_t err_code;
-
-    err_code = app_timer_stop(m_read_weight_timer_id);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_stop(m_battery_level_timer_id);
-    APP_ERROR_CHECK(err_code);
-
     weight_sensor_sleep();
-
-    twi_master_uninit();
-
     display_sleep();
 
-    err_code = app_timer_stop(m_elapsed_time_timer_id);
-    APP_ERROR_CHECK(err_code);
+    twi0_master_uninit();
+    spi3_master_uninit();
+
+    
 
     bluetooth_advertising_stop();
 
-    err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
+    //err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
+    //APP_ERROR_CHECK(err_code);
 }
 
 void wakeup_from_sleep()
 {
-    twi_master_init();
+    twi0_master_init();
 
+    spi3_master_init();
     display_wakeup();
     weight_sensor_wakeup();
 
@@ -603,12 +622,10 @@ void wakeup_from_sleep()
         
     weight_sensor_tare();
 
-    start_weight_sensor_timers();
+    timers_start();
 
     bluetooth_advertising_start(false);
 
-    ret_code_t err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -632,7 +649,8 @@ int main(void)
     NRF_LOG_INFO("Initilising Firmware...");
     NRF_LOG_FLUSH();
 
-    twi_master_init();                  // initialize nRF5 the twi library 
+    twi0_master_init();                  // initialize nRF5 the twi library 
+    spi3_master_init();
     //twi_master_secondary_init();
     timers_init();                      // Initialise nRF5 timers library
     nrf_buddy_leds_init();              // initialise nRF52 buddy leds library
@@ -688,7 +706,7 @@ int main(void)
     weight_sensor_init(scaleFactor);
 
     
-    if (max17260_init(&max17260Sensor, &m_twi))
+    if (max17260_init(&max17260Sensor, &m_twi0))
     {
         NRF_LOG_INFO("MAX17260 Initialised");
         
@@ -702,17 +720,14 @@ int main(void)
     }
 
     
-    //iqs227d_init(&touchSensor4, &m_twi_secondary);
+    iqs227d_init(&touchSensor4, &m_twi_secondary);
 
     NRF_LOG_FLUSH();
 
 
-    weight_sensor_wakeup();
-    spi3_master_init();
-    display_wakeup();
+    prepare_to_sleep();
+    wakeup_from_sleep();
 
-
-    start_weight_sensor_timers(); 
 
     for (;;)
     {

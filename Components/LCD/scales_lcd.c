@@ -37,8 +37,6 @@ lv_obj_t * bluetooth_logo_image;
 uint32_t draw_buf[DRAW_BUF_SIZE/8];
 
 void display_driver_init();
-void display_lvgl_init();
-
 
 static void lvgl_timeout_handler(void * p_context)
 {
@@ -81,6 +79,10 @@ void display_init(Scales_Display_t * scales_display)
     
     p_scales_display1 = scales_display;
 
+    lv_display_set_flush_cb(p_lv_display1, flush_cb);
+    lv_display_set_buffers(p_lv_display1, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x0000), LV_PART_MAIN);
+
         // Set LCD pins as outputs
     nrf_gpio_cfg_output(p_scales_display1->en_pin);
     nrf_gpio_cfg_output(p_scales_display1->rst_pin);
@@ -107,21 +109,6 @@ void display_driver_init()
     p_nrf_lcd_driver->lcd_display_invert(p_scales_display1->spim_instance, p_scales_display1->dc_pin, true);
 }
 
-void display_lvgl_init()
-{
-
-    lv_color_t color = {
-        .blue = 0xFF,
-        .green = 0xFF,
-        .red = 0xFF,
-    };
-
-    lv_display_set_flush_cb(p_lv_display1, flush_cb);
-    lv_display_set_buffers(p_lv_display1, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
-    lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x0000), LV_PART_MAIN);
-
-
-}
 
 void display_update_weight_label(float weight)
 {
@@ -198,7 +185,7 @@ void display_update_battery_label(uint8_t batteryLevel)
         return;
     }
     char buffer[4];
-    sprintf(buffer, "%d%%", batteryLevel);
+    sprintf(buffer, "%d%", batteryLevel);
 
     lv_label_set_text( objects.label_battery_percentage, buffer);
 }
@@ -324,7 +311,6 @@ void display_wakeup()
 {
     display_power_display_on();
     lv_obj_clean(lv_scr_act());
-    display_lvgl_init();
     display_reset();
     ui_init();
     display_driver_init();
@@ -332,6 +318,7 @@ void display_wakeup()
     lvgl_timeout_handler(NULL);
 
     start_lvgl_timer();
+
     display_turn_backlight_on();
 }
 
