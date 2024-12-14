@@ -499,10 +499,10 @@
             {
               "objID": "19d59618-f9a2-4cb5-cc6a-9d23a7e09d13",
               "type": "LVGLLabelWidget",
-              "left": 284,
-              "top": 0,
-              "width": 23,
-              "height": 16,
+              "left": -20,
+              "top": -75,
+              "width": 33,
+              "height": 22,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -537,7 +537,8 @@
                       "text_align": "RIGHT",
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
-                      "text_font": "MONTSERRAT_14"
+                      "text_font": "MONTSERRAT_20",
+                      "align": "RIGHT_MID"
                     }
                   }
                 }
@@ -552,10 +553,10 @@
             {
               "objID": "fb78b539-9f44-4d22-dfcc-d006e3624518",
               "type": "LVGLLabelWidget",
-              "left": 307,
+              "left": 300,
               "top": 0,
-              "width": 12,
-              "height": 16,
+              "width": 17,
+              "height": 22,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -589,7 +590,7 @@
                     "DEFAULT": {
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
-                      "text_font": "MONTSERRAT_14"
+                      "text_font": "MONTSERRAT_20"
                     }
                   }
                 }
