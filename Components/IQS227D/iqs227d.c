@@ -51,10 +51,11 @@ void iqs227d_init(IQS227D *sensor, const nrfx_twi_t *m_twi)
     nrf_gpio_cfg_output(sensor->pin_VCC);
     nrf_gpio_pin_set(sensor->pin_VCC);
 
-
-    err_code = nrf_drv_gpiote_init();
-    APP_ERROR_CHECK(err_code);
-
+    if (!nrfx_gpiote_is_init())
+    {
+        err_code = nrf_drv_gpiote_init();
+        APP_ERROR_CHECK(err_code);
+    }
     nrf_drv_gpiote_in_config_t in_config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
     in_config.pull = NRF_GPIO_PIN_NOPULL;
   
