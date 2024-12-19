@@ -35,13 +35,24 @@
 APP_TIMER_DEF(m_read_weight_timer_id);
 APP_TIMER_DEF(m_display_timer_id);
 APP_TIMER_DEF(m_wakeup_timer_id);
-APP_TIMER_DEF(m_keep_alive_timer_id);
 APP_TIMER_DEF(m_elapsed_time_timer_id);
 APP_TIMER_DEF(m_battery_level_timer_id);
+
+APP_TIMER_DEF(m_touch_sensor1_timer_id);
+APP_TIMER_DEF(m_touch_sensor4_timer_id);
 
 /* Time between RTC interrupts. */
 #define APP_TIMER_TICKS_TIMEOUT APP_TIMER_TICKS(100)
 
+
+typedef enum  
+{
+    OFF,
+    ON,
+    WAITING_FOR_TOUCH_4_RELEASE,
+} Scales_Operational_State_t;
+
+Scales_Operational_State_t scalesOperationalState = OFF;
 
 uint32_t currentElapsedTime = 0;
 
@@ -76,10 +87,21 @@ static const nrfx_spim_t spim3 = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< 
 #define WAKEUP_NOTIFICATION_INTERVAL            APP_TIMER_TICKS(500) 
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
+#define TOUCH_SENSOR4_TIMER_INTERVAL            APP_TIMER_TICKS(3000) 
 
 MAX17260 max17260Sensor;
+bool writeToWeightCharacteristic = false;
 
-void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+void begin_timer_on_weight_change();
+void start_weight_sensor_timers();
+void set_coffee_weight_callback();
+void start_timer_callback();
+
+void prepare_to_sleep();
+void wakeup_from_sleep();
+
+
+void touchSensor1TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     
     if (nrf_gpio_pin_read(pin) == 0U)
@@ -89,7 +111,42 @@ void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     else
     {
         NRF_LOG_INFO("Tout released.");
-        weight_sensor_tare();
+        begin_timer_on_weight_change();
+    }
+}
+
+void touchSensor1POutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    NRF_LOG_INFO("Pout Changed.");
+}
+
+void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    
+    if (nrf_gpio_pin_read(pin) == 0U)
+    {
+        ret_code_t err_code = app_timer_start(m_touch_sensor4_timer_id, TOUCH_SENSOR4_TIMER_INTERVAL, NULL);
+        APP_ERROR_CHECK(err_code);
+        NRF_LOG_INFO("Tout Touched.");
+    }
+    else
+    {
+        ret_code_t err_code = app_timer_stop(m_touch_sensor4_timer_id);
+        APP_ERROR_CHECK(err_code);
+        NRF_LOG_INFO("Tout released.");
+        if (scalesOperationalState == OFF)
+        {
+            wakeup_from_sleep();
+        }
+        else if (scalesOperationalState == WAITING_FOR_TOUCH_4_RELEASE)
+        {
+            scalesOperationalState = OFF;
+        }
+        else
+        {
+            weight_sensor_tare();
+        }
+        
     }
 }
 
@@ -97,6 +154,14 @@ void touchSensor4POutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
 {
     NRF_LOG_INFO("Pout Changed.");
 }
+
+IQS227D  touchSensor1 =    {
+                            .pin_POUT = 20,
+                            .pin_TOUT = 21,
+                            .pin_VCC = 22,
+                            .toutChangedFcn = touchSensor1TOutChanged,
+                            .poutChangedFcn = touchSensor1POutChanged,
+                           };
 
 IQS227D  touchSensor4 =    {
                             .pin_POUT = 46,
@@ -119,14 +184,6 @@ Scales_Display_t display1 = {
     .spim_instance = &spim3,
 };
 
-bool writeToWeightCharacteristic = false;
-
-void start_weight_sensor_timers();
-void set_coffee_weight_callback();
-void start_timer_callback();
-
-void prepare_to_sleep();
-void wakeup_from_sleep();
 
 
 static void calibration_complete_callback(float scaleFactor)
@@ -247,60 +304,6 @@ static void display_timeout_handler(void * p_context)
     APP_ERROR_CHECK(err_code);
 }
 
-float m_last_keep_alive_value = 0.0;
-float m_last_wakeup_value = 0.0;
-static void keep_alive_timeout_handler(void * p_context)
-{
-    UNUSED_PARAMETER(p_context);
-    ret_code_t err_code;
-    
-    float roundedValue = roundf(weight_sensor_get_weight_filtered() * 10.0);
-
-    if (fabs(m_last_keep_alive_value - roundedValue) < 5 && !writeToWeightCharacteristic)
-    {
-        NRF_LOG_INFO("SLEEPING");
-
-        prepare_to_sleep();
-
-        m_last_wakeup_value  = roundedValue;
-    }
-    else
-    {
-        NRF_LOG_INFO("NOT SLEEPING THIS ROUND");
-        err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_INTERVAL_TICKS, NULL);
-    }
-
-    m_last_keep_alive_value = roundedValue;
-}
-
-
-static void wakeup_timeout_handler(void * p_context)
-{
-    UNUSED_PARAMETER(p_context);
-    ret_code_t err_code;
-
-    float roundedValue = roundf(weight_sensor_read_weight() * 10.0);
-
-    if (fabs(m_last_wakeup_value - roundedValue) > 50)
-    {
-        err_code = app_timer_stop(m_wakeup_timer_id);
-        APP_ERROR_CHECK(err_code);
-
-        NRF_LOG_INFO("WAKING.");
-        NRF_LOG_FLUSH();
-
-        wakeup_from_sleep();
-    }
-    else
-    {
-        NRF_LOG_INFO("DIDN'T MEET WAKE THRESHOLD.");
-        NRF_LOG_FLUSH();
-        weight_sensor_sleep();
-        err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
-        APP_ERROR_CHECK(err_code);
-        m_last_wakeup_value = roundedValue; 
-    } 
-}
 
 void elapsed_time_timeout_handler(void * p_context)
 {
@@ -389,6 +392,15 @@ void battery_level_timeout_handler(void * p_context)
     APP_ERROR_CHECK(err_code);
 }
 
+void touch_sensor4_timeout_handler(void * p_context)
+{
+    if (scalesOperationalState == ON)
+    {
+        prepare_to_sleep();
+        scalesOperationalState = WAITING_FOR_TOUCH_4_RELEASE;
+    }
+}
+
 /**@brief Function for the Timer initialization.
  *
  * @details Initializes the timer module. This creates and starts application timers.
@@ -405,16 +417,13 @@ static void timers_init(void)
     err_code = app_timer_create(&m_display_timer_id, APP_TIMER_MODE_SINGLE_SHOT, display_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_create(&m_wakeup_timer_id, APP_TIMER_MODE_SINGLE_SHOT, wakeup_timeout_handler);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_create(&m_keep_alive_timer_id, APP_TIMER_MODE_SINGLE_SHOT, keep_alive_timeout_handler);
-    APP_ERROR_CHECK(err_code);
-
     err_code = app_timer_create(&m_elapsed_time_timer_id, APP_TIMER_MODE_REPEATED, elapsed_time_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_battery_level_timer_id, APP_TIMER_MODE_SINGLE_SHOT, battery_level_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_touch_sensor4_timer_id, APP_TIMER_MODE_SINGLE_SHOT, touch_sensor4_timeout_handler);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -423,9 +432,6 @@ void timers_start()
     ret_code_t err_code;
 
     err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_start(m_keep_alive_timer_id, KEEP_ALIVE_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
@@ -443,9 +449,6 @@ void timers_stop()
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_stop(m_wakeup_timer_id);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_stop(m_keep_alive_timer_id);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_stop(m_elapsed_time_timer_id);
@@ -588,18 +591,16 @@ static void spi3_master_uninit()
 
 void prepare_to_sleep()
 {
+    timers_stop();
     weight_sensor_sleep();
     display_sleep();
 
     twi0_master_uninit();
     spi3_master_uninit();
 
-    
-
     bluetooth_advertising_stop();
 
-    //err_code = app_timer_start(m_wakeup_timer_id, WAKEUP_NOTIFICATION_INTERVAL, NULL);
-    //APP_ERROR_CHECK(err_code);
+    scalesOperationalState = OFF;
 }
 
 void wakeup_from_sleep()
@@ -625,6 +626,8 @@ void wakeup_from_sleep()
     timers_start();
 
     bluetooth_advertising_start(false);
+
+    scalesOperationalState = ON;
 
 }
 
@@ -719,14 +722,14 @@ int main(void)
         NRF_LOG_INFO("MAX17260 not found");
     }
 
-    
+    iqs227d_init(&touchSensor1, &m_twi_secondary);
     iqs227d_init(&touchSensor4, &m_twi_secondary);
 
     NRF_LOG_FLUSH();
 
 
     prepare_to_sleep();
-    wakeup_from_sleep();
+    //wakeup_from_sleep();
 
 
     for (;;)
