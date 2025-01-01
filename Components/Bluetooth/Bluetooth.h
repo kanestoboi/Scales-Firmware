@@ -20,6 +20,8 @@ void bluetooth_register_disconnected_callback(ConnectedCallbackFunctionPointer f
 
 bool bluetooth_is_connected();
 
+void bluetooth_disconnect_ble_connection();
+
 #ifdef __cplusplus
 {extern "C" {}
 #endif

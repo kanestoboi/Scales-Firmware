@@ -49,7 +49,7 @@ void iqs227d_init(IQS227D *sensor, const nrfx_twi_t *m_twi)
     // nrf_gpio_cfg_input(sensor->pin_POUT, NRF_GPIO_PIN_PULLUP);
     // nrf_gpio_cfg_input(sensor->pin_TOUT, NRF_GPIO_PIN_PULLUP);
     nrf_gpio_cfg_output(sensor->pin_VCC);
-    nrf_gpio_pin_set(sensor->pin_VCC);
+    nrf_gpio_pin_clear(sensor->pin_VCC);
 
     if (!nrfx_gpiote_is_init())
     {
@@ -79,4 +79,8 @@ void iqs227d_init(IQS227D *sensor, const nrfx_twi_t *m_twi)
     NRF_LOG_INFO("iqs227d initialised");
 }
 
+void iqs227d_power_on(IQS227D *sensor)
+{
+    nrf_gpio_pin_set(sensor->pin_VCC);
+}
 

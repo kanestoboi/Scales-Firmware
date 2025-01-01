@@ -12,18 +12,9 @@ void ADS123X_Init(ADS123X *device, uint8_t pin_DOUT, uint8_t pin_SCLK, uint8_t p
   device->pin_GAIN1 = pin_GAIN1;
   device->pin_SPEED = pin_SPEED;
 
-  nrf_gpio_cfg_input(device->pin_DOUT, NRF_GPIO_PIN_NOPULL);
-  nrf_gpio_cfg_output(device->pin_SCLK);
-  nrf_gpio_cfg_output(device->pin_PDWN);
-  nrf_gpio_cfg_output(device->pin_GAIN0);
-  nrf_gpio_cfg_output(device->pin_GAIN1);
-  nrf_gpio_cfg_output(device->pin_SPEED);
-
   device->scaleFactor = 0.0f;
   device->offset = 0.0f;
   device->calibrateOnNextConversion = false;
-
-  ADS123X_PowerOn(device);
 }
 
 bool ADS123X_IsReady(ADS123X *device)
@@ -67,30 +58,40 @@ ADS123X_ERROR_t ADS123X_read(ADS123X *device, int32_t *value)
 
 void ADS123X_setGain(ADS123X *device, ADS123X_GAIN_t gain)
 {
+    if (nrf_gpio_pin_dir_get(device->pin_PDWN) == NRF_GPIO_PIN_DIR_OUTPUT)
+    {
+        device->gain = gain;
+        return;
+    }
+
     switch (gain)
     {
         case GAIN_1:
         {
             nrf_gpio_pin_clear(device->pin_GAIN1);
             nrf_gpio_pin_clear(device->pin_GAIN0);
+            device->gain = GAIN_1;
             break;
         }
         case GAIN_2:
         {
             nrf_gpio_pin_clear(device->pin_GAIN1);
             nrf_gpio_pin_set(device->pin_GAIN0);
+            device->gain = GAIN_2;
             break;
         }
         case GAIN_64:
         {
             nrf_gpio_pin_set(device->pin_GAIN1);
             nrf_gpio_pin_clear(device->pin_GAIN0);
+            device->gain = GAIN_64;
             break;
         }
         case GAIN_128:
         {
             nrf_gpio_pin_set(device->pin_GAIN1);
             nrf_gpio_pin_set(device->pin_GAIN0);
+            device->gain = GAIN_128;
             break;
         }
     }
@@ -98,7 +99,8 @@ void ADS123X_setGain(ADS123X *device, ADS123X_GAIN_t gain)
 
 void ADS123X_setSpeed(ADS123X *device, ADS123X_SPEED_t speed)
 {
-    switch (speed)
+    device->speed = speed;
+    switch (device->speed)
     {
         case SPEED_10SPS:
         {
@@ -135,12 +137,29 @@ ADS123X_ERROR_t ADS123X_readAverage(ADS123X *device, float *value, uint8_t times
 
 void ADS123X_PowerOn(ADS123X *device)
 {
-  nrf_gpio_pin_set(device->pin_PDWN);
+    nrf_gpio_cfg_input(device->pin_DOUT, NRF_GPIO_PIN_NOPULL);
+    nrf_gpio_cfg_output(device->pin_SCLK);
+    nrf_gpio_cfg_output(device->pin_PDWN);
+    nrf_gpio_cfg_output(device->pin_GAIN0);
+    nrf_gpio_cfg_output(device->pin_GAIN1);
+    nrf_gpio_cfg_output(device->pin_SPEED);
+
+    nrf_gpio_pin_set(device->pin_PDWN);
+
+    ADS123X_setSpeed(device, device->speed);
+    ADS123X_setGain(device, device->gain);
 }
 
 void ADS123X_PowerOff(ADS123X *device)
 {
   nrf_gpio_pin_clear(device->pin_PDWN);
+
+  nrf_gpio_cfg_default(device->pin_DOUT);
+  nrf_gpio_cfg_default(device->pin_SCLK);
+  nrf_gpio_cfg_default(device->pin_PDWN);
+  nrf_gpio_cfg_default(device->pin_GAIN0);
+  nrf_gpio_cfg_default(device->pin_GAIN1);
+  nrf_gpio_cfg_default(device->pin_SPEED);
 }
 
 ADS123X_ERROR_t ADS123X_tare(ADS123X *device, uint8_t times)

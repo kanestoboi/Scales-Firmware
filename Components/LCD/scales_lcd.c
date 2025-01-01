@@ -301,21 +301,33 @@ void display_power_display_off()
 
 void display_sleep()
 {
+    stop_lvgl_timer();
     display_turn_backlight_off();
     display_power_display_off();
     
-    stop_lvgl_timer();
+
+    nrf_gpio_cfg_default(p_scales_display1->en_pin);
+    nrf_gpio_cfg_default(p_scales_display1->rst_pin);
+    nrf_gpio_cfg_default(p_scales_display1->backlight_pin);
+    nrf_gpio_cfg_default(p_scales_display1->dc_pin);
 }
 
 void display_wakeup()
 {
-    display_power_display_on();
-    lv_obj_clean(lv_scr_act());
-    display_reset();
-    ui_init();
-    display_driver_init();
+    nrf_gpio_cfg_output(p_scales_display1->en_pin);
+    nrf_gpio_cfg_output(p_scales_display1->rst_pin);
+    nrf_gpio_cfg_output(p_scales_display1->backlight_pin);
+    nrf_gpio_cfg_output(p_scales_display1->dc_pin);
 
-    lvgl_timeout_handler(NULL);
+    display_power_display_on();
+
+    lv_obj_clean(lv_scr_act());
+
+    display_reset();
+
+    ui_init();
+        
+    display_driver_init();
 
     start_lvgl_timer();
 

@@ -98,7 +98,6 @@ static void services_init(void);
 static void on_conn_params_evt(ble_conn_params_evt_t * p_evt);
 static void conn_params_error_handler(uint32_t nrf_error);
 static void conn_params_init(void);
-static void sleep_mode_enter(void);
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context);
 static void ble_stack_init(void);
@@ -676,4 +675,19 @@ void bluetooth_call_disconnected_callback_registered_functions()
 bool bluetooth_is_connected()
 {
     return mBluetoothConnected;
+}
+
+void bluetooth_disconnect_ble_connection() {
+    ret_code_t err_code;
+
+    if (m_conn_handle != BLE_CONN_HANDLE_INVALID) {
+        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+        if (err_code != NRF_SUCCESS) {
+            NRF_LOG_ERROR("Failed to disconnect, error code: %d", err_code);
+        } else {
+            NRF_LOG_INFO("Disconnected successfully.");
+        }
+    } else {
+        NRF_LOG_WARNING("Invalid connection handle.");
+    }
 }
