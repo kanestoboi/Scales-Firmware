@@ -39,7 +39,8 @@ typedef struct ADS123X
   uint8_t pin_GAIN1;
   uint8_t pin_SPEED;
 
-  uint8_t gain;
+  ADS123X_GAIN_t gain;
+  ADS123X_SPEED_t speed;
   float scaleFactor;
   float offset;
   bool calibrateOnNextConversion;

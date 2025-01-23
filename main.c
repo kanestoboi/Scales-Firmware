@@ -34,7 +34,6 @@
 
 APP_TIMER_DEF(m_read_weight_timer_id);
 APP_TIMER_DEF(m_display_timer_id);
-APP_TIMER_DEF(m_wakeup_timer_id);
 APP_TIMER_DEF(m_elapsed_time_timer_id);
 APP_TIMER_DEF(m_battery_level_timer_id);
 
@@ -69,11 +68,6 @@ uint32_t currentElapsedTime = 0;
 #define SPI3_MOSI_PIN 14
 #define SPI3_SS_PIN 11
 
-#define ST7789_DC_PIN 40
-#define ST7789_RST_PIN 16
-#define ST7789_EN_PIN 41
-#define ST7789_BACKLIGHT_PIN 7;
-
 // Create a Handle for the twi communication
 const nrfx_twi_t m_twi0 = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
 const nrfx_twi_t m_twi_secondary = NRFX_TWI_INSTANCE(TWI_SECONDARY_INSTANCE_ID);
@@ -83,8 +77,6 @@ static const nrfx_spim_t spim3 = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< 
 
 #define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(40)   
 #define DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS    APP_TIMER_TICKS(40)  
-#define KEEP_ALIVE_INTERVAL_TICKS               APP_TIMER_TICKS(180000)
-#define WAKEUP_NOTIFICATION_INTERVAL            APP_TIMER_TICKS(500) 
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
 #define TOUCH_SENSOR4_TIMER_INTERVAL            APP_TIMER_TICKS(3000) 
@@ -115,6 +107,25 @@ void touchSensor1TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     }
 }
 
+void touchSensor2POutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    NRF_LOG_INFO("Pout Changed.");
+}
+
+void touchSensor2TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+    
+    if (nrf_gpio_pin_read(pin) == 0U)
+    {
+        NRF_LOG_INFO("Tout Touched.");
+    }
+    else
+    {
+        NRF_LOG_INFO("Tout released.");
+        set_coffee_weight_callback();
+    }
+}
+
 void touchSensor1POutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
     NRF_LOG_INFO("Pout Changed.");
@@ -122,7 +133,6 @@ void touchSensor1POutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
 
 void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    
     if (nrf_gpio_pin_read(pin) == 0U)
     {
         ret_code_t err_code = app_timer_start(m_touch_sensor4_timer_id, TOUCH_SENSOR4_TIMER_INTERVAL, NULL);
@@ -161,6 +171,22 @@ IQS227D  touchSensor1 =    {
                             .pin_VCC = 22,
                             .toutChangedFcn = touchSensor1TOutChanged,
                             .poutChangedFcn = touchSensor1POutChanged,
+                           };
+
+IQS227D  touchSensor2 =    {
+                            .pin_POUT = 23,
+                            .pin_TOUT = 24,
+                            .pin_VCC = 25,
+                            .toutChangedFcn = touchSensor2TOutChanged,
+                            .poutChangedFcn = touchSensor2POutChanged,
+                           };
+
+IQS227D  touchSensor3 =    {
+                            .pin_POUT = 17,
+                            .pin_TOUT = 15,
+                            .pin_VCC = 19,
+                            .toutChangedFcn = touchSensor4TOutChanged,
+                            .poutChangedFcn = touchSensor4POutChanged,
                            };
 
 IQS227D  touchSensor4 =    {
@@ -448,13 +474,16 @@ void timers_stop()
     err_code = app_timer_stop(m_display_timer_id);
     APP_ERROR_CHECK(err_code);
 
-    err_code = app_timer_stop(m_wakeup_timer_id);
-    APP_ERROR_CHECK(err_code);
-
     err_code = app_timer_stop(m_elapsed_time_timer_id);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_stop(m_battery_level_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_touch_sensor1_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_stop(m_touch_sensor4_timer_id);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -548,7 +577,6 @@ void twi_master_secondary_init(void)
     nrfx_twi_enable(&m_twi_secondary);
 }
 
-//Initialize the TWI as Master device
 void twi0_master_uninit(void)
 {
     //disable the TWI Communication
@@ -557,6 +585,7 @@ void twi0_master_uninit(void)
     //A function to initialize the twi communication
     nrfx_twi_uninit(&m_twi0);
 
+    // set pins to defult config
     nrf_gpio_cfg_default(TWI_SCL_M);
     nrf_gpio_cfg_default(TWI_SDA_M);
 }
@@ -583,8 +612,10 @@ static void spi3_master_uninit()
     nrfx_spim_abort(&spim3);
     nrfx_spim_uninit(&spim3);
 
+    // set pins to defult config
     nrf_gpio_cfg_default(SPI3_SCK_PIN);
     nrf_gpio_cfg_default(SPI3_MISO_PIN);
+    nrf_gpio_cfg_default(SPI3_SS_PIN);
     nrf_gpio_cfg_default(SPI3_MOSI_PIN);
 }
 
@@ -592,12 +623,19 @@ static void spi3_master_uninit()
 void prepare_to_sleep()
 {
     timers_stop();
+
+    // send components to sleep
     weight_sensor_sleep();
     display_sleep();
 
+    // uninitialise peripherals for low power sleep
     twi0_master_uninit();
     spi3_master_uninit();
 
+    // disconnect from any central device
+    bluetooth_disconnect_ble_connection();
+
+    // stop advertising
     bluetooth_advertising_stop();
 
     scalesOperationalState = OFF;
@@ -605,13 +643,16 @@ void prepare_to_sleep()
 
 void wakeup_from_sleep()
 {
+    // wake up hardware peripherals
     twi0_master_init();
-
     spi3_master_init();
+
+    // wake up components
     display_wakeup();
     weight_sensor_wakeup();
 
     display_indicate_tare();
+
     if (bluetooth_is_connected())
     {
         display_bluetooth_logo_show();
@@ -628,7 +669,6 @@ void wakeup_from_sleep()
     bluetooth_advertising_start(false);
 
     scalesOperationalState = ON;
-
 }
 
 
@@ -700,7 +740,6 @@ int main(void)
     bluetooth_register_connected_callback(enable_write_to_weight_characteristic);
     bluetooth_register_disconnected_callback(disable_write_to_weight_characteristic);
 
-    bluetooth_advertising_start(erase_bonds);
     NRF_LOG_INFO("Bluetooth setup complete");
     NRF_LOG_FLUSH();
 
@@ -708,7 +747,6 @@ int main(void)
     float scaleFactor = saved_parameters_getSavedScaleFactor();
     weight_sensor_init(scaleFactor);
 
-    
     if (max17260_init(&max17260Sensor, &m_twi0))
     {
         NRF_LOG_INFO("MAX17260 Initialised");
@@ -723,13 +761,16 @@ int main(void)
     }
 
     iqs227d_init(&touchSensor1, &m_twi_secondary);
+    iqs227d_init(&touchSensor2, &m_twi_secondary);
     iqs227d_init(&touchSensor4, &m_twi_secondary);
+    iqs227d_power_on(&touchSensor1);
+    iqs227d_power_on(&touchSensor2);
+    iqs227d_power_on(&touchSensor4);
 
     NRF_LOG_FLUSH();
 
 
     prepare_to_sleep();
-    //wakeup_from_sleep();
 
 
     for (;;)

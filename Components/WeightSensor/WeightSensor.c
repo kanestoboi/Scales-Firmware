@@ -33,20 +33,20 @@ const uint8_t pin_APWR = 4; // analogue power pin
 void (*mCalibrationCompleteCallback)(float scaleFactor) = NULL;
 void (*mWeightMovedFromZeroCallback)() = NULL;
 
-APP_TIMER_DEF(m_read_ads123x__timer_id);
+APP_TIMER_DEF(m_read_ads123x_timer_id);
 
 #define ADS123X_TIMER_INTERVAL_MS              12   // 12ms
 #define ADS123X_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(ADS123X_TIMER_INTERVAL_MS)
 
 static void start_read_ads123x_timer()
 {
-    ret_code_t err_code = app_timer_start(m_read_ads123x__timer_id, ADS123X_TIMER_INTERVAL_MS, NULL);
+    ret_code_t err_code = app_timer_start(m_read_ads123x_timer_id, ADS123X_TIMER_INTERVAL_MS, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
 static void stop_read_ads123x_timer()
 {
-    ret_code_t err_code = app_timer_stop(m_read_ads123x__timer_id);
+    ret_code_t err_code = app_timer_stop(m_read_ads123x_timer_id);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -183,7 +183,7 @@ static void ads123x_timeout_handler(void * p_context)
                                             
 void weight_sensor_init(float scaleFactor)
 {    
-    ret_code_t err_code = app_timer_create(&m_read_ads123x__timer_id, APP_TIMER_MODE_SINGLE_SHOT, ads123x_timeout_handler);
+    ret_code_t err_code = app_timer_create(&m_read_ads123x_timer_id, APP_TIMER_MODE_SINGLE_SHOT, ads123x_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     nrf_gpio_cfg_output(pin_APWR);
@@ -191,8 +191,7 @@ void weight_sensor_init(float scaleFactor)
 
 
     ADS123X_Init(&scale, pin_DOUT, pin_SCLK, pin_PWDN, pin_GAIN0, pin_GAIN1, pin_SPEED);
-    
-    ADS123X_PowerOff(&scale);
+
     ADS123X_setGain(&scale, GAIN_128);
     ADS123X_setSpeed(&scale, SPEED_80SPS);
     ADS123X_setScaleFactor(&scale, scaleFactor);
