@@ -114,7 +114,6 @@ void touchSensor2POutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
 
 void touchSensor2TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    
     if (nrf_gpio_pin_read(pin) == 0U)
     {
         NRF_LOG_INFO("Tout Touched.");
@@ -122,7 +121,7 @@ void touchSensor2TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     else
     {
         NRF_LOG_INFO("Tout released.");
-        set_coffee_weight_callback();
+        weight_sensor_get_stable_weight(set_coffee_weight_callback);
     }
 }
 
