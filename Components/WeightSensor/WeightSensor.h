@@ -36,4 +36,6 @@ float weight_sensor_read_weight();
 
 void weight_sensor_enable_weight_change_sense(void (*weightSenseTriggeredCallback)(void));
 
+void weight_sensor_get_stable_weight(void (*stableWeightAcheivedCallback)(void));
+
 #endif

@@ -10,7 +10,8 @@
 ADS123X scale;
 
 float mScaleValue;
-float mFilteredScaleValue = 0;
+float mFilteredScaleValue = 0.0;
+float mLastFilteredScaleValue = 0.0;
 float mRoundedValue;
 float mSenseThresholdValue = 0.0;
 
@@ -22,6 +23,8 @@ int32_t mCalibrationReadCount = 0;
 weight_sensor_state_t mWeightSensorCurrentState = NORMAL;
 weight_sensor_sense_state_t mWeightSensorSenseState = NOT_SENSING;
 
+bool mStableWeightRequested = false;
+
 const uint8_t pin_DOUT = 33;
 const uint8_t pin_SCLK = 35;
 const uint8_t pin_PWDN = 37;
@@ -32,6 +35,7 @@ const uint8_t pin_APWR = 4; // analogue power pin
 
 void (*mCalibrationCompleteCallback)(float scaleFactor) = NULL;
 void (*mWeightMovedFromZeroCallback)() = NULL;
+void (*mStableWeightAcheivedCallback)() = NULL;
 
 APP_TIMER_DEF(m_read_ads123x_timer_id);
 
@@ -57,16 +61,29 @@ static void ads123x_timeout_handler(void * p_context)
         case NORMAL:
         {
             ADS123X_getUnits(&scale, &mScaleValue, 1);
-            mFilteredScaleValue = 0.6*mFilteredScaleValue + 0.4 * mScaleValue;
+
+            if (mStableWeightRequested)
+            {
+                mLastFilteredScaleValue = mFilteredScaleValue;
+            }
+
+            mFilteredScaleValue = 0.6 * mFilteredScaleValue + 0.4 * mScaleValue;
+
+            if (mStableWeightRequested && fabs(mFilteredScaleValue - mLastFilteredScaleValue) <= 0.05)
+            {
+                mStableWeightAcheivedCallback();
+                mStableWeightRequested = false;
+            }
 
             if (mWeightSensorSenseState == SENSING_WEIGHT_CHANGE && mFilteredScaleValue >= mSenseThresholdValue)
             {
                 mWeightMovedFromZeroCallback();
                 mWeightSensorSenseState = NOT_SENSING;
             }
+
             break;
         }
-        case START_TARING :
+        case START_TARING:
         {
             mTaringReadCount = 0;
             mTaringSum = 0;
@@ -266,4 +283,10 @@ void weight_sensor_enable_weight_change_sense(void (*weightSenseTriggeredCallbac
     mWeightSensorSenseState = SENSING_WEIGHT_CHANGE;
     mSenseThresholdValue = mFilteredScaleValue + 0.5;
     mWeightMovedFromZeroCallback = weightSenseTriggeredCallback;
+}
+
+void weight_sensor_get_stable_weight(void (*stableWeightAcheivedCallback)(void))
+{
+    mStableWeightRequested = true;
+    mStableWeightAcheivedCallback = stableWeightAcheivedCallback;
 }
