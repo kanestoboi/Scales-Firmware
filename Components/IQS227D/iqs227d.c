@@ -84,3 +84,9 @@ void iqs227d_power_on(IQS227D *sensor)
     nrf_gpio_pin_set(sensor->pin_VCC);
 }
 
+void iqs227d_power_off(IQS227D *sensor)
+{
+    nrf_gpio_pin_clear(sensor->pin_VCC);
+}
+
+

@@ -637,6 +637,9 @@ void prepare_to_sleep()
     // stop advertising
     bluetooth_advertising_stop();
 
+    iqs227d_power_off(&touchSensor1);
+    iqs227d_power_off(&touchSensor2);
+
     scalesOperationalState = OFF;
 }
 
@@ -666,6 +669,9 @@ void wakeup_from_sleep()
     timers_start();
 
     bluetooth_advertising_start(false);
+
+    iqs227d_power_on(&touchSensor1);
+    iqs227d_power_on(&touchSensor2);
 
     scalesOperationalState = ON;
 }
