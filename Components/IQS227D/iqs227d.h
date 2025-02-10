@@ -26,4 +26,7 @@ void iqs227d_init(IQS227D *sensor, const nrfx_twi_t *m_twi);
 
 void iqs227d_power_on(IQS227D *sensor);
 
+void iqs227d_power_off(IQS227D *sensor);
+
+
 #endif
