@@ -35,7 +35,7 @@ static uint8_t battery_energy_measurement_encode(battery_energy_status_t* batter
     encoded_sfloat = ((battery_energy_status->external_power_source.exponent << 12) & 0xF000) |
                      ((battery_energy_status->external_power_source.mantissa <<  0) & 0x0FFF);
                      
-    NRF_LOG_INFO("Encoded external_power_source %X", encoded_sfloat);             
+    //NRF_LOG_INFO("Encoded external_power_source %X", encoded_sfloat);             
 
     len += uint16_encode(encoded_sfloat, &battery_energy_status_encoded_buffer[len]);
     
@@ -43,10 +43,10 @@ static uint8_t battery_energy_measurement_encode(battery_energy_status_t* batter
                      ((battery_energy_status->present_voltage.mantissa <<  0) & 0x0FFF);
 
 
-    NRF_LOG_INFO("Encoded Voltage exponent %d", battery_energy_status->present_voltage.exponent);
-    NRF_LOG_INFO("Encoded Voltage mantissa %d", battery_energy_status->present_voltage.mantissa);
+    //NRF_LOG_INFO("Encoded Voltage exponent %d", battery_energy_status->present_voltage.exponent);
+    //NRF_LOG_INFO("Encoded Voltage mantissa %d", battery_energy_status->present_voltage.mantissa);
 
-    NRF_LOG_INFO("Encoded Voltage Present %X", encoded_sfloat);
+    //NRF_LOG_INFO("Encoded Voltage Present %X", encoded_sfloat);
 
     len += uint16_encode(encoded_sfloat, &battery_energy_status_encoded_buffer[len]);
 
@@ -487,7 +487,7 @@ ret_code_t battery_service_battery_time_status_update(battery_time_status_t batt
                                       &gatts_value);
     if (err_code == NRF_SUCCESS)
     {
-        NRF_LOG_INFO(" battery time status has been updated:")
+        //NRF_LOG_INFO(" battery time status has been updated:")
     }
     else
     {
@@ -567,7 +567,7 @@ ret_code_t battery_service_battery_energy_status_update(battery_energy_status_t 
                                       &gatts_value);
     if (err_code == NRF_SUCCESS)
     {
-        NRF_LOG_INFO(" battery energy status has been updated:")
+        //NRF_LOG_INFO(" battery energy status has been updated:")
     }
     else
     {

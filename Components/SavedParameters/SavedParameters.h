@@ -29,6 +29,9 @@ void saved_parameters_setButton3CSenseThreshold(uint16_t threshold);
 uint16_t saved_parameters_getButton4CSenseThreshold();
 void saved_parameters_setButton4CSenseThreshold(uint16_t threshold);
 
+float saved_parameters_getWeightFilterOutputCoefficient();
+void saved_parameters_setWeightFilterOutputCoefficient(float coefficient);
+
 uint8_t saved_parameters_getWeighMode();
 void saved_parameters_setWeighMode(uint8_t mode);
 

@@ -38,4 +38,8 @@ void weight_sensor_enable_weight_change_sense(void (*weightSenseTriggeredCallbac
 
 void weight_sensor_get_stable_weight(void (*stableWeightAcheivedCallback)(void));
 
+void weight_sensor_set_weight_filter_input_coefficient(float coefficient);
+
+void weight_sensor_set_weight_filter_output_coefficient(float coefficient);
+
 #endif

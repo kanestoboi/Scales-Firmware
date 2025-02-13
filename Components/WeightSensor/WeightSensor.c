@@ -15,6 +15,9 @@ float mLastFilteredScaleValue = 0.0;
 float mRoundedValue;
 float mSenseThresholdValue = 0.0;
 
+float mWeightFilterInputCoefficient = 0.4;
+float mWeightFilterOutputCoefficient = 0.6;
+
 int32_t mTaringSum = 0;
 int32_t mTaringReadCount = 0;
 int32_t mCalibrationSum = 0;
@@ -67,7 +70,7 @@ static void ads123x_timeout_handler(void * p_context)
                 mLastFilteredScaleValue = mFilteredScaleValue;
             }
 
-            mFilteredScaleValue = 0.6 * mFilteredScaleValue + 0.4 * mScaleValue;
+            mFilteredScaleValue = mWeightFilterOutputCoefficient * mFilteredScaleValue + mWeightFilterInputCoefficient * mScaleValue;
 
             if (mStableWeightRequested && fabs(mFilteredScaleValue - mLastFilteredScaleValue) <= 0.05)
             {
@@ -289,4 +292,26 @@ void weight_sensor_get_stable_weight(void (*stableWeightAcheivedCallback)(void))
 {
     mStableWeightRequested = true;
     mStableWeightAcheivedCallback = stableWeightAcheivedCallback;
+}
+
+void weight_sensor_set_weight_filter_input_coefficient(float coefficient)
+{
+    if (coefficient < 1.0)
+    {
+        mWeightFilterInputCoefficient = coefficient;
+        mWeightFilterOutputCoefficient = 1.0 - mWeightFilterInputCoefficient;
+    }
+
+    NRF_LOG_INFO("Filter Output Coefficient:%s%d.%02d\n" , NRF_LOG_FLOAT(mWeightFilterOutputCoefficient) );
+}
+
+void weight_sensor_set_weight_filter_output_coefficient(float coefficient)
+{
+    if (coefficient < 1.0)
+    {
+        mWeightFilterOutputCoefficient = coefficient;
+        mWeightFilterInputCoefficient = 1.0 - mWeightFilterOutputCoefficient;
+    }
+
+    NRF_LOG_INFO("Filter Output Coefficient:%s%d.%02d\n" , NRF_LOG_FLOAT(mWeightFilterOutputCoefficient) );
 }

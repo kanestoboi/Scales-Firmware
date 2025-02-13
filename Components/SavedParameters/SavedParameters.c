@@ -42,6 +42,7 @@ typedef struct SavedParameters_t
     uint16_t button2_csense_threshold;
     uint16_t button3_csense_threshold;
     uint16_t button4_csense_threshold;
+    float weight_filter_output_coefficient;
 } SavedParameters_t;
 
 static SavedParameters_t mSavedParameters = 
@@ -50,6 +51,7 @@ static SavedParameters_t mSavedParameters =
     .coffee_to_water_ratio_numerator = 1,
     .coffee_to_water_ratio_denominator = 16,
     .weighMode = 0,
+    .weight_filter_output_coefficient = 0.5
 };
 
 /* A record containing dummy configuration data. */
@@ -310,6 +312,18 @@ void saved_parameters_setButton4CSenseThreshold(uint16_t threshold)
     mSavedParameters.button4_csense_threshold = threshold;
     record_update();
 }
+
+float saved_parameters_getWeightFilterOutputCoefficient()
+{
+    return mSavedParameters.weight_filter_output_coefficient;
+}
+
+void saved_parameters_setWeightFilterOutputCoefficient(float coefficient)
+{
+    mSavedParameters.weight_filter_output_coefficient = coefficient;
+    record_update();
+}
+
 
 
 static void record_update()
