@@ -156,11 +156,11 @@ static ret_code_t diagnostics_service_weight_filter_output_coefficient_char_add(
 
 ret_code_t diagnostics_service_init()
 {
-    // Initialize Battery Service.
+    // Initialize Diagnostics Service.
     diagnostics_service_init_t     diagnostics_service_init;
     memset(&diagnostics_service_init, 0, sizeof(diagnostics_service_init));
 
-    // Here the sec level for the Battery Service can be changed/increased.
+    // Here the sec level for the Diagnostics Service can be changed/increased.
     diagnostics_service_init.bl_rd_sec        = SEC_OPEN;
     diagnostics_service_init.bl_cccd_wr_sec   = SEC_OPEN;
     diagnostics_service_init.bl_report_rd_sec = SEC_OPEN;
@@ -192,7 +192,7 @@ ret_code_t diagnostics_service_init()
     err_code = sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &ble_uuid, &m_diagnostics_service.service_handle);
     VERIFY_SUCCESS(err_code);
 
-    // Add battery level characteristic
+    // Add weight filter output coefficient characteristic
     err_code = diagnostics_service_weight_filter_output_coefficient_char_add(&diagnostics_service_init);
     if (err_code != NRF_SUCCESS)
     {
@@ -203,19 +203,19 @@ ret_code_t diagnostics_service_init()
 }
 
 
-/**@brief Function for sending notifications with the Battery Level characteristic.
+/**@brief Function for sending notifications with the Diagnostics Service.
  *
  * @param[in]   p_hvx_params Pointer to structure with notification data.
  * @param[in]   conn_handle  Connection handle.
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-static ret_code_t diagnostics_service_battery_notification_send(ble_gatts_hvx_params_t * const p_hvx_params, uint16_t conn_handle)
+static ret_code_t diagnostics_service_notification_send(ble_gatts_hvx_params_t * const p_hvx_params, uint16_t conn_handle)
 {
     ret_code_t err_code = sd_ble_gatts_hvx(conn_handle, p_hvx_params);
     if (err_code == NRF_SUCCESS)
     {
-        NRF_LOG_INFO("Battery notification has been sent using conn_handle: 0x%04X", conn_handle);
+        NRF_LOG_INFO("Diagnostics notification has been sent using conn_handle: 0x%04X", conn_handle);
     }
     else
     {
@@ -280,21 +280,19 @@ ret_code_t diagnostics_service_weight_filter_output_coefficient_update(float coe
                     {
                         if (err_code == NRF_SUCCESS)
                         {
-                            err_code = diagnostics_service_battery_notification_send(&hvx_params,
-                                                                 conn_handles.conn_handles[i]);
+                            err_code = diagnostics_service_notification_send(&hvx_params, conn_handles.conn_handles[i]);
                         }
                         else
                         {
                             // Preserve the first non-zero error code
-                            UNUSED_RETURN_VALUE(diagnostics_service_battery_notification_send(&hvx_params,
-                                                                          conn_handles.conn_handles[i]));
+                            UNUSED_RETURN_VALUE(diagnostics_service_notification_send(&hvx_params, conn_handles.conn_handles[i]));
                         }
                     }
                 }
             }
             else
             {
-                err_code = diagnostics_service_battery_notification_send(&hvx_params, conn_handle);
+                err_code = diagnostics_service_notification_send(&hvx_params, conn_handle);
             }
         }
         else
@@ -306,7 +304,7 @@ ret_code_t diagnostics_service_weight_filter_output_coefficient_update(float coe
     return err_code;
 }
 
-ret_code_t diagnostics_service_battery_lvl_on_reconnection_update(uint16_t    conn_handle)
+ret_code_t diagnostics_service_weight_filter_output_coefficient_on_reconnection_update(uint16_t    conn_handle)
 {
     ret_code_t err_code;
 
@@ -323,7 +321,7 @@ ret_code_t diagnostics_service_battery_lvl_on_reconnection_update(uint16_t    co
         hvx_params.p_len  = &len;
         hvx_params.p_data = (uint8_t*)&m_diagnostics_service.weight_filter_output_coefficient_last;
 
-        err_code = diagnostics_service_battery_notification_send(&hvx_params, conn_handle);
+        err_code = diagnostics_service_notification_send(&hvx_params, conn_handle);
 
         return err_code;
     }
