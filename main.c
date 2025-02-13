@@ -99,11 +99,11 @@ void touchSensor1TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     
     if (nrf_gpio_pin_read(pin) == 0U)
     {
-        NRF_LOG_INFO("Tout Touched.");
+        NRF_LOG_INFO("Pin %d Tout Touched.", pin);
     }
     else
     {
-        NRF_LOG_INFO("Tout released.");
+        NRF_LOG_INFO("Pin %d Tout released.", pin);
         begin_timer_on_weight_change();
     }
 }
@@ -117,11 +117,11 @@ void touchSensor2TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
 {
     if (nrf_gpio_pin_read(pin) == 0U)
     {
-        NRF_LOG_INFO("Tout Touched.");
+        NRF_LOG_INFO("Pin %d Tout Touched.", pin);
     }
     else
     {
-        NRF_LOG_INFO("Tout released.");
+        NRF_LOG_INFO("Pin %d Tout released.", pin);
         weight_sensor_get_stable_weight(set_coffee_weight_callback);
     }
 }
@@ -137,13 +137,13 @@ void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     {
         ret_code_t err_code = app_timer_start(m_touch_sensor4_timer_id, TOUCH_SENSOR4_TIMER_INTERVAL, NULL);
         APP_ERROR_CHECK(err_code);
-        NRF_LOG_INFO("Tout Touched.");
+        NRF_LOG_INFO("Pin %d Tout Touched.", pin);
     }
     else
     {
         ret_code_t err_code = app_timer_stop(m_touch_sensor4_timer_id);
         APP_ERROR_CHECK(err_code);
-        NRF_LOG_INFO("Tout released.");
+        NRF_LOG_INFO("Pin %d Tout released.", pin);
         if (scalesOperationalState == OFF)
         {
             wakeup_from_sleep();
