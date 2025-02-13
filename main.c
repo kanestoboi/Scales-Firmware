@@ -29,6 +29,7 @@
 #include "Components/Bluetooth/Services/ElapsedTimeService.h"
 #include "Components/Bluetooth/Services/BatteryService.h"
 #include "Components/Bluetooth/Services/ButtonThresholdService.h"
+#include "Components/Bluetooth/Services/DiagnosticsService.h"
 #include "Components/SavedParameters/SavedParameters.h"
 #include "Components/IQS227D/iqs227d.h"
 
@@ -210,6 +211,14 @@ Scales_Display_t display1 = {
 };
 
 
+static void weight_filter_output_coefficient_callback(float coeffifient)
+{
+    NRF_LOG_INFO("weight_filter_output_coefficient_callback entered.");
+    NRF_LOG_FLUSH();
+    weight_sensor_set_weight_filter_output_coefficient(coeffifient);
+    NRF_LOG_INFO("weight_filter_output_coefficient_callback complete");
+    NRF_LOG_FLUSH();
+}
 
 static void calibration_complete_callback(float scaleFactor)
 {
@@ -403,7 +412,7 @@ void battery_level_timeout_handler(void * p_context)
 
         battery_service_battery_energy_status_update(battery_energy_status, BLE_CONN_HANDLE_ALL);
 
-        NRF_LOG_RAW_INFO("Cell Voltage:%s%d.%01d V\n" , NRF_LOG_FLOAT_SCALES(voltage) );
+        //NRF_LOG_RAW_INFO("Cell Voltage:%s%d.%01d V\n" , NRF_LOG_FLOAT_SCALES(voltage) );
 
 
         display_update_battery_label((uint8_t)roundf(soc));
@@ -676,9 +685,7 @@ void wakeup_from_sleep()
     scalesOperationalState = ON;
 }
 
-
-/**@brief Function for application main en
-try.
+/**@brief Function for application main entry.
  */
 int main(void)
 {
@@ -726,6 +733,11 @@ int main(void)
         NRF_LOG_INFO("Error Initialing button threshold service");
     }
 
+    if (diagnostics_service_init() != NRF_SUCCESS)
+    {
+        NRF_LOG_INFO("Error initialing diagnostics service");
+    }
+
     ble_weight_sensor_set_tare_callback(weight_sensor_tare);
     ble_weight_sensor_set_calibration_callback(weight_sensor_service_calibration_callback);
     ble_weight_sensor_set_coffee_to_water_ratio_callback(set_coffee_to_water_ratio);
@@ -735,6 +747,10 @@ int main(void)
 
     saved_parameters_setCoffeeToWaterRatioNumerator(1);
     saved_parameters_setCoffeeToWaterRatioDenominator(16);
+
+    weight_sensor_set_weight_filter_output_coefficient(saved_parameters_getWeightFilterOutputCoefficient());
+
+    diagnostics_service_weight_filter_output_coefficient_received_callback(weight_filter_output_coefficient_callback);
 
     uint16_t savedCoffeeToWaterRatio = saved_parameters_getCoffeeToWaterRatioNumerator() << 8 | saved_parameters_getCoffeeToWaterRatioDenominator();
     ble_weight_sensor_service_coffee_to_water_ratio_update((uint8_t*)&savedCoffeeToWaterRatio, sizeof(savedCoffeeToWaterRatio));
