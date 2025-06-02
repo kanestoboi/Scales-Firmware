@@ -1,6 +1,6 @@
 #include "Components/IQS227D/iqs227d.h"
 #include "nrf_log.h"
-
+#include "nrf_delay.h"
 
 #include "nrf_drv_gpiote.h"
 
@@ -39,54 +39,73 @@ static bool iqs227d_register_read(IQS227D *sensor, uint8_t register_address, uin
 void iqs227d_init(IQS227D *sensor, const nrfx_twi_t *m_twi)
 {    
     ret_code_t err_code;
-
     sensor->mHandle = m_twi;
 
-    uint8_t bank0;
-    
-    //iqs227d_register_read(sensor, 0, &bank0, 1);
-
-    // nrf_gpio_cfg_input(sensor->pin_POUT, NRF_GPIO_PIN_PULLUP);
-    // nrf_gpio_cfg_input(sensor->pin_TOUT, NRF_GPIO_PIN_PULLUP);
+    // Power pin setup
     nrf_gpio_cfg_output(sensor->pin_VCC);
-    nrf_gpio_pin_clear(sensor->pin_VCC);
+    nrf_gpio_pin_clear(sensor->pin_VCC); // keep off initially
 
+    // GPIOTE init
     if (!nrfx_gpiote_is_init())
     {
         err_code = nrf_drv_gpiote_init();
         APP_ERROR_CHECK(err_code);
     }
+
+    // Configure input pins for IQS227D, but don't enable interrupts yet
     nrf_drv_gpiote_in_config_t in_config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
-    in_config.pull = NRF_GPIO_PIN_NOPULL;
-  
+    in_config.pull = NRF_GPIO_PIN_PULLUP;  // Choose appropriately
+
     if (sensor->toutChangedFcn != NULL)
     {
         err_code = nrf_drv_gpiote_in_init(sensor->pin_TOUT, &in_config, sensor->toutChangedFcn);
         APP_ERROR_CHECK(err_code);
-
-        nrf_drv_gpiote_in_event_enable(sensor->pin_TOUT, true);
+        // Don't enable event yet
     }
 
     if (sensor->poutChangedFcn != NULL)
     {
         err_code = nrf_drv_gpiote_in_init(sensor->pin_POUT, &in_config, sensor->poutChangedFcn);
         APP_ERROR_CHECK(err_code);
-
-        //nrf_drv_gpiote_in_event_enable(sensor->pin_POUT, true);
+        // Don't enable event yet
     }
-    
 
-    NRF_LOG_INFO("iqs227d initialised");
+    NRF_LOG_INFO("iqs227d initialized (waiting for power on)");
 }
+
 
 void iqs227d_power_on(IQS227D *sensor)
 {
     nrf_gpio_pin_set(sensor->pin_VCC);
+    nrf_delay_ms(10); // Allow time for power-up and pin to stabilize
+
+    if (sensor->toutChangedFcn != NULL)
+    {
+        nrf_drv_gpiote_in_event_enable(sensor->pin_TOUT, true);
+    }
+
+    if (sensor->poutChangedFcn != NULL)
+    {
+        //nrf_drv_gpiote_in_event_enable(sensor->pin_POUT, true);
+    }
+
+    NRF_LOG_INFO("iqs227d powered on and interrupt enabled");
 }
 
 void iqs227d_power_off(IQS227D *sensor)
 {
-    nrf_gpio_pin_clear(sensor->pin_VCC);
-}
+    if (sensor->toutChangedFcn != NULL)
+    {
+        nrf_drv_gpiote_in_event_disable(sensor->pin_TOUT);
+    }
 
+    if (sensor->poutChangedFcn != NULL)
+    {
+        nrf_drv_gpiote_in_event_disable(sensor->pin_POUT);
+    }
+
+    nrf_gpio_pin_clear(sensor->pin_VCC);
+
+    NRF_LOG_INFO("iqs227d powered off and interrupts disabled");
+}
 

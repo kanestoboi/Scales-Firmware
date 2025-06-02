@@ -72,7 +72,7 @@ static void ads123x_timeout_handler(void * p_context)
 
             mFilteredScaleValue = mWeightFilterOutputCoefficient * mFilteredScaleValue + mWeightFilterInputCoefficient * mScaleValue;
 
-            if (mStableWeightRequested && fabs(mFilteredScaleValue - mLastFilteredScaleValue) <= 0.05)
+            if (mStableWeightRequested && fabs(mFilteredScaleValue - mLastFilteredScaleValue) <= 0.02)
             {
                 mStableWeightAcheivedCallback();
                 mStableWeightRequested = false;

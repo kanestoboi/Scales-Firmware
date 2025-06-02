@@ -18,7 +18,7 @@ extern const nrf_lcd_t nrf_lcd_st7735;
 extern const nrf_lcd_t nrf_lcd_st7789;
 
 APP_TIMER_DEF(m_lvgl_timer_id);
-
+APP_TIMER_DEF(m_elapsed_time_timer_id);
 
 lv_display_t * p_lv_display1;
 Scales_Display_t * p_scales_display1;
@@ -29,19 +29,54 @@ static const nrf_lcd_t * p_nrf_lcd_driver = &nrf_lcd_st7789;
 #define ver_res 172
 
 lv_obj_t * bluetooth_logo_image;
+static bool flash_timer_label = false;
 
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
 #define LVGL_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(LVGL_TIMER_INTERVAL_MS)
+
+#define ELAPSED_TIME_TIMER_INTERVAL_MS              1000   // 1000ms
+#define ELAPSED_TIME_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(ELAPSED_TIME_TIMER_INTERVAL_MS)
+
 //LVGL draw into this buffer, 1/10 screen size usually works well. The size is in bytes
 #define DRAW_BUF_SIZE (hor_res * ver_res * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE/8];
 
 void display_driver_init();
 
+void display_toggle_timer_label_visibility()
+{
+    if (objects.label_timer == NULL)
+        return;
+
+    if (lv_obj_has_flag(objects.label_timer, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_clear_flag(objects.label_timer, LV_OBJ_FLAG_HIDDEN); // Show
+    } else {
+        lv_obj_add_flag(objects.label_timer, LV_OBJ_FLAG_HIDDEN);   // Hide
+    }
+}
+
+void display_flash_elapsed_time_label()
+{
+    ret_code_t err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIME_TIMER_INTERVAL_TICKS, NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
+void display_stop_flash_elapsed_time_label()
+{
+    lv_obj_clear_flag(objects.label_timer, LV_OBJ_FLAG_HIDDEN);
+    ret_code_t err_code = app_timer_stop(m_elapsed_time_timer_id);
+    APP_ERROR_CHECK(err_code);
+}
+
 static void lvgl_timeout_handler(void * p_context)
 {
     lv_task_handler(); // let the GUI do its work 
     lv_tick_inc(LVGL_TIMER_INTERVAL_MS); // tell LVGL how much time has passed 
+}
+
+static void elapsed_time_timeout_handler(void * p_context)
+{
+    display_toggle_timer_label_visibility();
 }
 
 void flush_cb(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
@@ -90,6 +125,9 @@ void display_init(Scales_Display_t * scales_display)
     nrf_gpio_cfg_output(p_scales_display1->dc_pin);
 
     ret_code_t err_code = app_timer_create(&m_lvgl_timer_id, APP_TIMER_MODE_REPEATED, lvgl_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_elapsed_time_timer_id, APP_TIMER_MODE_REPEATED, elapsed_time_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     display_sleep();

@@ -59,4 +59,7 @@ void display_reset();
 void display_sleep();
 void display_wakeup();
 
+void display_flash_elapsed_time_label();
+void display_stop_flash_elapsed_time_label();
+
 #endif

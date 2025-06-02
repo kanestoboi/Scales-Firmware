@@ -52,9 +52,18 @@ typedef enum
     WAITING_FOR_TOUCH_4_RELEASE,
 } Scales_Operational_State_t;
 
+typedef enum  
+{
+    IDLE,
+    WAITING_FOR_TOUCH_RELEASE,
+} Button_Operation_State_t;
+
 Scales_Operational_State_t scalesOperationalState = OFF;
 
+Button_Operation_State_t button1OperationState = IDLE;
+
 uint32_t currentElapsedTime = 0;
+bool elapsed_time_timer_running = false;
 
 //Initializing TWI0 instance
 #define TWI_INSTANCE_ID                 0
@@ -80,6 +89,7 @@ static const nrfx_spim_t spim3 = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< 
 #define DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS    APP_TIMER_TICKS(40)  
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
+#define TOUCH_SENSOR1_TIMER_INTERVAL            APP_TIMER_TICKS(3000) 
 #define TOUCH_SENSOR4_TIMER_INTERVAL            APP_TIMER_TICKS(3000) 
 
 MAX17260 max17260Sensor;
@@ -88,7 +98,8 @@ bool writeToWeightCharacteristic = false;
 void begin_timer_on_weight_change();
 void start_weight_sensor_timers();
 void set_coffee_weight_callback();
-void start_timer_callback();
+void start_elapsed_timer_timer_callback();
+void stop_elapsed_time_timer();
 
 void prepare_to_sleep();
 void wakeup_from_sleep();
@@ -96,15 +107,32 @@ void wakeup_from_sleep();
 
 void touchSensor1TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    
     if (nrf_gpio_pin_read(pin) == 0U)
     {
+        ret_code_t err_code = app_timer_start(m_touch_sensor1_timer_id, TOUCH_SENSOR1_TIMER_INTERVAL, NULL);
+        APP_ERROR_CHECK(err_code);
         NRF_LOG_INFO("Pin %d Tout Touched.", pin);
     }
     else
     {
+        ret_code_t err_code = app_timer_stop(m_touch_sensor1_timer_id);
+        APP_ERROR_CHECK(err_code);
         NRF_LOG_INFO("Pin %d Tout released.", pin);
-        begin_timer_on_weight_change();
+        
+        if (button1OperationState == WAITING_FOR_TOUCH_RELEASE)
+        {
+            weight_sensor_get_stable_weight(begin_timer_on_weight_change);
+            
+            button1OperationState = IDLE;
+        }
+        else
+        {
+            if (elapsed_time_timer_running) {
+                stop_elapsed_time_timer();  // Call this if the timer is running
+            } else {
+                start_elapsed_timer_timer_callback();
+            }
+        }    
     }
 }
 
@@ -156,7 +184,6 @@ void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
         {
             weight_sensor_tare();
         }
-        
     }
 }
 
@@ -277,18 +304,30 @@ void begin_timer_on_weight_change()
 
     display_update_timer_label(0);
 
-    weight_sensor_enable_weight_change_sense(start_timer_callback);
+    weight_sensor_enable_weight_change_sense(start_elapsed_timer_timer_callback);
 }
 
-void start_timer_callback()
+void start_elapsed_timer_timer_callback()
 {
     ret_code_t err_code = app_timer_stop(m_elapsed_time_timer_id);
     APP_ERROR_CHECK(err_code);
 
     currentElapsedTime = 0;
 
+    display_stop_flash_elapsed_time_label();
+
     err_code = app_timer_start(m_elapsed_time_timer_id, ELAPSED_TIMER_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);   
+
+    elapsed_time_timer_running = true;
+}
+
+void stop_elapsed_time_timer()
+{
+    ret_code_t err_code = app_timer_stop(m_elapsed_time_timer_id);
+    APP_ERROR_CHECK(err_code);
+
+    elapsed_time_timer_running = false;
 }
 
 void enable_write_to_weight_characteristic()
@@ -337,7 +376,6 @@ static void display_timeout_handler(void * p_context)
     ret_code_t err_code = app_timer_start(m_display_timer_id, DISPLAY_UPDATE_WEIGHT_INTERVAL_TICKS, NULL);
     APP_ERROR_CHECK(err_code);
 }
-
 
 void elapsed_time_timeout_handler(void * p_context)
 {
@@ -426,6 +464,18 @@ void battery_level_timeout_handler(void * p_context)
     APP_ERROR_CHECK(err_code);
 }
 
+void touch_sensor1_timeout_handler(void * p_context)
+{
+    if (button1OperationState == IDLE)
+    {
+        ret_code_t err_code = app_timer_stop(m_elapsed_time_timer_id);
+        APP_ERROR_CHECK(err_code);
+        display_flash_elapsed_time_label();
+        display_update_timer_label(0);
+        button1OperationState = WAITING_FOR_TOUCH_RELEASE;
+    }
+}
+
 void touch_sensor4_timeout_handler(void * p_context)
 {
     if (scalesOperationalState == ON)
@@ -455,6 +505,9 @@ static void timers_init(void)
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_battery_level_timer_id, APP_TIMER_MODE_SINGLE_SHOT, battery_level_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_touch_sensor1_timer_id, APP_TIMER_MODE_SINGLE_SHOT, touch_sensor1_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_touch_sensor4_timer_id, APP_TIMER_MODE_SINGLE_SHOT, touch_sensor4_timeout_handler);
@@ -784,8 +837,8 @@ int main(void)
     iqs227d_init(&touchSensor1, &m_twi_secondary);
     iqs227d_init(&touchSensor2, &m_twi_secondary);
     iqs227d_init(&touchSensor4, &m_twi_secondary);
-    iqs227d_power_on(&touchSensor1);
-    iqs227d_power_on(&touchSensor2);
+    //iqs227d_power_on(&touchSensor1);
+    //iqs227d_power_on(&touchSensor2);
     iqs227d_power_on(&touchSensor4);
 
     NRF_LOG_FLUSH();
