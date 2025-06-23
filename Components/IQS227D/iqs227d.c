@@ -86,7 +86,7 @@ void iqs227d_power_on(IQS227D *sensor)
 
     if (sensor->poutChangedFcn != NULL)
     {
-        //nrf_drv_gpiote_in_event_enable(sensor->pin_POUT, true);
+        nrf_drv_gpiote_in_event_enable(sensor->pin_POUT, true);
     }
 
     NRF_LOG_INFO("iqs227d powered on and interrupt enabled");

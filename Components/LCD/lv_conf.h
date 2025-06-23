@@ -857,6 +857,12 @@
  * OTHERS
  *==================*/
 
+/* 1: Swap the bytes of 16-bit colors (RGB565 -> BGR565 or vice versa) 
+ * Useful if the display or MCU has different endianness or color format.
+ * Set to 1 if colors appear incorrectly (e.g., red appears blue).
+ */
+#define LV_COLOR_16_SWAP 1
+
 /*1: Enable API to take snapshot for object*/
 #define LV_USE_SNAPSHOT 0
 

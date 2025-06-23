@@ -63,7 +63,12 @@ static void ads123x_timeout_handler(void * p_context)
     {
         case NORMAL:
         {
-            ADS123X_getUnits(&scale, &mScaleValue, 1);
+            ADS123X_ERROR_t err = ADS123X_getUnits(&scale, &mScaleValue, 1);
+
+            if (err != NoERROR)
+            {
+                break;
+            }
 
             if (mStableWeightRequested)
             {
