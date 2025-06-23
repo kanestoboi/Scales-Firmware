@@ -376,61 +376,6 @@ static void st7735_uninit(void)
     
 }
 
-static void st7735_pixel_draw(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x, uint16_t y, uint32_t color)
-{
-    st7735_set_addr_window(spim, dc_pin, x, y, x, y);
-
-    color = RGB2BGR(color);
-
-    const uint8_t data[2] = {color >> 8, color};
-
-    nrf_gpio_pin_set(dc_pin);
-
-    st7735_spi_write(spim, dc_pin, data, sizeof(data));
-
-    nrf_gpio_pin_clear(dc_pin);
-}
-
-static void st7735_rect_draw(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color)
-{
-    st7735_set_addr_window(spim, dc_pin, x, y, x + width - 1, y + height - 1);
-
-    color = RGB2BGR(color);
-
-    const uint8_t data[2] = {color >> 8, color};
-
-    nrf_gpio_pin_set(dc_pin);
-
-    // Duff's device algorithm for optimizing loop.
-    uint32_t i = (height * width + 7) / 8;
-
-/*lint -save -e525 -e616 -e646 */
-    switch ((height * width) % 8) {
-        case 0:
-            do {
-                st7735_spi_write(spim, dc_pin, data, sizeof(data));
-        case 7:
-                st7735_spi_write(spim, dc_pin, data, sizeof(data));
-        case 6:
-                st7735_spi_write(spim, dc_pin, data, sizeof(data));
-        case 5:
-                st7735_spi_write(spim, dc_pin, data, sizeof(data));
-        case 4:
-                st7735_spi_write(spim, dc_pin, data, sizeof(data));
-        case 3:
-                st7735_spi_write(spim, dc_pin, data, sizeof(data));
-        case 2:
-                st7735_spi_write(spim, dc_pin, data, sizeof(data));
-        case 1:
-                st7735_spi_write(spim, dc_pin, data, sizeof(data));
-            } while (--i > 0);
-        default:
-            break;
-    }
-/*lint -restore */
-    nrf_gpio_pin_clear(dc_pin);
-}
-
 static void st7735_set_addr_window_to_buffer(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
     x0 += 1;  // Add horizontal offset
@@ -529,8 +474,6 @@ static void st7735_display_invert(const nrfx_spim_t * spim, uint8_t dc_pin, bool
 const nrf_lcd_t nrf_lcd_st7735 = {
     .lcd_init = st7735_init,
     .lcd_uninit = st7735_uninit,
-    .lcd_pixel_draw = st7735_pixel_draw,
-    .lcd_rect_draw = st7735_rect_draw,
     .lcd_display = st7735_display,
     .lcd_rotation_set = st7735_rotation_set,
     .lcd_display_invert = st7735_display_invert,

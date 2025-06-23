@@ -109,33 +109,13 @@ typedef struct
     void (* lcd_uninit)(void);
 
     /**
-     * @brief Function for drawing a single pixel.
-     *
-     * @param[in] x             Horizontal coordinate of the pixel.
-     * @param[in] y             Vertical coordinate of the pixel.
-     * @param[in] color         Color of the pixel in LCD accepted format.
-     */
-    void (* lcd_pixel_draw)(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x, uint16_t y, uint32_t color);
-
-    /**
-     * @brief Function for drawing a filled rectangle.
-     *
-     * @param[in] x             Horizontal coordinate of the point where to start drawing the rectangle.
-     * @param[in] y             Vertical coordinate of the point where to start drawing the rectangle.
-     * @param[in] width         Width of the image.
-     * @param[in] height        Height of the image.
-     * @param[in] color         Color with which to fill the rectangle in LCD accepted format.
-     */
-    void (* lcd_rect_draw)(const nrfx_spim_t * spim, uint8_t dc_pin, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color);
-
-    /**
      * @brief Function for displaying data from an internal frame buffer.
      *
      * This function may be used when functions for drawing do not write directly to
      * LCD but to an internal frame buffer. It could be implemented to write data from this
      * buffer to LCD.
     */
-    void (* lcd_display)(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+    nrfx_err_t (* lcd_display)(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
     /**
      * @brief Function for rotating the screen.
@@ -153,7 +133,7 @@ typedef struct
 
     uint32_t (* lcd_set_addr_window_to_buffer)(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 
-    void (* lcd_sleep)();
+    void (* xfer_complete_handler)(const nrfx_spim_t * spim, uint8_t dc_pin);
 
     /**
      * @brief Pointer to the LCD instance control block.

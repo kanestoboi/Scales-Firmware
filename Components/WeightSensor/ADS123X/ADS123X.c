@@ -2,7 +2,6 @@
 #include "nrf_gpio.h"
 
 // Initialize library
-
 void ADS123X_Init(ADS123X *device, uint8_t pin_DOUT, uint8_t pin_SCLK, uint8_t pin_PDWN, uint8_t pin_GAIN0, uint8_t pin_GAIN1, uint8_t pin_SPEED)
 {
   device->pin_DOUT = pin_DOUT;
@@ -214,18 +213,27 @@ ADS123X_ERROR_t ADS123X_getUnits(ADS123X *device, float *value, uint8_t times)
   
   *value = val / ADS123X_getScaleFactor(device);
 
-  return NoERROR;
+  return err;
 }
 
 ADS123X_ERROR_t ADS123X_getValue(ADS123X *device, float *value, uint8_t times)
 {
-  float readValue;
-
-  ADS123X_readAverage(device, &readValue, times);
+  float readValue = 0.0;
+  ADS123X_ERROR_t err;
+  if (times == 1)
+  {
+    uint32_t val;
+    err = ADS123X_read(device, &val);
+    readValue = (float)val;
+  }
+  else
+  {
+    err = ADS123X_readAverage(device, &readValue, times);
+  }
 
   *value = readValue - ADS123X_getOffset(device);
 
-  return NoERROR;
+  return err;
 }
 
 void  ADS123X_calibrateOnNextConversion(ADS123X *device)

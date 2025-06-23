@@ -13,7 +13,7 @@ typedef enum ADS123X_ERROR_t {
 	WOULD_BLOCK,      // weight not measured, measuring takes too long
 	STABLE_TIMEOUT,   // weight not stable within timeout
 	DIVIDED_by_ZERO,
-        SENSOR_NOT_READY,    
+  SENSOR_NOT_READY,    
 } ADS123X_ERROR_t;
 
 typedef enum ADS123X_SPEED_t 

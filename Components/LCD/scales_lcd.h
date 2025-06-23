@@ -23,27 +23,14 @@ typedef struct Scales_Display_t
 
 void display_init();
 
-void screen_clear(void);
-void display_indicate_tare();
+void display_screen_clear(void);
 void display_update_weight_label(float weight);
 
 void display_update_coffee_weight_label(float weight);
 void display_update_water_weight_label(float weight);
 
-void display_button1_count_label(uint16_t count);
-void display_button2_count_label(uint16_t count);
-void display_button3_count_label(uint16_t count);
-void display_button4_count_label(uint16_t count);
-
-void display_button1_threshold_label(uint16_t threshold);
-void display_button2_threshold_label(uint16_t threshold);
-void display_button3_threshold_label(uint16_t threshold);
-void display_button4_threshold_label(uint16_t threshold);
-
 void display_update_timer_label(uint32_t seconds);
 void display_update_battery_label(uint8_t batteryLevel);
-
-void text_print();
 
 void display_turn_backlight_on();
 void display_turn_backlight_off();
@@ -59,4 +46,12 @@ void display_reset();
 void display_sleep();
 void display_wakeup();
 
+void display_flash_elapsed_time_label();
+void display_stop_flash_elapsed_time_label();
+void display_chart_init();
+void display_cycle_screen();
+
+void display_spi_xfer_complete_callback(nrfx_spim_evt_t const * p_event, void * p_context);
+
+void display_loop();
 #endif
