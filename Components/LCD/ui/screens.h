@@ -22,11 +22,11 @@ typedef struct _objects_t {
     lv_obj_t *label_coffee_to_water_ratio_numerator;
     lv_obj_t *label_coffee_to_water_ratio_denominator;
     lv_obj_t *label_coffee_to_water_ratio_colon;
+    lv_obj_t *graph_bar;
     lv_obj_t *graph_label_timer;
     lv_obj_t *graph_label_weight_integer;
     lv_obj_t *graph__weight_decimal;
     lv_obj_t *graph_label_weight_fraction;
-    lv_obj_t *weight_chart;
 } objects_t;
 
 extern objects_t objects;

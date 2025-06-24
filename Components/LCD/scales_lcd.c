@@ -41,6 +41,7 @@ static bool flash_timer_label = false;
 static lv_chart_series_t * mWeightChartSeries;  // Keep series global if needed later
 static lv_chart_series_t * mTargetWaterWeightSeries;
 
+char mBatteryLevelCharacterBuffer[4];
 char wholeNumbers[5];
 char fractionalPart[2];
 
@@ -333,19 +334,7 @@ void display_reset()
 void display_chart_init()
 {  
     // Set chart type
-    lv_chart_set_type(objects.weight_chart, LV_CHART_TYPE_LINE);
-    lv_chart_set_update_mode(objects.weight_chart, LV_CHART_UPDATE_MODE_SHIFT);
-    lv_chart_set_point_count(objects.weight_chart, 50);  // Number of data points
-    lv_chart_set_range(objects.weight_chart, LV_CHART_AXIS_PRIMARY_Y, 0, 500);
-    // Remove the indicator dots (point markers)
-    lv_obj_set_style_radius(objects.weight_chart, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);   // no circles
-    lv_obj_set_style_size(objects.weight_chart, 0, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);     // 0 px
-    lv_chart_set_div_line_count(objects.weight_chart, 0, 0);  // Disable horizontal and vertical division lines
-    lv_obj_set_style_line_width(objects.weight_chart, 6, LV_PART_ITEMS);
 
-    // Add series
-    mWeightChartSeries = lv_chart_add_series(objects.weight_chart, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_PRIMARY_Y);
-    mTargetWaterWeightSeries = lv_chart_add_series(objects.weight_chart, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_PRIMARY_Y);
 }
 
 void display_cycle_screen()
@@ -387,20 +376,22 @@ void display_loop()
         lv_label_set_text(objects.graph_label_weight_integer, wholeNumbers);
         lv_label_set_text(objects.graph_label_weight_fraction, fractionalPart);
 
-        lv_chart_set_next_value(objects.weight_chart, mWeightChartSeries, mWeight);
+        lv_bar_set_value(objects.graph_bar, mWeight, LV_ANIM_ON);
 
-        if (mWaterWeight != 0.0)
+        if (mWeight >= mWaterWeight - 5.0 ) 
         {
-            // Fill the series with constant value
-            for (uint16_t i = 0; i < 50; i++) {
-                lv_chart_set_next_value(objects.weight_chart, mTargetWaterWeightSeries, mWaterWeight);
-            }
-
-            lv_chart_set_range(objects.weight_chart, LV_CHART_AXIS_PRIMARY_Y, mWeight-100, mWeight+100);
-
-            lv_chart_set_next_value(objects.weight_chart, mTargetWaterWeightSeries, mWaterWeight);
-            
-            lv_chart_refresh(objects.weight_chart);
+            // Set to green
+            lv_obj_set_style_bg_color(objects.graph_bar, lv_palette_main(LV_PALETTE_GREEN), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+        } 
+        else if (mWeight >= mWaterWeight - mWaterWeight*0.1)
+        {
+            // Set to Yellow
+            lv_obj_set_style_bg_color(objects.graph_bar, lv_palette_main(LV_PALETTE_YELLOW), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+        }
+        else
+        {
+            // Set to red
+            lv_obj_set_style_bg_color(objects.graph_bar, lv_palette_main(LV_PALETTE_RED), LV_PART_INDICATOR | LV_STATE_DEFAULT);
         }
 
         mWeightUpdated = false;
@@ -420,6 +411,9 @@ void display_loop()
         sprintf(buffer, "%0.1f", mWaterWeight);
 
         lv_label_set_text( objects.label_water_weight, buffer );
+
+
+        lv_bar_set_range(objects.graph_bar, 0, mWaterWeight);
         mWaterWeightUpdated = false;
     }
 
@@ -460,10 +454,9 @@ void display_loop()
 
     if (mBatteryLevelUpdated)
     {
-        char buffer[4];
-        sprintf(buffer, "%d\%", mBatteryLevel);
+        sprintf(mBatteryLevelCharacterBuffer, "%d\%", mBatteryLevel);
 
-        lv_label_set_text( objects.label_battery_percentage, buffer);
+        lv_label_set_text( objects.label_battery_percentage, mBatteryLevelCharacterBuffer);
         mBatteryLevelUpdated = false;
     }
 }
