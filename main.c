@@ -83,7 +83,7 @@ static const nrfx_spim_t spim3 = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< 
 
 #define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(80)    
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
-#define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(5000) 
+#define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(500) 
 #define TOUCH_SENSOR1_TIMER_INTERVAL            APP_TIMER_TICKS(3000) 
 #define TOUCH_SENSOR4_TIMER_INTERVAL            APP_TIMER_TICKS(3000) 
 
@@ -379,19 +379,25 @@ void battery_level_timeout_handler(void * p_context)
     if (max17260Sensor.initialised)
     {
         float soc;
-        float current;
+        float averageCurrent;
         float ttf;
         float tte;
         float voltage;
+        float cycles;
         float external_source_power = 0;
-        float remaining_capacity = 0;
+        float remaining_capacity;
+        float fullCapacity;
+        float remainingCapacity;
 
         max17260_getStateOfCharge(&max17260Sensor, &soc);
-        max17260_getAvgCurrent(&max17260Sensor, &current);
+        max17260_getAvgCurrent(&max17260Sensor, &averageCurrent);
         max17260_getTimeToFull(&max17260Sensor, &ttf);
         max17260_getTimeToEmpty(&max17260Sensor, &tte);
         max17260_getCellVoltage(&max17260Sensor, &voltage);
         max17260_getRemainingCapacity(&max17260Sensor, &remaining_capacity);
+        max17260_getCycles(&max17260Sensor, &cycles);
+        max17260_getFullCapacity(&max17260Sensor, &fullCapacity);
+        max17260_getRemainingCapacity(&max17260Sensor, &remainingCapacity);
 
         battery_service_battery_level_update((uint8_t)roundf(soc), BLE_CONN_HANDLE_ALL);
 
@@ -406,14 +412,14 @@ void battery_level_timeout_handler(void * p_context)
         battery_time_status.time_until_discharged_bytes[1] = tte_minutes >> 8 & 0xFF;
         battery_time_status.time_until_discharged_bytes[2] = tte_minutes >> 16 & 0xFF;
 
-        if (current > 0)
+        if (averageCurrent > 0)
         {
             battery_time_status.flags = 0x01;
             battery_time_status.time_uintil_recharged_bytes[0] = ttf_minutes & 0xFF;
             battery_time_status.time_uintil_recharged_bytes[1] = ttf_minutes >> 8 & 0xFF;
             battery_time_status.time_uintil_recharged_bytes[2] = ttf_minutes >> 16 & 0xFF;
 
-            external_source_power = voltage * current;
+            external_source_power = voltage * averageCurrent;
         }
         else
         {
@@ -435,10 +441,13 @@ void battery_level_timeout_handler(void * p_context)
 
 
         display_update_battery_label((uint8_t)roundf(soc));
-
-        //NRF_LOG_RAW_INFO("Current:%s%d.%01d mA\n" , NRF_LOG_FLOAT_SCALES(current*1000) );
-        //NRF_LOG_RAW_INFO("ttf:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(ttf) );
-        //NRF_LOG_RAW_INFO("tte:%s%d.%01d\n" , NRF_LOG_FLOAT_SCALES(tte) );
+        display_update_battery_time_to_charge_value(ttf);
+        display_update_battery_time_to_empty_value(tte);
+        display_update_battery_cycles_value(cycles);
+        display_update_battery_average_current_value(averageCurrent);
+        display_update_battery_cell_voltage_value(voltage);
+        display_update_battery_full_capacity_value(fullCapacity);
+        display_update_battery_remaining_capacity_value(remainingCapacity);
     }
 
     ret_code_t err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);

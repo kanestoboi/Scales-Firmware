@@ -31,6 +31,13 @@ void display_update_water_weight_label(float weight);
 
 void display_update_timer_label(uint32_t seconds);
 void display_update_battery_label(uint8_t batteryLevel);
+void display_update_battery_time_to_charge_value(float timeToCharge);
+void display_update_battery_time_to_empty_value(float timeToEmpty);
+void display_update_battery_cycles_value(float cycles);
+void display_update_battery_average_current_value(float averageCurrent);
+void display_update_battery_cell_voltage_value(float cellVoltage);
+void display_update_battery_full_capacity_value(float fullCapacity);
+void display_update_battery_remaining_capacity_value(float remainingCapacity);
 
 void display_turn_backlight_on();
 void display_turn_backlight_off();
