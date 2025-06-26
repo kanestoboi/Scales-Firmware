@@ -1447,7 +1447,7 @@
               "objID": "50cc2429-f383-4fa7-9fc0-6c97f19feb0f",
               "type": "LVGLLabelWidget",
               "left": 0,
-              "top": 0,
+              "top": -75,
               "width": 202,
               "height": 22,
               "customInputs": [],
@@ -1483,7 +1483,8 @@
                     "DEFAULT": {
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
-                      "text_font": "MONTSERRAT_20"
+                      "text_font": "MONTSERRAT_20",
+                      "align": "CENTER"
                     }
                   }
                 }

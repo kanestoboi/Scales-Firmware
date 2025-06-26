@@ -68,6 +68,7 @@ bool mBatteryAverageCurrentUpdated = false;
 bool mCellVoltageUpdated = false;
 bool mBatteryFullCapacityUpdated = false;
 bool mBatteryRemainingCapacityUpdated = false;
+bool mDisplayScreenUpdated = false;
 
 float mWeight = 0.0;
 float mCoffeeWeight = 0.0;
@@ -93,6 +94,8 @@ float mBatteryRemainingCapacity = 0;
 //LVGL draw into this buffer, 1/10 screen size usually works well. The size is in bytes
 #define DRAW_BUF_SIZE (hor_res * ver_res * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE/8];
+
+bool mDisplayInvalid = false;
 
 void display_driver_init();
 
@@ -177,6 +180,8 @@ void display_init(Scales_Display_t * scales_display)
     lv_display_set_flush_cb(p_lv_display1, flush_cb);
     lv_display_set_buffers(p_lv_display1, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x0000), LV_PART_MAIN);
+
+    ui_init();
 
     // Set LCD pins as outputs
     nrf_gpio_cfg_output(p_scales_display1->en_pin);
@@ -353,11 +358,13 @@ void display_power_display_off()
 
 void display_sleep()
 {
+    lv_display_flush_ready(flush_cb_display);
+    flush_cb_display = NULL;
+
     p_nrf_lcd_driver->lcd_uninit();
     stop_lvgl_timer();
     display_turn_backlight_off();
     display_power_display_off();
-    
 
     nrf_gpio_cfg_default(p_scales_display1->en_pin);
     nrf_gpio_cfg_default(p_scales_display1->rst_pin);
@@ -374,16 +381,13 @@ void display_wakeup()
 
     display_power_display_on();
 
-    lv_obj_clean(lv_scr_act());
-
     display_reset();
-
-    ui_init();
-    display_chart_init();
         
     display_driver_init();
 
     start_lvgl_timer();
+
+    mDisplayInvalid = true;
 
     display_turn_backlight_on();
 }
@@ -395,24 +399,9 @@ void display_reset()
     nrf_gpio_pin_set(p_scales_display1->rst_pin);
 }
 
-void display_chart_init()
-{  
-    // Set chart type
-
-}
-
 void display_cycle_screen()
 {
-    if (current_screen_id != SCREEN_ID_DIAGNOSTICS)
-    {
-        loadScreen(SCREEN_ID_DIAGNOSTICS);
-        current_screen_id = SCREEN_ID_DIAGNOSTICS;
-    }
-    else
-    {
-        loadScreen(SCREEN_ID_MAIN);
-        current_screen_id = SCREEN_ID_MAIN;
-    }
+    mDisplayScreenUpdated = true;    
 }
 
 void display_spi_xfer_complete_callback(nrfx_spim_evt_t const * p_event, void * p_context)
@@ -429,6 +418,11 @@ void display_spi_xfer_complete_callback(nrfx_spim_evt_t const * p_event, void * 
 
 void display_loop()
 {
+    if (mDisplayInvalid)
+    {
+        lv_obj_invalidate(lv_scr_act());
+    }
+
     lv_task_handler(); // let the GUI do its work   
     
     //lv_label_set_text( objects.label_weight_integer, buffer );
@@ -551,10 +545,7 @@ void display_loop()
 
     if (mBatteryCyclesUpdated)
     {
-        sprintf(mBatteryCyclesBuffer, "%0.5f", mBatteryCycles);
-
-        NRF_LOG_INFO("Cycles: %f", mBatteryCycles);
-        NRF_LOG_FLUSH();
+        sprintf(mBatteryCyclesBuffer, "%0.2f", mBatteryCycles);
 
         lv_label_set_text( objects.diagnostics_cycles_value, mBatteryCyclesBuffer);
         mBatteryCyclesUpdated = false;
@@ -593,7 +584,21 @@ void display_loop()
     }
 
 
+    if (mDisplayScreenUpdated)
+    {
+        if (current_screen_id != SCREEN_ID_DIAGNOSTICS)
+        {
+            loadScreen(SCREEN_ID_DIAGNOSTICS);
+            current_screen_id = SCREEN_ID_DIAGNOSTICS;
+        }
+        else
+        {
+            loadScreen(SCREEN_ID_MAIN);
+            current_screen_id = SCREEN_ID_MAIN;
+        }
 
+        mDisplayScreenUpdated = false;
+    }
 
     
 }

@@ -55,7 +55,6 @@ void display_wakeup();
 
 void display_flash_elapsed_time_label();
 void display_stop_flash_elapsed_time_label();
-void display_chart_init();
 void display_cycle_screen();
 
 void display_spi_xfer_complete_callback(nrfx_spim_evt_t const * p_event, void * p_context);
