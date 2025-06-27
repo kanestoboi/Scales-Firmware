@@ -41,9 +41,19 @@ static bool flash_timer_label = false;
 static lv_chart_series_t * mWeightChartSeries;  // Keep series global if needed later
 static lv_chart_series_t * mTargetWaterWeightSeries;
 
-char mBatteryLevelCharacterBuffer[4];
 char wholeNumbers[5];
 char fractionalPart[2];
+
+char mBatteryLevelCharacterBuffer[4];
+char mBatteryChargeTimeBuffer[12];
+char mBatteryTimeToEmptyBuffer[12];
+char mBatteryCyclesBuffer[10];
+char mBatteryAverageCurrentBuffer[10];
+char mBatteryCellVoltageBuffer[10];
+char mBattteryFullCapacityBuffer[10];
+char mBattteryRemainingCapacityBuffer[10];
+
+char mWeightSensorTareAttemptsBuffer[10];
 
 bool mWeightUpdated = false;
 bool mToggleElapsedTimeVisibility = false;
@@ -51,13 +61,36 @@ bool mCoffeeWeightUpdated = false;
 bool mWaterWeightUpdated = false;
 bool mTimerValueUpdated = false;
 bool mClearTimerFlashing = false;
+
 bool mBatteryLevelUpdated = false;
+bool mBatteryChargeTimeUpdated = false;
+bool mBatteryTimeToEmptyUpdated = false;
+bool mBatteryCyclesUpdated = false;
+bool mBatteryAverageCurrentUpdated = false;
+bool mCellVoltageUpdated = false;
+bool mBatteryFullCapacityUpdated = false;
+bool mBatteryRemainingCapacityUpdated = false;
+bool mDisplayScreenUpdated = false;
+
+bool mWeightSensorTareAttemptsUpdated = false;
 
 float mWeight = 0.0;
 float mCoffeeWeight = 0.0;
 float mWaterWeight = 0.0;
 uint32_t mTimerValue = 0;
+
+// Battery Related
 uint8_t mBatteryLevel = 0;
+float mBatteryChargeTime = 0;
+float mBatteryTimeToEmpty = 0;
+float mBatteryCycles = 0;
+float mBatteryAverageCurrent = 0;
+float mBatteryCellVoltage = 0;
+float mBatteryFullCapacity = 0;
+float mBatteryRemainingCapacity = 0;
+
+// Weight Sensor Diagnostic Values
+uint32_t mWeightSensorTareAttempts = 0;
 
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
 #define LVGL_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(LVGL_TIMER_INTERVAL_MS)
@@ -69,6 +102,8 @@ uint8_t mBatteryLevel = 0;
 #define DRAW_BUF_SIZE (hor_res * ver_res * (LV_COLOR_DEPTH / 8))
 uint32_t draw_buf[DRAW_BUF_SIZE/8];
 
+bool mDisplayInvalid = false;
+
 void display_driver_init();
 
 void display_toggle_timer_label_visibility()
@@ -77,11 +112,9 @@ void display_toggle_timer_label_visibility()
         return;
 
     if (lv_obj_has_flag(objects.label_timer, LV_OBJ_FLAG_HIDDEN)) {
-        lv_obj_clear_flag(objects.graph_label_timer, LV_OBJ_FLAG_HIDDEN); // Show
         lv_obj_clear_flag(objects.label_timer, LV_OBJ_FLAG_HIDDEN); // Show
     } else {
         lv_obj_add_flag(objects.label_timer, LV_OBJ_FLAG_HIDDEN);   // Hide
-        lv_obj_add_flag(objects.graph_label_timer, LV_OBJ_FLAG_HIDDEN);   // Hide
     }
 }
 
@@ -154,6 +187,8 @@ void display_init(Scales_Display_t * scales_display)
     lv_display_set_flush_cb(p_lv_display1, flush_cb);
     lv_display_set_buffers(p_lv_display1, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x0000), LV_PART_MAIN);
+
+    ui_init();
 
     // Set LCD pins as outputs
     nrf_gpio_cfg_output(p_scales_display1->en_pin);
@@ -233,6 +268,47 @@ void display_update_battery_label(uint8_t batteryLevel)
     mBatteryLevelUpdated = true;
 }
 
+void display_update_battery_time_to_charge_value(float timeToCharge)
+{
+    mBatteryChargeTime = timeToCharge;
+    mBatteryChargeTimeUpdated = true;
+}
+
+void display_update_battery_time_to_empty_value(float timeToEmpty)
+{
+    mBatteryTimeToEmpty = timeToEmpty;
+    mBatteryTimeToEmptyUpdated = true;
+}
+void display_update_battery_cycles_value(float cycles)
+{
+    mBatteryCycles = cycles;
+    mBatteryCyclesUpdated = true;
+}
+
+void display_update_battery_average_current_value(float averageCurrent)
+{
+    mBatteryAverageCurrent = averageCurrent;
+    mBatteryAverageCurrentUpdated = true;
+}
+
+void display_update_battery_cell_voltage_value(float cellVoltage)
+{
+    mBatteryCellVoltage = cellVoltage;
+    mCellVoltageUpdated = true;
+}
+
+void display_update_battery_full_capacity_value(float fullCapacity)
+{
+    mBatteryFullCapacity = fullCapacity;
+    mBatteryFullCapacityUpdated = true;
+}
+
+void display_update_battery_remaining_capacity_value(float remainingCapacity)
+{
+    mBatteryRemainingCapacity = remainingCapacity;
+    mBatteryRemainingCapacityUpdated = true;
+}
+
 void display_update_coffee_weight_label(float weight)
 {
     if (objects.label_coffee_weight == NULL)
@@ -253,6 +329,13 @@ void display_update_water_weight_label(float weight)
 
     mWaterWeight = weight;
     mWaterWeightUpdated = true;
+}
+
+void display_update_tare_attempts_label(uint32_t attempts)
+{
+
+    mWeightSensorTareAttempts = attempts;
+    mWeightSensorTareAttemptsUpdated = true;
 }
 
 void display_turn_backlight_on()
@@ -289,11 +372,13 @@ void display_power_display_off()
 
 void display_sleep()
 {
+    lv_display_flush_ready(flush_cb_display);
+    flush_cb_display = NULL;
+
     p_nrf_lcd_driver->lcd_uninit();
     stop_lvgl_timer();
     display_turn_backlight_off();
     display_power_display_off();
-    
 
     nrf_gpio_cfg_default(p_scales_display1->en_pin);
     nrf_gpio_cfg_default(p_scales_display1->rst_pin);
@@ -310,16 +395,13 @@ void display_wakeup()
 
     display_power_display_on();
 
-    lv_obj_clean(lv_scr_act());
-
     display_reset();
-
-    ui_init();
-    display_chart_init();
         
     display_driver_init();
 
     start_lvgl_timer();
+
+    mDisplayInvalid = true;
 
     display_turn_backlight_on();
 }
@@ -331,24 +413,9 @@ void display_reset()
     nrf_gpio_pin_set(p_scales_display1->rst_pin);
 }
 
-void display_chart_init()
-{  
-    // Set chart type
-
-}
-
 void display_cycle_screen()
 {
-    if (current_screen_id != SCREEN_ID_GRAPH)
-    {
-        loadScreen(SCREEN_ID_GRAPH);
-        current_screen_id = SCREEN_ID_GRAPH;
-    }
-    else
-    {
-        loadScreen(SCREEN_ID_MAIN);
-        current_screen_id = SCREEN_ID_MAIN;
-    }
+    mDisplayScreenUpdated = true;    
 }
 
 void display_spi_xfer_complete_callback(nrfx_spim_evt_t const * p_event, void * p_context)
@@ -365,6 +432,11 @@ void display_spi_xfer_complete_callback(nrfx_spim_evt_t const * p_event, void * 
 
 void display_loop()
 {
+    if (mDisplayInvalid)
+    {
+        lv_obj_invalidate(lv_scr_act());
+    }
+
     lv_task_handler(); // let the GUI do its work   
     
     //lv_label_set_text( objects.label_weight_integer, buffer );
@@ -373,8 +445,6 @@ void display_loop()
         lv_label_set_text(objects.label_weight_integer, wholeNumbers);
         lv_label_set_text(objects.label_weight_fraction, fractionalPart);
 
-        lv_label_set_text(objects.graph_label_weight_integer, wholeNumbers);
-        lv_label_set_text(objects.graph_label_weight_fraction, fractionalPart);
 
         lv_bar_set_value(objects.graph_bar, mWeight, LV_ANIM_ON);
 
@@ -441,22 +511,121 @@ void display_loop()
         sprintf(buffer, "%02d:%02d", minutes, remainingSeconds);
 
         lv_label_set_text( objects.label_timer, buffer);
-        lv_label_set_text( objects.graph_label_timer, buffer);
         mTimerValueUpdated = false;
     }
 
     if (mClearTimerFlashing)
     {
         lv_obj_clear_flag(objects.label_timer, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(objects.graph_label_timer, LV_OBJ_FLAG_HIDDEN);
         mClearTimerFlashing = false;
     }
 
     if (mBatteryLevelUpdated)
     {
-        sprintf(mBatteryLevelCharacterBuffer, "%d\%", mBatteryLevel);
+        sprintf(mBatteryLevelCharacterBuffer, "%d%%", mBatteryLevel);
 
         lv_label_set_text( objects.label_battery_percentage, mBatteryLevelCharacterBuffer);
+        lv_label_set_text( objects.diagnostics_charge_value, mBatteryLevelCharacterBuffer);
         mBatteryLevelUpdated = false;
     }
+
+    if (mBatteryChargeTimeUpdated)
+    {
+        uint16_t hours, minutes, remainingSeconds;
+
+        hours = (uint16_t)mBatteryChargeTime / 3600;
+        minutes = ((uint16_t)mBatteryChargeTime % 3600) / 60;
+        remainingSeconds = (uint16_t)mBatteryChargeTime % 60;
+
+        sprintf(mBatteryChargeTimeBuffer, "%02d:%02d:%02d", hours, minutes, remainingSeconds);
+
+        lv_label_set_text( objects.diagnostics_time_to_charge_value, mBatteryChargeTimeBuffer);
+        mBatteryChargeTimeUpdated = false;
+    }
+
+    if (mBatteryTimeToEmptyUpdated)
+    {
+        uint16_t hours, minutes, remainingSeconds;
+
+        hours = (uint16_t)mBatteryTimeToEmpty / 3600;
+        minutes = ((uint16_t)mBatteryTimeToEmpty % 3600) / 60;
+        remainingSeconds = (uint16_t)mBatteryTimeToEmpty % 60;
+
+        sprintf(mBatteryTimeToEmptyBuffer, "%02d:%02d:%02d", hours, minutes, remainingSeconds);
+
+        lv_label_set_text( objects.diagnostics_time_to_empty_value, mBatteryTimeToEmptyBuffer);
+        mBatteryTimeToEmptyUpdated = false;
+    }
+
+    if (mBatteryCyclesUpdated)
+    {
+        sprintf(mBatteryCyclesBuffer, "%0.2f", mBatteryCycles);
+
+        lv_label_set_text( objects.diagnostics_cycles_value, mBatteryCyclesBuffer);
+        mBatteryCyclesUpdated = false;
+    }
+
+    if (mBatteryAverageCurrentUpdated)
+    {
+        sprintf(mBatteryAverageCurrentBuffer, "%0.3f A", mBatteryAverageCurrent);
+
+        lv_label_set_text( objects.diagnostics_average_current_value, mBatteryAverageCurrentBuffer);
+        mBatteryAverageCurrentUpdated = false;
+    }
+
+    if (mCellVoltageUpdated)
+    {
+        sprintf(mBatteryCellVoltageBuffer, "%0.3f V", mBatteryCellVoltage);
+
+        lv_label_set_text( objects.diagnostics_cell_voltage_value, mBatteryCellVoltageBuffer);
+        mCellVoltageUpdated = false;
+    }
+
+    if (mBatteryFullCapacityUpdated)
+    {
+        sprintf(mBattteryFullCapacityBuffer, "%0.4f Ah", mBatteryFullCapacity);
+
+        lv_label_set_text( objects.diagnostics_full_capacity_value, mBattteryFullCapacityBuffer);
+        mBatteryFullCapacityUpdated = false;
+    }
+
+    if (mBatteryRemainingCapacityUpdated)
+    {
+        sprintf(mBattteryRemainingCapacityBuffer, "%0.4f Ah", mBatteryRemainingCapacity);
+
+        lv_label_set_text( objects.diagnostics_remaining_capacity_value, mBattteryRemainingCapacityBuffer);
+        mBatteryRemainingCapacityUpdated = false;
+    }
+
+    if (mWeightSensorTareAttemptsUpdated)
+    {
+        sprintf(mWeightSensorTareAttemptsBuffer, "%d", mWeightSensorTareAttempts);
+
+        lv_label_set_text( objects.diagnostics_tare_attempts_value, mWeightSensorTareAttemptsBuffer);
+        mWeightSensorTareAttemptsUpdated = false;
+    }
+
+
+    if (mDisplayScreenUpdated)
+    {
+        if (current_screen_id == SCREEN_ID_MAIN)
+        {
+            loadScreen(SCREEN_ID_DIAGNOSTICS_BATTERY);
+            current_screen_id = SCREEN_ID_DIAGNOSTICS_BATTERY;
+        }
+        else if (current_screen_id == SCREEN_ID_DIAGNOSTICS_BATTERY)
+        {
+            loadScreen(SCREEN_ID_DIAGNOSTICS_WEIGHT_SENSOR);
+            current_screen_id = SCREEN_ID_DIAGNOSTICS_WEIGHT_SENSOR;
+        }
+        else
+        {
+            loadScreen(SCREEN_ID_MAIN);
+            current_screen_id = SCREEN_ID_MAIN;
+        }
+
+        mDisplayScreenUpdated = false;
+    }
+
+    
 }

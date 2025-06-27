@@ -23,6 +23,8 @@ int32_t mTaringReadCount = 0;
 int32_t mCalibrationSum = 0;
 int32_t mCalibrationReadCount = 0;
 
+uint16_t mTaringAttempts = 0;
+
 weight_sensor_state_t mWeightSensorCurrentState = NORMAL;
 weight_sensor_sense_state_t mWeightSensorSenseState = NOT_SENSING;
 
@@ -77,7 +79,7 @@ static void ads123x_timeout_handler(void * p_context)
 
             mFilteredScaleValue = mWeightFilterOutputCoefficient * mFilteredScaleValue + mWeightFilterInputCoefficient * mScaleValue;
 
-            if (mStableWeightRequested && fabs(mFilteredScaleValue - mLastFilteredScaleValue) <= 0.02)
+            if (mStableWeightRequested && fabs(mFilteredScaleValue - mLastFilteredScaleValue) <= 0.01)
             {
                 mStableWeightAcheivedCallback();
                 mStableWeightRequested = false;
@@ -93,6 +95,7 @@ static void ads123x_timeout_handler(void * p_context)
         }
         case START_TARING:
         {
+            mTaringAttempts++;
             mTaringReadCount = 0;
             mTaringSum = 0;
             int32_t readValue;
@@ -114,9 +117,9 @@ static void ads123x_timeout_handler(void * p_context)
                 mTaringReadCount++;
             }
 
-            if (mTaringReadCount >= 80)
+            if (mTaringReadCount >= 20)
             {
-                ADS123X_setOffset(&scale, mTaringSum/80);
+                ADS123X_setOffset(&scale, mTaringSum/20);
                 mWeightSensorCurrentState = VERIFY_TARE;
             }
 
@@ -222,6 +225,8 @@ void weight_sensor_init(float scaleFactor)
     ADS123X_setScaleFactor(&scale, scaleFactor);
 
     weight_sensor_sleep(&scale);
+
+    mTaringAttempts = 0;
 }
 
 void weight_sensor_tare()
@@ -319,4 +324,9 @@ void weight_sensor_set_weight_filter_output_coefficient(float coefficient)
     }
 
     NRF_LOG_INFO("Filter Output Coefficient:%s%d.%02d\n" , NRF_LOG_FLOAT(mWeightFilterOutputCoefficient) );
+}
+
+uint16_t weight_sensor_get_taring_attempts()
+{
+    return mTaringAttempts;
 }

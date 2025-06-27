@@ -16,46 +16,49 @@
 #define MAX17260_CONFIG_2_REG           0xBB
 
 // ModelGauge m5 Algorithm Output Registers
-#define MAX17260_REP_CAP_REG            0x05
-#define MAX17260_REP_SOC_REG            0x06
-#define MAX17260_FULL_CAP_REP_REG       0x10
-#define MAX17260_TTE_REG                0x11    // time to empty
-#define MAX17260_TTF_REG                0x20    // time to full
-#define MAX17260_CYCLES_REG             0x17
-#define MAX17260_STATUS_REG             0x00
+#define MAX17260_REP_CAP_REG            0x05  // Reported Remaining Capacity (mAh)
+#define MAX17260_REP_SOC_REG            0x06  // Reported State of Charge (%)
+#define MAX17260_FULL_CAP_REP_REG       0x10  // Reported Full Capacity (mAh)
+#define MAX17260_TTE_REG                0x11  // Time to Empty (minutes)
+#define MAX17260_TTF_REG                0x20  // Time to Full (minutes)
+#define MAX17260_CYCLES_REG             0x17  // Battery Cycle Count
+#define MAX17260_STATUS_REG             0x00  // General Status Flags
 
 // Voltage measurement registers
-#define MAX17260_V_CELL_REG         0x09
-#define MAX17260_AVG_V_CELL_REG     0x19 
-#define MAX17260_MAX_MIN_VOLT_REG   0x1B
+#define MAX17260_V_CELL_REG             0x09  // Instantaneous cell voltage (mV)
+#define MAX17260_AVG_V_CELL_REG         0x19  // Average cell voltage (mV)
+#define MAX17260_MAX_MIN_VOLT_REG       0x1B  // Max/Min recorded cell voltage (mV)
 
 // Current measurement registers
-#define MAX17260_CURRENT_REG            0x0A
-#define MAX17260_AVG_CURRENT_REG        0x0B
-#define MAX17260_MAX_MIN_CURRENT_REG    0x1C
+#define MAX17260_CURRENT_REG            0x0A  // Instantaneous current (signed, mA)
+#define MAX17260_AVG_CURRENT_REG        0x0B  // Average current (signed, mA)
+#define MAX17260_MAX_MIN_CURRENT_REG    0x1C  // Max/Min recorded current (mA)
 
 // Temperature measurement registers
-#define MAX17260_TEMP_REG               0x08
-#define MAX17260_AVG_TEMP_REG           0x16
-#define MAX17260_MAX_MIN_TEMP_REG       0x1A
-#define MAX17260_DIE_TEMP_REG           0x34
+#define MAX17260_TEMP_REG               0x08  // Instantaneous temperature (1/256°C)
+#define MAX17260_AVG_TEMP_REG           0x16  // Average temperature (1/256°C)
+#define MAX17260_MAX_MIN_TEMP_REG       0x1A  // Max/Min recorded temperature
+#define MAX17260_DIE_TEMP_REG           0x34  // Die temperature (internal IC temperature)
 
+// Configuration / Advanced algorithm registers
+#define MAX17260_SOC_HOLD_REG           0xD3  // SOC Hold threshold
+#define MAX17260_SC_OCV_LIM_REG         0xD1  // Soft-Current Open-Circuit Voltage limit
+#define MAX17260_CURVE_REG              0xB9  // Model curve configuration
+#define MAX17260_CG_TEMP_CO_REG         0xB8  // Temperature compensation coefficient
+#define MAX17260_AIN_REG                0x27  // Auxiliary input (external analog input)
+#define MAX17260_TEMP_GAIN_REG          0x2C  // External temperature sensor gain
+#define MAX17260_TEMP_OFF_REG           0x2D  // External temperature sensor offset
 
-#define MAX17260_SOC_HOLD_REG     0xD3
-#define MAX17260_SC_OCV_LIM_REG   0xD1
-#define MAX17260_CURVE_REG        0xB9
-#define MAX17260_CG_TEMP_CO_REG      0xB8
-#define MAX17260_AIN_REG          0x27
-#define MAX17260_TEMP_GAIN_REG    0x2C
-#define MAX17260_TEMP_OFF_REG       0x2D
-#define MAX17260_MPP_CURRENT_REG    0xD9
-#define MAX17260_SPP_CURRENT_REG    0xDA
-#define MAX17260_MAX_PEAK_POWER_REG 0xD4
-#define MAX17260_SUS_PEAK_POWER_REG 0xD5
-#define MAX17260_PEAK_RESISTANCE_REG  0xD6
-#define MAX17260_SYS_RESISTANCE_REG 0xD7
-#define MAX17260_MIN_SYS_VOLTAGE_REG 0xD8
-#define MAX17260_R_GAIN_REG          0x43
+// Peak power and resistance registers
+#define MAX17260_MPP_CURRENT_REG        0xD9  // Max Peak Power current
+#define MAX17260_SPP_CURRENT_REG        0xDA  // Sustained Peak Power current
+#define MAX17260_MAX_PEAK_POWER_REG     0xD4  // Maximum Peak Power
+#define MAX17260_SUS_PEAK_POWER_REG     0xD5  // Sustained Peak Power
+#define MAX17260_PEAK_RESISTANCE_REG    0xD6  // Peak resistance estimate
+#define MAX17260_SYS_RESISTANCE_REG     0xD7  // System resistance estimate
+#define MAX17260_MIN_SYS_VOLTAGE_REG    0xD8  // Minimum system voltage limit
+#define MAX17260_R_GAIN_REG             0x43  // Sense resistor gain calibration
+
 
 
 

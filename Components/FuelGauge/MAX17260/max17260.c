@@ -28,9 +28,9 @@ bool max17260_init(MAX17260 *sensor, const nrfx_twi_t *m_twi)
 
     if (statusPOR == 1)
     {
-       uint16_t socHold = 1;
+        uint16_t socHold = 1;
 
-       // After power-up, wait for the ICto complete its startup operations
+        // After power-up, wait for the ICto complete its startup operations
         //10ms Wait Loop. Do not continue until FSTAT.DNR==0
         while(socHold & 0x01)
         {
@@ -38,32 +38,32 @@ bool max17260_init(MAX17260 *sensor, const nrfx_twi_t *m_twi)
             nrf_delay_ms(10);
         }
 
-       uint16_t HibCFG;
-       max17260_register_read(sensor, 0xBA, (uint8_t*)&HibCFG, 2);
+        uint16_t HibCFG;
+        max17260_register_read(sensor, 0xBA, (uint8_t*)&HibCFG, 2);
 
-       max17260_register_write16(sensor, 0x60, 0x90);
+        max17260_register_write16(sensor, 0x60, 0x90);
 
-       max17260_setDesignCapacity(sensor, DesignCap);
-       max17260_setTerminationChargeCurrent(sensor, IchgTerm);
+        max17260_setDesignCapacity(sensor, DesignCap);
+        max17260_setTerminationChargeCurrent(sensor, IchgTerm);
         max17260_setVoltageEmpty(sensor, VEmpty);
 
         uint16_t ModelCFGRegValue = 0x8000;
         max17260_register_write16(sensor, MAX17260_MODEL_CONFIG_REG, ModelCFGRegValue);
 
         // Reset the m5 EZ model
-       //Poll ModelCFG.Refresh(highest bit),
-       //proceed to Step 3 when ModelCFG.Refresh=0.
-       while(ModelCFGRegValue & 0x8000)
-       {
+        //Poll ModelCFG.Refresh(highest bit),
+        //proceed to Step 3 when ModelCFG.Refresh=0.
+        while(ModelCFGRegValue & 0x8000)
+        {
            max17260_register_read(sensor, MAX17260_MODEL_CONFIG_REG, (uint8_t*)&ModelCFGRegValue, 2);
            nrf_delay_ms(10);
-       }
+        }
 
-       max17260_register_read(sensor, MAX17260_STATUS_REG, (uint8_t*)&statusRegisterValue, 2);
-       max17260_register_write16(sensor, MAX17260_STATUS_REG, statusRegisterValue & 0xFFFD);
+        max17260_register_read(sensor, MAX17260_STATUS_REG, (uint8_t*)&statusRegisterValue, 2);
+        max17260_register_write16(sensor, MAX17260_STATUS_REG, statusRegisterValue & 0xFFFD);
 
-       max17260_register_write16(sensor, 0x60, 0x00);
-       max17260_register_write16(sensor, 0xBA , HibCFG)  ; // Restore Original HibCFGvalue
+        max17260_register_write16(sensor, 0x60, 0x00);
+        max17260_register_write16(sensor, 0xBA , HibCFG)  ; // Restore Original HibCFGvalue
     }
 
     sensor->initialised = true;
