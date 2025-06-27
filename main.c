@@ -353,6 +353,7 @@ static void read_weight_timeout_handler(void * p_context)
     }
 
     display_update_weight_label(scaleValue);
+    display_update_tare_attempts_label(weight_sensor_get_taring_attempts());
 
     ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);

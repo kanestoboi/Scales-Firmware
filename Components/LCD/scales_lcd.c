@@ -53,6 +53,8 @@ char mBatteryCellVoltageBuffer[10];
 char mBattteryFullCapacityBuffer[10];
 char mBattteryRemainingCapacityBuffer[10];
 
+char mWeightSensorTareAttemptsBuffer[10];
+
 bool mWeightUpdated = false;
 bool mToggleElapsedTimeVisibility = false;
 bool mCoffeeWeightUpdated = false;
@@ -70,6 +72,8 @@ bool mBatteryFullCapacityUpdated = false;
 bool mBatteryRemainingCapacityUpdated = false;
 bool mDisplayScreenUpdated = false;
 
+bool mWeightSensorTareAttemptsUpdated = false;
+
 float mWeight = 0.0;
 float mCoffeeWeight = 0.0;
 float mWaterWeight = 0.0;
@@ -84,6 +88,9 @@ float mBatteryAverageCurrent = 0;
 float mBatteryCellVoltage = 0;
 float mBatteryFullCapacity = 0;
 float mBatteryRemainingCapacity = 0;
+
+// Weight Sensor Diagnostic Values
+uint32_t mWeightSensorTareAttempts = 0;
 
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
 #define LVGL_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(LVGL_TIMER_INTERVAL_MS)
@@ -322,6 +329,13 @@ void display_update_water_weight_label(float weight)
 
     mWaterWeight = weight;
     mWaterWeightUpdated = true;
+}
+
+void display_update_tare_attempts_label(uint32_t attempts)
+{
+
+    mWeightSensorTareAttempts = attempts;
+    mWeightSensorTareAttemptsUpdated = true;
 }
 
 void display_turn_backlight_on()
@@ -583,13 +597,26 @@ void display_loop()
         mBatteryRemainingCapacityUpdated = false;
     }
 
+    if (mWeightSensorTareAttemptsUpdated)
+    {
+        sprintf(mWeightSensorTareAttemptsBuffer, "%d", mWeightSensorTareAttempts);
+
+        lv_label_set_text( objects.diagnostics_tare_attempts_value, mWeightSensorTareAttemptsBuffer);
+        mWeightSensorTareAttemptsUpdated = false;
+    }
+
 
     if (mDisplayScreenUpdated)
     {
-        if (current_screen_id != SCREEN_ID_DIAGNOSTICS)
+        if (current_screen_id == SCREEN_ID_MAIN)
         {
-            loadScreen(SCREEN_ID_DIAGNOSTICS);
-            current_screen_id = SCREEN_ID_DIAGNOSTICS;
+            loadScreen(SCREEN_ID_DIAGNOSTICS_BATTERY);
+            current_screen_id = SCREEN_ID_DIAGNOSTICS_BATTERY;
+        }
+        else if (current_screen_id == SCREEN_ID_DIAGNOSTICS_BATTERY)
+        {
+            loadScreen(SCREEN_ID_DIAGNOSTICS_WEIGHT_SENSOR);
+            current_screen_id = SCREEN_ID_DIAGNOSTICS_WEIGHT_SENSOR;
         }
         else
         {

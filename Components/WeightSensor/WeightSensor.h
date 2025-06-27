@@ -42,4 +42,6 @@ void weight_sensor_set_weight_filter_input_coefficient(float coefficient);
 
 void weight_sensor_set_weight_filter_output_coefficient(float coefficient);
 
+uint16_t weight_sensor_get_taring_attempts();
+
 #endif

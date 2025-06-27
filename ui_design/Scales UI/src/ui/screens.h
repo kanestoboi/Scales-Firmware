@@ -9,7 +9,8 @@ extern "C" {
 
 typedef struct _objects_t {
     lv_obj_t *main;
-    lv_obj_t *diagnostics;
+    lv_obj_t *diagnostics_battery;
+    lv_obj_t *diagnostics_weight_sensor;
     lv_obj_t *label_timer;
     lv_obj_t *label_weight_integer;
     lv_obj_t *label_weight_decimal;
@@ -39,20 +40,27 @@ typedef struct _objects_t {
     lv_obj_t *diagnostics_full_capacity_value;
     lv_obj_t *diagnostics1_remaining_capacity_label;
     lv_obj_t *diagnostics_remaining_capacity_value;
+    lv_obj_t *diagnostics_tare_attempts_label;
+    lv_obj_t *diagnostics_tare_attempts_value;
+    lv_obj_t *diagnostics_weight_sensor_label;
 } objects_t;
 
 extern objects_t objects;
 
 enum ScreensEnum {
     SCREEN_ID_MAIN = 1,
-    SCREEN_ID_DIAGNOSTICS = 2,
+    SCREEN_ID_DIAGNOSTICS_BATTERY = 2,
+    SCREEN_ID_DIAGNOSTICS_WEIGHT_SENSOR = 3,
 };
 
 void create_screen_main();
 void tick_screen_main();
 
-void create_screen_diagnostics();
-void tick_screen_diagnostics();
+void create_screen_diagnostics_battery();
+void tick_screen_diagnostics_battery();
+
+void create_screen_diagnostics_weight_sensor();
+void tick_screen_diagnostics_weight_sensor();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

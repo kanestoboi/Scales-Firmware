@@ -39,6 +39,8 @@ void display_update_battery_cell_voltage_value(float cellVoltage);
 void display_update_battery_full_capacity_value(float fullCapacity);
 void display_update_battery_remaining_capacity_value(float remainingCapacity);
 
+void display_update_tare_attempts_label(uint32_t attempts);
+
 void display_turn_backlight_on();
 void display_turn_backlight_off();
 
