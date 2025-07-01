@@ -71,6 +71,7 @@ bool mCellVoltageUpdated = false;
 bool mBatteryFullCapacityUpdated = false;
 bool mBatteryRemainingCapacityUpdated = false;
 bool mDisplayScreenUpdated = false;
+bool mGramsPerSecondUpdated = false;
 
 bool mWeightSensorTareAttemptsUpdated = false;
 
@@ -78,6 +79,7 @@ float mWeight = 0.0;
 float mCoffeeWeight = 0.0;
 float mWaterWeight = 0.0;
 uint32_t mTimerValue = 0;
+static float mGramsPerSecond = 0;
 
 // Battery Related
 uint8_t mBatteryLevel = 0;
@@ -336,6 +338,12 @@ void display_update_tare_attempts_label(uint32_t attempts)
 
     mWeightSensorTareAttempts = attempts;
     mWeightSensorTareAttemptsUpdated = true;
+}
+
+void display_update_grams_per_second_bar_label(float gramsPerSecond)
+{
+    mGramsPerSecond = gramsPerSecond;
+    mGramsPerSecondUpdated = true;
 }
 
 void display_turn_backlight_on()
@@ -605,6 +613,11 @@ void display_loop()
         mWeightSensorTareAttemptsUpdated = false;
     }
 
+    if (mGramsPerSecondUpdated)
+    {
+        lv_bar_set_value(objects.graph_flow_rate_bar, mGramsPerSecond, LV_ANIM_ON);
+        mGramsPerSecondUpdated = false;
+    }
 
     if (mDisplayScreenUpdated)
     {

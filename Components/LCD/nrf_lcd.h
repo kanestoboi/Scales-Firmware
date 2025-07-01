@@ -131,7 +131,7 @@ typedef struct
      */
     void (* lcd_display_invert)(const nrfx_spim_t * spim, uint8_t dc_pin, bool invert);
 
-    uint32_t (* lcd_set_addr_window_to_buffer)(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+    nrfx_err_t (* lcd_set_addr_window_to_buffer)(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 
     void (* xfer_complete_handler)(const nrfx_spim_t * spim, uint8_t dc_pin);
 

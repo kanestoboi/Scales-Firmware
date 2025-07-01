@@ -1,5 +1,6 @@
 #ifndef WEIGHT_SENSOR_h
 #define WEIGHT_SENSOR_h
+#include "nrf_drv_gpiote.h"
 
 #define NRF_LOG_FLOAT_SCALES(val) (uint32_t)(((val) < 0 && (val) > -1.0) ? "-" : ""),   \
                            (int32_t)(val),                                              \
@@ -43,5 +44,11 @@ void weight_sensor_set_weight_filter_input_coefficient(float coefficient);
 void weight_sensor_set_weight_filter_output_coefficient(float coefficient);
 
 uint16_t weight_sensor_get_taring_attempts();
+
+void weight_sensor_data_ready_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
+
+void weight_sensor_tick_inc(uint32_t tickPeriod);
+
+float weight_sensor_get_grams_per_second();
 
 #endif
