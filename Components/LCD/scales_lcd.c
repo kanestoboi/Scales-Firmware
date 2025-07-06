@@ -54,6 +54,7 @@ char mBattteryFullCapacityBuffer[10];
 char mBattteryRemainingCapacityBuffer[10];
 
 char mWeightSensorTareAttemptsBuffer[10];
+char mWeightSensorSamplingRateBuffer[10];
 
 bool mWeightUpdated = false;
 bool mToggleElapsedTimeVisibility = false;
@@ -72,6 +73,7 @@ bool mBatteryFullCapacityUpdated = false;
 bool mBatteryRemainingCapacityUpdated = false;
 bool mDisplayScreenUpdated = false;
 bool mGramsPerSecondUpdated = false;
+bool mSamplingRateUpdated = false;
 
 bool mWeightSensorTareAttemptsUpdated = false;
 
@@ -93,6 +95,7 @@ float mBatteryRemainingCapacity = 0;
 
 // Weight Sensor Diagnostic Values
 uint32_t mWeightSensorTareAttempts = 0;
+uint16_t mWeightSensorSamplingRate = 0;
 
 #define LVGL_TIMER_INTERVAL_MS              5   // 5ms
 #define LVGL_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(LVGL_TIMER_INTERVAL_MS)
@@ -338,6 +341,13 @@ void display_update_tare_attempts_label(uint32_t attempts)
 
     mWeightSensorTareAttempts = attempts;
     mWeightSensorTareAttemptsUpdated = true;
+}
+
+void display_update_sampling_rate_label(uint16_t samplingRate)
+{
+
+    mWeightSensorSamplingRate = samplingRate;
+    mSamplingRateUpdated = true;
 }
 
 void display_update_grams_per_second_bar_label(float gramsPerSecond)
@@ -611,6 +621,14 @@ void display_loop()
 
         lv_label_set_text( objects.diagnostics_tare_attempts_value, mWeightSensorTareAttemptsBuffer);
         mWeightSensorTareAttemptsUpdated = false;
+    }
+
+    if (mSamplingRateUpdated)
+    {
+        sprintf(mWeightSensorSamplingRateBuffer, "%d", mWeightSensorSamplingRate);
+
+        lv_label_set_text( objects.diagnostics_sampling_rate_value, mWeightSensorSamplingRateBuffer);
+        mSamplingRateUpdated = false;
     }
 
     if (mGramsPerSecondUpdated)

@@ -44,6 +44,7 @@ void weight_sensor_set_weight_filter_input_coefficient(float coefficient);
 void weight_sensor_set_weight_filter_output_coefficient(float coefficient);
 
 uint16_t weight_sensor_get_taring_attempts();
+uint16_t weight_sensor_get_sampling_rate();
 
 void weight_sensor_data_ready_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 

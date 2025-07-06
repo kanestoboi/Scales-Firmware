@@ -14,7 +14,7 @@ uint32_t mThisTimePeriodStart = 0;
 uint32_t mLastTimePeriodStart = 0;
 uint32_t mSamplesLastTimePeriod = 0;
 uint32_t mSamplesThisTimePeriod = 0;
-uint32_t mSamplesPerSecond = 0;
+uint16_t mSamplesPerSecond = 0;
 uint32_t MIN_SAMPLE_WINDOW_MS = 15*20;
 
 static float mGramsPerSecond = 0.0;
@@ -348,6 +348,11 @@ void weight_sensor_set_weight_filter_output_coefficient(float coefficient)
     }
 
     NRF_LOG_INFO("Filter Output Coefficient:%s%d.%02d\n" , NRF_LOG_FLOAT(mWeightFilterOutputCoefficient) );
+}
+
+uint16_t weight_sensor_get_sampling_rate()
+{
+    return mSamplesPerSecond;
 }
 
 uint16_t weight_sensor_get_taring_attempts()

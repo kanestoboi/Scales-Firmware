@@ -40,6 +40,7 @@ void display_update_battery_full_capacity_value(float fullCapacity);
 void display_update_battery_remaining_capacity_value(float remainingCapacity);
 
 void display_update_tare_attempts_label(uint32_t attempts);
+void display_update_sampling_rate_label(uint16_t samplingRate);
 void display_update_grams_per_second_bar_label(float gramsPerSecond);
 
 void display_turn_backlight_on();

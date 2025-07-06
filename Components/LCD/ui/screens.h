@@ -44,6 +44,8 @@ typedef struct _objects_t {
     lv_obj_t *diagnostics_tare_attempts_label;
     lv_obj_t *diagnostics_tare_attempts_value;
     lv_obj_t *diagnostics_weight_sensor_label;
+    lv_obj_t *diagnostics_sampling_rate_label;
+    lv_obj_t *diagnostics_sampling_rate_value;
 } objects_t;
 
 extern objects_t objects;

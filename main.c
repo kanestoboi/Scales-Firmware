@@ -349,6 +349,7 @@ static void read_weight_timeout_handler(void * p_context)
 
     float scaleValue = roundf(weight_sensor_get_weight_filtered()*10)/10.0;
     float gramsPerSecond = weight_sensor_get_grams_per_second();
+    uint16_t samplingRate = weight_sensor_get_sampling_rate();
 
     if (writeToWeightCharacteristic)
     {
@@ -358,6 +359,7 @@ static void read_weight_timeout_handler(void * p_context)
     display_update_weight_label(scaleValue);
     display_update_tare_attempts_label(weight_sensor_get_taring_attempts());
     display_update_grams_per_second_bar_label(gramsPerSecond);
+    display_update_sampling_rate_label(samplingRate);
 
     ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
