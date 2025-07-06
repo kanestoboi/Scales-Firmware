@@ -158,7 +158,7 @@ typedef enum{
 static st7735_t m_st7735;
 
 
-static inline void st7735_spi_write(const nrfx_spim_t * spim, uint8_t dc_pin, const void * data, size_t size)
+static inline nrfx_err_t st7735_spi_write(const nrfx_spim_t * spim, uint8_t dc_pin, const void * data, size_t size)
 {
     nrfx_spim_xfer_desc_t desc;
 
@@ -167,20 +167,20 @@ static inline void st7735_spi_write(const nrfx_spim_t * spim, uint8_t dc_pin, co
     desc.p_rx_buffer = NULL;
     desc.rx_length = 0;
 
-    (nrfx_spim_xfer(&spi, &desc, 0));
+    return (nrfx_spim_xfer(&spi, &desc, 0));
 }
 
-static inline void st7735_write_data_buffered(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * c, uint16_t len)
+static inline nrfx_err_t st7735_write_data_buffered(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * c, uint16_t len)
 {
     nrf_gpio_pin_set(dc_pin);
 
-    st7735_spi_write(spim, dc_pin, c, len);
+    return st7735_spi_write(spim, dc_pin, c, len);
 }
 
-static inline void st7735_write_command(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t c)
+static inline nrfx_err_t st7735_write_command(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t c)
 {
     nrf_gpio_pin_clear(dc_pin);
-    st7735_spi_write(spim, dc_pin, &c, sizeof(c));
+    return st7735_spi_write(spim, dc_pin, &c, sizeof(c));
 }
 
 static inline void st7735_write_data(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t c)
@@ -376,7 +376,7 @@ static void st7735_uninit(void)
     
 }
 
-static void st7735_set_addr_window_to_buffer(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+static nrfx_err_t st7735_set_addr_window_to_buffer(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
     x0 += 1;  // Add horizontal offset
     y0 += 26; // Add vertical offset
@@ -405,14 +405,14 @@ static void st7735_set_addr_window_to_buffer(const nrfx_spim_t * spim, uint8_t d
     st7735_write_data(spim, dc_pin, y0);
     st7735_write_data(spim, dc_pin, 0x00);                       // For a 128x160 display, it is always 0.
     st7735_write_data(spim, dc_pin, y1);
-    st7735_write_command(spim, dc_pin, ST7735_RAMWR);
+    return st7735_write_command(spim, dc_pin, ST7735_RAMWR);
 }
 
-static void st7735_display(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+static nrfx_err_t st7735_display(const nrfx_spim_t * spim, uint8_t dc_pin, uint8_t * data, uint16_t len, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
     st7735_set_addr_window(spim, dc_pin, x0, y0, x1, y1);
 
-    st7735_write_data_buffered(spim, dc_pin, data, len);   
+    return st7735_write_data_buffered(spim, dc_pin, data, len);   
 }
 
 static void st7735_rotation_set(const nrfx_spim_t * spim, uint8_t dc_pin, nrf_lcd_rotation_t rotation)

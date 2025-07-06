@@ -90,7 +90,7 @@ void create_screen_main() {
             // label_coffee_weight
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.label_coffee_weight = obj;
-            lv_obj_set_pos(obj, 95, 71);
+            lv_obj_set_pos(obj, 95, 76);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(obj, lv_color_hex(0xffcacaca), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -101,7 +101,7 @@ void create_screen_main() {
             // label_water_weight
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.label_water_weight = obj;
-            lv_obj_set_pos(obj, 175, 71);
+            lv_obj_set_pos(obj, 175, 76);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(obj, lv_color_hex(0xffcacaca), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -125,7 +125,7 @@ void create_screen_main() {
             // label_coffee_to_water_ratio_numerator
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.label_coffee_to_water_ratio_numerator = obj;
-            lv_obj_set_pos(obj, 142, 35);
+            lv_obj_set_pos(obj, 142, 47);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(obj, lv_color_hex(0xffcacaca), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -137,7 +137,7 @@ void create_screen_main() {
             // label_coffee_to_water_ratio_denominator
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.label_coffee_to_water_ratio_denominator = obj;
-            lv_obj_set_pos(obj, 166, 35);
+            lv_obj_set_pos(obj, 166, 47);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(obj, lv_color_hex(0xffcacaca), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -149,7 +149,7 @@ void create_screen_main() {
             // label_coffee_to_water_ratio_colon
             lv_obj_t *obj = lv_label_create(parent_obj);
             objects.label_coffee_to_water_ratio_colon = obj;
-            lv_obj_set_pos(obj, 157, 35);
+            lv_obj_set_pos(obj, 157, 47);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(obj, lv_color_hex(0xffcacaca), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -161,8 +161,17 @@ void create_screen_main() {
             lv_obj_t *obj = lv_bar_create(parent_obj);
             objects.graph_bar = obj;
             lv_obj_set_pos(obj, -1, 22);
-            lv_obj_set_size(obj, 321, 13);
+            lv_obj_set_size(obj, 321, 9);
             lv_bar_set_value(obj, 25, LV_ANIM_ON);
+        }
+        {
+            // graph_flow_rate_bar
+            lv_obj_t *obj = lv_bar_create(parent_obj);
+            objects.graph_flow_rate_bar = obj;
+            lv_obj_set_pos(obj, -1, 38);
+            lv_obj_set_size(obj, 321, 9);
+            lv_bar_set_range(obj, -20, 20);
+            lv_bar_set_mode(obj, LV_BAR_MODE_SYMMETRICAL);
         }
     }
     
@@ -423,6 +432,28 @@ void create_screen_diagnostics_weight_sensor() {
             lv_obj_set_style_text_font(obj, &lv_font_montserrat_20, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_align(obj, LV_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "Weight Sensor Information");
+        }
+        {
+            // diagnostics_sampling_rate_label
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.diagnostics_sampling_rate_label = obj;
+            lv_obj_set_pos(obj, 0, 38);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0xffcacaca), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_14, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text(obj, "Sampleing Rate ");
+        }
+        {
+            // diagnostics_sampling_rate_value
+            lv_obj_t *obj = lv_label_create(parent_obj);
+            objects.diagnostics_sampling_rate_value = obj;
+            lv_obj_set_pos(obj, 160, 38);
+            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_color(obj, lv_color_hex(0xffcacaca), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_font(obj, &lv_font_montserrat_14, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_label_set_text(obj, "--");
         }
     }
     

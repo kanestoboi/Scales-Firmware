@@ -3,11 +3,23 @@
 #include "nrf_log.h"
 #include "app_timer.h"
 #include "nrf_gpio.h"
-
+#include "nrf_drv_gpiote.h"
 
 #include <math.h>
 
 ADS123X scale;
+
+uint32_t mTimeMS = 0;
+uint32_t mThisTimePeriodStart = 0;
+uint32_t mLastTimePeriodStart = 0;
+uint32_t mSamplesLastTimePeriod = 0;
+uint32_t mSamplesThisTimePeriod = 0;
+uint16_t mSamplesPerSecond = 0;
+uint32_t MIN_SAMPLE_WINDOW_MS = 15*20;
+
+static float mGramsPerSecond = 0.0;
+float mGramsLastTimePeriod = 0.0;
+float mGramsThisTimePeriod = 0.0;
 
 float mScaleValue;
 float mFilteredScaleValue = 0.0;
@@ -42,25 +54,26 @@ void (*mCalibrationCompleteCallback)(float scaleFactor) = NULL;
 void (*mWeightMovedFromZeroCallback)() = NULL;
 void (*mStableWeightAcheivedCallback)() = NULL;
 
-APP_TIMER_DEF(m_read_ads123x_timer_id);
-
-#define ADS123X_TIMER_INTERVAL_MS              12   // 12ms
-#define ADS123X_TIMER_INTERVAL_TICKS           APP_TIMER_TICKS(ADS123X_TIMER_INTERVAL_MS)
-
-static void start_read_ads123x_timer()
-{
-    ret_code_t err_code = app_timer_start(m_read_ads123x_timer_id, ADS123X_TIMER_INTERVAL_MS, NULL);
-    APP_ERROR_CHECK(err_code);
-}
-
-static void stop_read_ads123x_timer()
-{
-    ret_code_t err_code = app_timer_stop(m_read_ads123x_timer_id);
-    APP_ERROR_CHECK(err_code);
-}
 
 static void ads123x_timeout_handler(void * p_context)
 {
+    uint32_t elapsedMs = mTimeMS - mThisTimePeriodStart;
+    if (elapsedMs >= MIN_SAMPLE_WINDOW_MS) // e.g. 100 or 250 ms
+    {
+        mLastTimePeriodStart = mThisTimePeriodStart;
+        mThisTimePeriodStart = mTimeMS;
+
+        mSamplesLastTimePeriod = mSamplesThisTimePeriod;
+        mSamplesThisTimePeriod = 0;
+
+        mGramsLastTimePeriod = mGramsThisTimePeriod;
+        mGramsThisTimePeriod = mFilteredScaleValue;
+
+        mGramsPerSecond = ((mFilteredScaleValue-mGramsLastTimePeriod) * 1000.0) / (float)elapsedMs;
+
+        mSamplesPerSecond = (mSamplesLastTimePeriod * 1000) / elapsedMs;
+    }
+
     switch (mWeightSensorCurrentState)
     {
         case NORMAL:
@@ -71,6 +84,8 @@ static void ads123x_timeout_handler(void * p_context)
             {
                 break;
             }
+
+            mSamplesThisTimePeriod++;
 
             if (mStableWeightRequested)
             {
@@ -206,17 +221,28 @@ static void ads123x_timeout_handler(void * p_context)
             break;
     }
 
-    start_read_ads123x_timer();
 }
                                             
 void weight_sensor_init(float scaleFactor)
-{    
-    ret_code_t err_code = app_timer_create(&m_read_ads123x_timer_id, APP_TIMER_MODE_SINGLE_SHOT, ads123x_timeout_handler);
-    APP_ERROR_CHECK(err_code);
-
+{
+    ret_code_t err_code;
     nrf_gpio_cfg_output(pin_APWR);
     nrf_gpio_pin_clear(pin_APWR);
 
+        // GPIOTE init
+    if (!nrfx_gpiote_is_init())
+    {
+        err_code = nrf_drv_gpiote_init();
+        APP_ERROR_CHECK(err_code);
+    }
+
+    nrf_drv_gpiote_in_config_t in_config = NRFX_GPIOTE_CONFIG_IN_SENSE_HITOLO(true);
+    // Configure input pins for ADS1232, but don't enable interrupts yet
+    in_config.pull = NRF_GPIO_PIN_NOPULL; 
+
+    err_code = nrf_drv_gpiote_in_init(pin_DOUT, &in_config, weight_sensor_data_ready_handler);
+    APP_ERROR_CHECK(err_code);
+    // Don't enable event yet
 
     ADS123X_Init(&scale, pin_DOUT, pin_SCLK, pin_PWDN, pin_GAIN0, pin_GAIN1, pin_SPEED);
 
@@ -265,19 +291,12 @@ float weight_sensor_get_weight_filtered()
 
 float weight_sensor_read_weight()
 {
-    nrf_gpio_pin_clear(pin_APWR);
-    ADS123X_PowerOn(&scale);
-    float readValue;
-    ADS123X_getUnits(&scale, &readValue, 1); 
-    ADS123X_PowerOff(&scale); 
-    nrf_gpio_pin_set(pin_APWR);
-
-    return readValue;
+    return mScaleValue;
 }
 
 void weight_sensor_sleep()
 {
-    stop_read_ads123x_timer();
+    nrf_drv_gpiote_in_event_enable(pin_DOUT, false);
     ADS123X_PowerOff(&scale);
     nrf_gpio_pin_set(pin_APWR);
 }
@@ -286,7 +305,12 @@ void weight_sensor_wakeup()
 {
     nrf_gpio_pin_clear(pin_APWR);
     ADS123X_PowerOn(&scale);
-    start_read_ads123x_timer();
+
+    while (!ADS123X_IsReady(&scale)){}
+
+    ads123x_timeout_handler(NULL);
+
+    nrf_drv_gpiote_in_event_enable(pin_DOUT, true);
 
     mWeightSensorCurrentState = START_TARING;
 }
@@ -326,7 +350,27 @@ void weight_sensor_set_weight_filter_output_coefficient(float coefficient)
     NRF_LOG_INFO("Filter Output Coefficient:%s%d.%02d\n" , NRF_LOG_FLOAT(mWeightFilterOutputCoefficient) );
 }
 
+uint16_t weight_sensor_get_sampling_rate()
+{
+    return mSamplesPerSecond;
+}
+
 uint16_t weight_sensor_get_taring_attempts()
 {
     return mTaringAttempts;
+}
+
+void weight_sensor_data_ready_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
+{
+   ads123x_timeout_handler(NULL);
+}
+
+void weight_sensor_tick_inc(uint32_t tickPeriod)
+{
+    mTimeMS += tickPeriod;
+}
+
+float weight_sensor_get_grams_per_second()
+{
+    return mGramsPerSecond;
 }

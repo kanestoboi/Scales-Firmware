@@ -23,37 +23,41 @@ bool ADS123X_IsReady(ADS123X *device)
 
 ADS123X_ERROR_t ADS123X_read(ADS123X *device, int32_t *value)
 {
-  if (!ADS123X_IsReady(device))
-  {
-    return SENSOR_NOT_READY;
-  }
-  int32_t readValue = 0;
-  
-  // Read 24 bits
-  for(int16_t i=23 ; i >= 0; i--) {
-      nrf_gpio_pin_set(device->pin_SCLK);
-      readValue = (readValue << 1) + nrf_gpio_pin_read(device->pin_DOUT);
-      nrf_gpio_pin_clear(device->pin_SCLK);
-  }
+    if (!ADS123X_IsReady(device))
+    {
+        return SENSOR_NOT_READY;
+    }
 
-  // One last pulse on SCLK needed to ensure DOUT goes high at end of transmission
-  nrf_gpio_pin_set(device->pin_SCLK);
-  nrf_gpio_pin_clear(device->pin_SCLK);
+    int32_t readValue = 0;
 
-  if (device->calibrateOnNextConversion)
-  {
+    // Read 24 bits MSB first
+    for (int i = 23; i >= 0; i--) {
+        nrf_gpio_pin_set(device->pin_SCLK);
+        readValue = (readValue << 1) | nrf_gpio_pin_read(device->pin_DOUT);
+        nrf_gpio_pin_clear(device->pin_SCLK);
+    }
+
+    // Extra clock pulse to complete transmission
     nrf_gpio_pin_set(device->pin_SCLK);
     nrf_gpio_pin_clear(device->pin_SCLK);
 
-    device->calibrateOnNextConversion = false;
-  }
+    // Optional self-calibration trigger
+    if (device->calibrateOnNextConversion)
+    {
+        nrf_gpio_pin_set(device->pin_SCLK);
+        nrf_gpio_pin_clear(device->pin_SCLK);
+        device->calibrateOnNextConversion = false;
+    }
 
-  *value &= 0xFFFFFF80;
-  //Bit 23 is the signed bit so shift left and divide by 256
-  *value = (readValue << 8) / 256;
+    // Sign extend the 24-bit two's complement value
+    if (readValue & 0x800000) {
+        readValue |= 0xFF000000;
+    }
 
-  return NoERROR;
+    *value = readValue;
+    return NoERROR;
 }
+
 
 void ADS123X_setGain(ADS123X *device, ADS123X_GAIN_t gain)
 {
