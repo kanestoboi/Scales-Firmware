@@ -695,6 +695,10 @@ void prepare_to_sleep()
     iqs227d_power_off(&touchSensor2);
     iqs227d_power_off(&touchSensor3);
 
+    iqs227d_uninit(&touchSensor1);
+    iqs227d_uninit(&touchSensor2);
+    iqs227d_uninit(&touchSensor3);
+
     scalesOperationalState = OFF;
 }
 
@@ -713,6 +717,10 @@ void wakeup_from_sleep()
     timers_start();
 
     bluetooth_advertising_start(false);
+
+    iqs227d_init(&touchSensor1, &m_twi_secondary);
+    iqs227d_init(&touchSensor2, &m_twi_secondary);
+    iqs227d_init(&touchSensor3, &m_twi_secondary);
 
     iqs227d_power_on(&touchSensor1);
     iqs227d_power_on(&touchSensor2);
@@ -817,9 +825,7 @@ int main(void)
         NRF_LOG_INFO("MAX17260 not found");
     }
 
-    iqs227d_init(&touchSensor1, &m_twi_secondary);
-    iqs227d_init(&touchSensor2, &m_twi_secondary);
-    iqs227d_init(&touchSensor3, &m_twi_secondary);
+
     iqs227d_init(&touchSensor4, &m_twi_secondary);
     iqs227d_power_on(&touchSensor4);
 
