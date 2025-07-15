@@ -128,6 +128,8 @@ void touchSensor1TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
             }
         }    
     }
+
+    NRF_LOG_FLUSH();
 }
 
 void touchSensor2TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
@@ -141,6 +143,7 @@ void touchSensor2TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
         NRF_LOG_INFO("Pin %d Tout released.", pin);
         weight_sensor_get_stable_weight(set_coffee_weight_callback);
     }
+    NRF_LOG_FLUSH();
 }
 
 void touchSensor3TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
@@ -154,6 +157,7 @@ void touchSensor3TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     {
         NRF_LOG_INFO("Pin %d Tout released.", pin);
     }
+    NRF_LOG_FLUSH();
 }
 
 void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
@@ -182,6 +186,7 @@ void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
             weight_sensor_tare();
         }
     }
+    NRF_LOG_FLUSH();
 }
 
 IQS227D  touchSensor1 =    {
@@ -695,6 +700,10 @@ void prepare_to_sleep()
     iqs227d_power_off(&touchSensor2);
     iqs227d_power_off(&touchSensor3);
 
+    iqs227d_uninit(&touchSensor1);
+    iqs227d_uninit(&touchSensor2);
+    iqs227d_uninit(&touchSensor3);
+
     scalesOperationalState = OFF;
 }
 
@@ -713,6 +722,10 @@ void wakeup_from_sleep()
     timers_start();
 
     bluetooth_advertising_start(false);
+
+    iqs227d_init(&touchSensor1, &m_twi_secondary);
+    iqs227d_init(&touchSensor2, &m_twi_secondary);
+    iqs227d_init(&touchSensor3, &m_twi_secondary);
 
     iqs227d_power_on(&touchSensor1);
     iqs227d_power_on(&touchSensor2);
@@ -820,6 +833,11 @@ int main(void)
     iqs227d_init(&touchSensor1, &m_twi_secondary);
     iqs227d_init(&touchSensor2, &m_twi_secondary);
     iqs227d_init(&touchSensor3, &m_twi_secondary);
+
+    iqs227d_power_on(&touchSensor1);
+    iqs227d_power_on(&touchSensor2);
+    iqs227d_power_on(&touchSensor3);
+
     iqs227d_init(&touchSensor4, &m_twi_secondary);
     iqs227d_power_on(&touchSensor4);
 

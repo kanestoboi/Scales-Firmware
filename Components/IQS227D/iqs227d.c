@@ -41,10 +41,6 @@ void iqs227d_init(IQS227D *sensor, const nrfx_twi_t *m_twi)
     ret_code_t err_code;
     sensor->mHandle = m_twi;
 
-    // Power pin setup
-    nrf_gpio_cfg_output(sensor->pin_VCC);
-    nrf_gpio_pin_clear(sensor->pin_VCC); // keep off initially
-
     // GPIOTE init
     if (!nrfx_gpiote_is_init())
     {
@@ -73,9 +69,25 @@ void iqs227d_init(IQS227D *sensor, const nrfx_twi_t *m_twi)
     NRF_LOG_INFO("iqs227d initialized (waiting for power on)");
 }
 
+void iqs227d_uninit(IQS227D *sensor)
+{    
+    if (sensor->toutChangedFcn != NULL)
+    {
+        nrf_drv_gpiote_in_uninit(sensor->pin_TOUT);;
+    }
+
+    if (sensor->poutChangedFcn != NULL)
+    {
+        nrf_drv_gpiote_in_uninit(sensor->pin_POUT);
+    }
+
+    NRF_LOG_INFO("iqs227d uninitialized");
+}
 
 void iqs227d_power_on(IQS227D *sensor)
 {
+    // Power pin setup
+    nrf_gpio_cfg_output(sensor->pin_VCC);
     nrf_gpio_pin_set(sensor->pin_VCC);
     nrf_delay_ms(10); // Allow time for power-up and pin to stabilize
 
@@ -105,6 +117,7 @@ void iqs227d_power_off(IQS227D *sensor)
     }
 
     nrf_gpio_pin_clear(sensor->pin_VCC);
+    nrf_gpio_cfg_default(sensor->pin_VCC);
 
     NRF_LOG_INFO("iqs227d powered off and interrupts disabled");
 }
