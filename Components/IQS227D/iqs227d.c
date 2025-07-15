@@ -71,9 +71,15 @@ void iqs227d_init(IQS227D *sensor, const nrfx_twi_t *m_twi)
 
 void iqs227d_uninit(IQS227D *sensor)
 {    
-    nrf_drv_gpiote_in_uninit(sensor->pin_TOUT);
+    if (sensor->toutChangedFcn != NULL)
+    {
+        nrf_drv_gpiote_in_uninit(sensor->pin_TOUT);;
+    }
 
-    nrf_drv_gpiote_in_uninit(sensor->pin_POUT);
+    if (sensor->poutChangedFcn != NULL)
+    {
+        nrf_drv_gpiote_in_uninit(sensor->pin_POUT);
+    }
 
     NRF_LOG_INFO("iqs227d uninitialized");
 }
