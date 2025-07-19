@@ -74,6 +74,7 @@ bool mBatteryRemainingCapacityUpdated = false;
 bool mDisplayScreenUpdated = false;
 bool mGramsPerSecondUpdated = false;
 bool mSamplingRateUpdated = false;
+bool mResetDefaults = false;
 
 bool mWeightSensorTareAttemptsUpdated = false;
 
@@ -356,6 +357,11 @@ void display_update_grams_per_second_bar_label(float gramsPerSecond)
     mGramsPerSecondUpdated = true;
 }
 
+void display_reset_label_defaults()
+{
+    mResetDefaults = true;
+}
+
 void display_turn_backlight_on()
 {
     nrf_gpio_pin_clear(p_scales_display1->backlight_pin);
@@ -389,7 +395,7 @@ void display_power_display_off()
 }
 
 void display_sleep()
-{
+{   
     lv_display_flush_ready(flush_cb_display);
     flush_cb_display = NULL;
 
@@ -421,6 +427,8 @@ void display_wakeup()
 
     mDisplayInvalid = true;
 
+    display_reset_label_defaults();
+    
     display_turn_backlight_on();
 }
 
@@ -453,9 +461,7 @@ void display_loop()
     if (mDisplayInvalid)
     {
         lv_obj_invalidate(lv_scr_act());
-    }
-
-    lv_task_handler(); // let the GUI do its work   
+    }  
     
     //lv_label_set_text( objects.label_weight_integer, buffer );
     if (mWeightUpdated)
@@ -658,5 +664,20 @@ void display_loop()
         mDisplayScreenUpdated = false;
     }
 
+    if (mResetDefaults)
+    {
+        char coffeeWeightBuffer[6] = "--.-";
+        lv_label_set_text( objects.label_coffee_weight, coffeeWeightBuffer);
+
+        char waterWeightBuffer[6] = "--.-";
+        lv_label_set_text( objects.label_water_weight, waterWeightBuffer);
+
+        char timerBuffer[6] = "00:00";
+        lv_label_set_text( objects.label_timer, timerBuffer);
+
+        mResetDefaults = false;
+    }
+
+    lv_task_handler(); // let the GUI do its work 
     
 }
