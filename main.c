@@ -33,7 +33,6 @@
 #include "Components/SavedParameters/SavedParameters.h"
 #include "Components/IQS227D/iqs227d.h"
 
-APP_TIMER_DEF(m_read_weight_timer_id);
 APP_TIMER_DEF(m_elapsed_time_timer_id);
 APP_TIMER_DEF(m_battery_level_timer_id);
 
@@ -346,13 +345,9 @@ void disable_write_to_weight_characteristic()
  * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
  *                       app_start_timer() call to the timeout handler.
  */
-static void read_weight_timeout_handler(void * p_context)
+static void new_weight_value_received_handler(float weight)
 {
-    UNUSED_PARAMETER(p_context);
-
-    weight_sensor_tick_inc(15);
-
-    float scaleValue = roundf(weight_sensor_get_weight_filtered()*10)/10.0;
+    float scaleValue = roundf(weight*10)/10.0;
     float gramsPerSecond = weight_sensor_get_grams_per_second();
     uint16_t samplingRate = weight_sensor_get_sampling_rate();
 
@@ -363,11 +358,8 @@ static void read_weight_timeout_handler(void * p_context)
 
     display_update_weight_label(scaleValue);
     display_update_tare_attempts_label(weight_sensor_get_taring_attempts());
-    // display_update_grams_per_second_bar_label(gramsPerSecond);
+    display_update_grams_per_second_bar_label(gramsPerSecond);
     display_update_sampling_rate_label(samplingRate);
-
-    ret_code_t err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
 }
 
 void elapsed_time_timeout_handler(void * p_context)
@@ -496,9 +488,6 @@ static void timers_init(void)
     // Initialize timer module.
     ret_code_t err_code = app_timer_init();
     APP_ERROR_CHECK(err_code);
-    
-    err_code = app_timer_create(&m_read_weight_timer_id, APP_TIMER_MODE_SINGLE_SHOT, read_weight_timeout_handler);
-    APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_elapsed_time_timer_id, APP_TIMER_MODE_REPEATED, elapsed_time_timeout_handler);
     APP_ERROR_CHECK(err_code);
@@ -517,9 +506,6 @@ void timers_start()
 {
     ret_code_t err_code;
 
-    err_code = app_timer_start(m_read_weight_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
-
     err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
@@ -527,9 +513,6 @@ void timers_start()
 void timers_stop()
 {
     ret_code_t err_code;
-
-    err_code = app_timer_stop(m_read_weight_timer_id);
-    APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_stop(m_elapsed_time_timer_id);
     APP_ERROR_CHECK(err_code);
@@ -813,9 +796,13 @@ int main(void)
     NRF_LOG_INFO("Bluetooth setup complete");
     NRF_LOG_FLUSH();
 
-    
-    float scaleFactor = saved_parameters_getSavedScaleFactor();
-    weight_sensor_init(scaleFactor);
+    weight_sensor_init_t ws_init = {
+        .scaleFactor = saved_parameters_getSavedScaleFactor(),
+        .newWeightValueReceivedCallback = NULL,//new_weight_value_received_handler,
+        .newWeightFilteredValueReceivedCallback = new_weight_value_received_handler
+    };
+
+    weight_sensor_init(ws_init);
 
     if (max17260_init(&max17260Sensor, &m_twi0))
     {

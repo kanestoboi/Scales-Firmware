@@ -24,7 +24,15 @@ typedef enum
     SENSING_WEIGHT_CHANGE
 } weight_sensor_sense_state_t;
 
-void weight_sensor_init(float scaleFactor);
+typedef struct
+{
+    float scaleFactor;
+    void (*newWeightValueReceivedCallback)(float weight);
+    void (*newWeightFilteredValueReceivedCallback)(float weight);
+
+} weight_sensor_init_t;
+
+void weight_sensor_init(weight_sensor_init_t ws_init);
 float weight_sensor_get_weight();
 float weight_sensor_get_weight_filtered();
 void weight_sensor_tare();
