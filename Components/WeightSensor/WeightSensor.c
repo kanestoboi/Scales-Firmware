@@ -4,6 +4,7 @@
 #include "app_timer.h"
 #include "nrf_gpio.h"
 #include "nrf_drv_gpiote.h"
+#include "libraries/biquad/biquad.h"
 
 #include <math.h>
 
@@ -17,11 +18,16 @@ uint32_t mSamplesThisTimePeriod = 0;
 uint16_t mSamplesPerSecond = 0;
 uint32_t MIN_SAMPLE_WINDOW_MS = 15*20;
 
+uint32_t first_sample = 1;
+
+
 static float mGramsPerSecond = 0.0;
+static float mGramsPerSecondFiltered = 0.0;
 float mGramsLastTimePeriod = 0.0;
 float mGramsThisTimePeriod = 0.0;
 
 float mScaleValue;
+float prev_filtered_weight = 0;
 float mFilteredScaleValue = 0.0;
 float mLastFilteredScaleValue = 0.0;
 float mRoundedValue;
@@ -53,6 +59,24 @@ const uint8_t pin_APWR = 4; // analogue power pin
 void (*mCalibrationCompleteCallback)(float scaleFactor) = NULL;
 void (*mWeightMovedFromZeroCallback)() = NULL;
 void (*mStableWeightAcheivedCallback)() = NULL;
+void (*mNewWeightValueReceivedCallback)(float weight) = NULL;
+void (*mNewWeightFilteredValueReceivedCallback)(float weight) = NULL;
+
+// Define filter order and sections (4th order = 2 biquads)
+#define NUM_SECTIONS 2
+
+Biquad weight_filter[NUM_SECTIONS] = {
+    // Section 1 coefficients (b0,b1,b2,a1,a2)
+    {0.06745527, 0.13491055, 0.06745527, -1.1429805, 0.4128016, 0, 0},
+    // Section 2 coefficients
+    {0.06745527, 0.13491055, 0.06745527, -1.1429805, 0.4128016, 0, 0}
+};
+
+Biquad flow_filter[NUM_SECTIONS] = {
+    // Example coeffs for 4th order Butterworth low-pass 10 Hz @ 80 Hz sampling
+    {0.02008337, 0.04016673, 0.02008337, -1.5610181, 0.6413515, 0, 0},
+    {0.02008337, 0.04016673, 0.02008337, -1.5610181, 0.6413515, 0, 0}
+};
 
 
 static void ads123x_timeout_handler(void * p_context)
@@ -66,12 +90,12 @@ static void ads123x_timeout_handler(void * p_context)
         mSamplesLastTimePeriod = mSamplesThisTimePeriod;
         mSamplesThisTimePeriod = 0;
 
-        mGramsLastTimePeriod = mGramsThisTimePeriod;
-        mGramsThisTimePeriod = mFilteredScaleValue;
+        // mGramsLastTimePeriod = mGramsThisTimePeriod;
+        // mGramsThisTimePeriod = mFilteredScaleValue;
 
-        mGramsPerSecond = ((mFilteredScaleValue-mGramsLastTimePeriod) * 1000.0) / (float)elapsedMs;
+        // mGramsPerSecond = ((mFilteredScaleValue-mGramsLastTimePeriod) * 1000.0) / (float)elapsedMs;
 
-        mSamplesPerSecond = (mSamplesLastTimePeriod * 1000) / elapsedMs;
+        // mSamplesPerSecond = (mSamplesLastTimePeriod * 1000) / elapsedMs;
     }
 
     switch (mWeightSensorCurrentState)
@@ -92,7 +116,18 @@ static void ads123x_timeout_handler(void * p_context)
                 mLastFilteredScaleValue = mFilteredScaleValue;
             }
 
-            mFilteredScaleValue = mWeightFilterOutputCoefficient * mFilteredScaleValue + mWeightFilterInputCoefficient * mScaleValue;
+            mFilteredScaleValue = filter_process(weight_filter, NUM_SECTIONS, mScaleValue); //mWeightFilterOutputCoefficient * mFilteredScaleValue + mWeightFilterInputCoefficient * mScaleValue;
+
+            if (!first_sample) {
+                mGramsPerSecond = (mFilteredScaleValue - prev_filtered_weight) / (1.0/80.0);
+            } else {
+                first_sample = 0;
+            }
+            prev_filtered_weight = mFilteredScaleValue;
+
+            // Filter the flow rate
+            mGramsPerSecondFiltered = filter_process(flow_filter, NUM_SECTIONS, mGramsPerSecond);
+
 
             if (mStableWeightRequested && fabs(mFilteredScaleValue - mLastFilteredScaleValue) <= 0.01)
             {
@@ -104,6 +139,16 @@ static void ads123x_timeout_handler(void * p_context)
             {
                 mWeightMovedFromZeroCallback();
                 mWeightSensorSenseState = NOT_SENSING;
+            }
+
+            if (mNewWeightValueReceivedCallback != NULL)
+            {
+                mNewWeightValueReceivedCallback(mScaleValue);
+            }
+
+            if (mNewWeightFilteredValueReceivedCallback != NULL)
+            {
+                mNewWeightFilteredValueReceivedCallback(mFilteredScaleValue);
             }
 
             break;
@@ -223,8 +268,13 @@ static void ads123x_timeout_handler(void * p_context)
 
 }
                                             
-void weight_sensor_init(float scaleFactor)
+void weight_sensor_init(weight_sensor_init_t ws_init)
 {
+    first_sample = 1;
+
+    mNewWeightValueReceivedCallback = ws_init.newWeightValueReceivedCallback;
+    mNewWeightFilteredValueReceivedCallback = ws_init.newWeightFilteredValueReceivedCallback;
+
     ret_code_t err_code;
     nrf_gpio_cfg_output(pin_APWR);
     nrf_gpio_pin_clear(pin_APWR);
@@ -248,7 +298,7 @@ void weight_sensor_init(float scaleFactor)
 
     ADS123X_setGain(&scale, GAIN_128);
     ADS123X_setSpeed(&scale, SPEED_80SPS);
-    ADS123X_setScaleFactor(&scale, scaleFactor);
+    ADS123X_setScaleFactor(&scale, ws_init.scaleFactor);
 
     weight_sensor_sleep(&scale);
 
@@ -372,5 +422,5 @@ void weight_sensor_tick_inc(uint32_t tickPeriod)
 
 float weight_sensor_get_grams_per_second()
 {
-    return mGramsPerSecond;
+    return mGramsPerSecondFiltered;
 }

@@ -1165,6 +1165,10 @@
         </folder>
       </folder>
       <folder Name="libraries">
+        <folder Name="biquad">
+          <file file_name="libraries/biquad/biquad.c" />
+          <file file_name="libraries/biquad/biquad.h" />
+        </folder>
         <file file_name="libraries/sfloat/sfloat.c" />
         <file file_name="libraries/sfloat/sfloat.h" />
       </folder>
