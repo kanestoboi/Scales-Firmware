@@ -102,8 +102,13 @@ void touchSensor1TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
 {
     if (nrf_gpio_pin_read(pin) == 0U)
     {
-        ret_code_t err_code = app_timer_start(m_touch_sensor1_timer_id, TOUCH_SENSOR1_TIMER_INTERVAL, NULL);
-        APP_ERROR_CHECK(err_code);
+        if (!elapsed_time_timer_running)
+        {
+            display_update_timer_label(0);
+            ret_code_t err_code = app_timer_start(m_touch_sensor1_timer_id, TOUCH_SENSOR1_TIMER_INTERVAL, NULL);
+            APP_ERROR_CHECK(err_code);
+        }
+        
         NRF_LOG_INFO("Pin %d Tout Touched.", pin);
     }
     else
@@ -122,6 +127,7 @@ void touchSensor1TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
         {
             if (elapsed_time_timer_running) {
                 stop_elapsed_time_timer();  // Call this if the timer is running
+                
             } else {
                 start_elapsed_timer_timer_callback();
             }

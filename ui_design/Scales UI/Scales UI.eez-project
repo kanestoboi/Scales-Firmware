@@ -139,7 +139,7 @@
             {
               "objID": "221a5308-32b5-4e99-96a0-c0f96914638e",
               "type": "LVGLLabelWidget",
-              "left": -1,
+              "left": 2,
               "top": 125,
               "width": 139,
               "height": 52,
@@ -191,7 +191,7 @@
             {
               "objID": "2c60ddcd-d24a-4bd9-e6e2-a5d1cc69d39c",
               "type": "LVGLLabelWidget",
-              "left": -42,
+              "left": -45,
               "top": 65,
               "width": 96,
               "height": 52,
@@ -245,7 +245,7 @@
             {
               "objID": "0c7a3355-3a5c-4004-ee74-75722ebcbdfa",
               "type": "LVGLLabelWidget",
-              "left": 278,
+              "left": 275,
               "top": 125,
               "width": 11,
               "height": 52,
@@ -297,7 +297,7 @@
             {
               "objID": "2253e3d2-2d4d-4575-8dfd-a55a59701459",
               "type": "LVGLLabelWidget",
-              "left": 289,
+              "left": 286,
               "top": 125,
               "width": 32,
               "height": 52,
@@ -563,8 +563,8 @@
             {
               "objID": "0dd967ff-279b-478b-f5d9-c3e031c1a122",
               "type": "LVGLLabelWidget",
-              "left": 142,
-              "top": 71,
+              "left": -10,
+              "top": 4,
               "width": 13,
               "height": 38,
               "customInputs": [],
@@ -601,7 +601,8 @@
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
                       "text_font": "MONTSERRAT_34",
-                      "text_align": "RIGHT"
+                      "text_align": "RIGHT",
+                      "align": "CENTER"
                     }
                   }
                 }
@@ -616,8 +617,8 @@
             {
               "objID": "dd2b8f04-f8c3-44d7-82f2-c439e3b30853",
               "type": "LVGLLabelWidget",
-              "left": 166,
-              "top": 71,
+              "left": 22,
+              "top": 4,
               "width": 34,
               "height": 38,
               "customInputs": [],
@@ -654,7 +655,8 @@
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
                       "text_font": "MONTSERRAT_34",
-                      "text_align": "LEFT"
+                      "text_align": "LEFT",
+                      "align": "CENTER"
                     }
                   }
                 }
@@ -669,8 +671,8 @@
             {
               "objID": "f86f07f5-e865-48b5-ac86-d13445c63f87",
               "type": "LVGLLabelWidget",
-              "left": 155,
-              "top": 71,
+              "left": 0,
+              "top": 0,
               "width": 8,
               "height": 38,
               "customInputs": [],
@@ -706,7 +708,8 @@
                     "DEFAULT": {
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
-                      "text_font": "MONTSERRAT_34"
+                      "text_font": "MONTSERRAT_34",
+                      "align": "CENTER"
                     }
                   }
                 }
@@ -855,7 +858,8 @@
                       "line_color": "#cacaca",
                       "line_rounded": true,
                       "align": "CENTER",
-                      "line_width": 2
+                      "line_width": 2,
+                      "line_opa": 125
                     }
                   }
                 }
@@ -906,7 +910,8 @@
                       "line_color": "#cacaca",
                       "line_rounded": true,
                       "align": "CENTER",
-                      "line_width": 2
+                      "line_width": 2,
+                      "line_opa": 125
                     }
                   }
                 }
@@ -957,7 +962,8 @@
                       "line_color": "#cacaca",
                       "line_rounded": true,
                       "align": "CENTER",
-                      "line_width": 2
+                      "line_width": 2,
+                      "line_opa": 125
                     }
                   }
                 }
@@ -970,10 +976,10 @@
             {
               "objID": "d7039010-ad68-4e67-9174-92b550b361a7",
               "type": "LVGLLabelWidget",
-              "left": 77,
-              "top": 47,
-              "width": 6,
-              "height": 11,
+              "left": -80,
+              "top": -32,
+              "width": 7,
+              "height": 15,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -1007,8 +1013,9 @@
                     "DEFAULT": {
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
-                      "text_font": "MONTSERRAT_10",
-                      "text_align": "CENTER"
+                      "text_font": "MONTSERRAT_12",
+                      "text_align": "CENTER",
+                      "align": "CENTER"
                     }
                   }
                 }
@@ -1023,10 +1030,10 @@
             {
               "objID": "ed43137b-5830-4f9f-bbc7-d52d6dfc9693",
               "type": "LVGLLabelWidget",
-              "left": 155,
-              "top": 47,
-              "width": 11,
-              "height": 11,
+              "left": 0,
+              "top": -32,
+              "width": 12,
+              "height": 15,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -1060,8 +1067,9 @@
                     "DEFAULT": {
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
-                      "text_font": "MONTSERRAT_10",
-                      "text_align": "CENTER"
+                      "text_font": "MONTSERRAT_12",
+                      "text_align": "CENTER",
+                      "align": "CENTER"
                     }
                   }
                 }
@@ -1076,10 +1084,10 @@
             {
               "objID": "56aade43-30d3-4b47-a1b9-433d7c5e893b",
               "type": "LVGLLabelWidget",
-              "left": 235,
-              "top": 47,
-              "width": 10,
-              "height": 11,
+              "left": 80,
+              "top": -32,
+              "width": 11,
+              "height": 15,
               "customInputs": [],
               "customOutputs": [],
               "style": {
@@ -1113,8 +1121,9 @@
                     "DEFAULT": {
                       "bg_color": "#FFFFFF",
                       "text_color": "#cacaca",
-                      "text_font": "MONTSERRAT_10",
-                      "text_align": "CENTER"
+                      "text_font": "MONTSERRAT_12",
+                      "text_align": "CENTER",
+                      "align": "CENTER"
                     }
                   }
                 }
