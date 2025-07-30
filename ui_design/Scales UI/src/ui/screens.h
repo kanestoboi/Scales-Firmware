@@ -24,6 +24,12 @@ typedef struct _objects_t {
     lv_obj_t *label_coffee_to_water_ratio_colon;
     lv_obj_t *graph_bar;
     lv_obj_t *graph_flow_rate_bar;
+    lv_obj_t *obj1;
+    lv_obj_t *obj2;
+    lv_obj_t *obj3;
+    lv_obj_t *label_flow_value_1_4;
+    lv_obj_t *label_flow_value_2_4;
+    lv_obj_t *label_flow_value_3_4;
     lv_obj_t *diagnostics_charge_label;
     lv_obj_t *diagnostics_charge_value;
     lv_obj_t *diagnostics1_time_to_charge_label;
