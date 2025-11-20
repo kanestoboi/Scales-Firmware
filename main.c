@@ -33,6 +33,7 @@
 #include "Components/SavedParameters/SavedParameters.h"
 #include "Components/IQS227D/iqs227d.h"
 
+APP_TIMER_DEF(m_weight_sensor_tick_timer_id);
 APP_TIMER_DEF(m_elapsed_time_timer_id);
 APP_TIMER_DEF(m_battery_level_timer_id);
 
@@ -80,7 +81,7 @@ const nrfx_twi_t m_twi_secondary = NRFX_TWI_INSTANCE(TWI_SECONDARY_INSTANCE_ID);
 #define ST7789_SPI_INSTANCE 3
 static const nrfx_spim_t spim3 = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< SPI instance. */
 
-#define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(15)    
+#define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(5)    
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(500) 
 #define TOUCH_SENSOR1_TIMER_INTERVAL            APP_TIMER_TICKS(3000) 
@@ -355,15 +356,20 @@ void disable_write_to_weight_characteristic()
 static void new_weight_value_received_handler(float weight)
 {
     float scaleValue = roundf(weight*10)/10.0;
-    float gramsPerSecond = weight_sensor_get_grams_per_second();
-    uint16_t samplingRate = weight_sensor_get_sampling_rate();
 
     if (writeToWeightCharacteristic)
     {
         ble_weight_sensor_service_sensor_data_update((uint8_t*)&scaleValue, sizeof(float));
     }
-
     display_update_weight_label(scaleValue);
+}
+
+static void weight_conversion_complete_handler()
+{
+    float gramsPerSecond = weight_sensor_get_grams_per_second();
+    uint16_t samplingRate = weight_sensor_get_sampling_rate();
+
+
     display_update_tare_attempts_label(weight_sensor_get_taring_attempts());
     display_update_grams_per_second_bar_label(gramsPerSecond);
     display_update_sampling_rate_label(samplingRate);
@@ -486,6 +492,11 @@ void touch_sensor4_timeout_handler(void * p_context)
     }
 }
 
+void weight_sensor_tick_inc_handler()
+{
+    weight_sensor_tick_inc(5);
+}
+
 /**@brief Function for the Timer initialization.
  *
  * @details Initializes the timer module. This creates and starts application timers.
@@ -494,6 +505,9 @@ static void timers_init(void)
 {
     // Initialize timer module.
     ret_code_t err_code = app_timer_init();
+    APP_ERROR_CHECK(err_code);
+
+    err_code = app_timer_create(&m_weight_sensor_tick_timer_id, APP_TIMER_MODE_REPEATED, weight_sensor_tick_inc_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_elapsed_time_timer_id, APP_TIMER_MODE_REPEATED, elapsed_time_timeout_handler);
@@ -513,6 +527,9 @@ void timers_start()
 {
     ret_code_t err_code;
 
+    err_code = app_timer_start(m_weight_sensor_tick_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
+    APP_ERROR_CHECK(err_code);
+
     err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
@@ -520,6 +537,9 @@ void timers_start()
 void timers_stop()
 {
     ret_code_t err_code;
+
+    err_code = app_timer_stop(m_weight_sensor_tick_timer_id);
+    APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_stop(m_elapsed_time_timer_id);
     APP_ERROR_CHECK(err_code);
@@ -806,7 +826,8 @@ int main(void)
     weight_sensor_init_t ws_init = {
         .scaleFactor = saved_parameters_getSavedScaleFactor(),
         .newWeightValueReceivedCallback = NULL,//new_weight_value_received_handler,
-        .newWeightFilteredValueReceivedCallback = new_weight_value_received_handler
+        .newWeightFilteredValueReceivedCallback = new_weight_value_received_handler,
+        .conversionCompleteCallback = weight_conversion_complete_handler
     };
 
     weight_sensor_init(ws_init);

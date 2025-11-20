@@ -59,6 +59,7 @@ const uint8_t pin_APWR = 4; // analogue power pin
 void (*mCalibrationCompleteCallback)(float scaleFactor) = NULL;
 void (*mWeightMovedFromZeroCallback)() = NULL;
 void (*mStableWeightAcheivedCallback)() = NULL;
+void (*mConversionCompleteCallback)() = NULL;
 void (*mNewWeightValueReceivedCallback)(float weight) = NULL;
 void (*mNewWeightFilteredValueReceivedCallback)(float weight) = NULL;
 
@@ -81,6 +82,8 @@ Biquad flow_filter[NUM_SECTIONS] = {
 
 static void ads123x_timeout_handler(void * p_context)
 {
+    nrf_drv_gpiote_in_event_disable(pin_DOUT);
+
     uint32_t elapsedMs = mTimeMS - mThisTimePeriodStart;
     if (elapsedMs >= MIN_SAMPLE_WINDOW_MS) // e.g. 100 or 250 ms
     {
@@ -95,8 +98,11 @@ static void ads123x_timeout_handler(void * p_context)
 
         // mGramsPerSecond = ((mFilteredScaleValue-mGramsLastTimePeriod) * 1000.0) / (float)elapsedMs;
 
-        // mSamplesPerSecond = (mSamplesLastTimePeriod * 1000) / elapsedMs;
+        mSamplesPerSecond = (mSamplesLastTimePeriod * 1000) / elapsedMs;
     }
+
+    mSamplesThisTimePeriod++;
+
 
     switch (mWeightSensorCurrentState)
     {
@@ -109,7 +115,6 @@ static void ads123x_timeout_handler(void * p_context)
                 break;
             }
 
-            mSamplesThisTimePeriod++;
 
             if (mStableWeightRequested)
             {
@@ -119,7 +124,7 @@ static void ads123x_timeout_handler(void * p_context)
             mFilteredScaleValue = filter_process(weight_filter, NUM_SECTIONS, mScaleValue); //mWeightFilterOutputCoefficient * mFilteredScaleValue + mWeightFilterInputCoefficient * mScaleValue;
 
             if (!first_sample) {
-                mGramsPerSecond = (mFilteredScaleValue - prev_filtered_weight) / (1.0/80.0);
+                mGramsPerSecond = (mFilteredScaleValue - prev_filtered_weight) / (1.0/mSamplesPerSecond);
             } else {
                 first_sample = 0;
             }
@@ -269,7 +274,10 @@ static void ads123x_timeout_handler(void * p_context)
         default:
             break;
     }
+    
+    mConversionCompleteCallback();
 
+    nrf_drv_gpiote_in_event_enable(pin_DOUT, true);
 }
                                             
 void weight_sensor_init(weight_sensor_init_t ws_init)
@@ -278,7 +286,8 @@ void weight_sensor_init(weight_sensor_init_t ws_init)
 
     mNewWeightValueReceivedCallback = ws_init.newWeightValueReceivedCallback;
     mNewWeightFilteredValueReceivedCallback = ws_init.newWeightFilteredValueReceivedCallback;
-
+    mConversionCompleteCallback = ws_init.conversionCompleteCallback;
+    
     ret_code_t err_code;
     nrf_gpio_cfg_output(pin_APWR);
     nrf_gpio_pin_clear(pin_APWR);

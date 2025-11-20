@@ -1,5 +1,6 @@
 #include "ADS123X.h"
 #include "nrf_gpio.h"
+#include "nrf_delay.h"
 
 // Initialize library
 void ADS123X_Init(ADS123X *device, uint8_t pin_DOUT, uint8_t pin_SCLK, uint8_t pin_PDWN, uint8_t pin_GAIN0, uint8_t pin_GAIN1, uint8_t pin_SPEED)
@@ -34,6 +35,7 @@ ADS123X_ERROR_t ADS123X_read(ADS123X *device, int32_t *value)
     for (int i = 23; i >= 0; i--) {
         nrf_gpio_pin_set(device->pin_SCLK);
         readValue = (readValue << 1) | nrf_gpio_pin_read(device->pin_DOUT);
+        nrf_delay_us(2);
         nrf_gpio_pin_clear(device->pin_SCLK);
     }
 
@@ -51,7 +53,7 @@ ADS123X_ERROR_t ADS123X_read(ADS123X *device, int32_t *value)
 
     // Sign extend the 24-bit two's complement value
     if (readValue & 0x800000) {
-        readValue |= 0xFF000000;
+        readValue = (readValue << 8) >> 8; // Arithmetic shift for sign-extension
     }
 
     *value = readValue;
@@ -61,12 +63,6 @@ ADS123X_ERROR_t ADS123X_read(ADS123X *device, int32_t *value)
 
 void ADS123X_setGain(ADS123X *device, ADS123X_GAIN_t gain)
 {
-    if (nrf_gpio_pin_dir_get(device->pin_PDWN) == NRF_GPIO_PIN_DIR_OUTPUT)
-    {
-        device->gain = gain;
-        return;
-    }
-
     switch (gain)
     {
         case GAIN_1:
