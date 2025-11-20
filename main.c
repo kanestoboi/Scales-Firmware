@@ -188,6 +188,7 @@ void touchSensor4TOutChanged(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
         }
         else
         {
+            display_indicate_tare();
             weight_sensor_tare();
         }
     }
@@ -706,7 +707,7 @@ void wakeup_from_sleep()
     display_wakeup();
     weight_sensor_wakeup();
         
-    weight_sensor_tare();
+   // weight_sensor_tare();
 
     timers_start();
 
