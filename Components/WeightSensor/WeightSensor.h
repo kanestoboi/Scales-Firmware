@@ -29,7 +29,7 @@ typedef struct
     float scaleFactor;
     void (*newWeightValueReceivedCallback)(float weight);
     void (*newWeightFilteredValueReceivedCallback)(float weight);
-
+    void (*conversionCompleteCallback)(void);
 } weight_sensor_init_t;
 
 void weight_sensor_init(weight_sensor_init_t ws_init);
