@@ -192,6 +192,10 @@ static void ads123x_timeout_handler(void * p_context)
             if(error == NoERROR && fabs(mScaleValue) < 0.02)
             {
                 mWeightSensorCurrentState = NORMAL;
+                mScaleValue = 0.0;
+                mFilteredScaleValue = 0;
+                mGramsPerSecond = 0;
+                mGramsPerSecondFiltered = 0;
             }
             else if (error != NoERROR)
             {

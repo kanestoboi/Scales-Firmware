@@ -75,6 +75,7 @@ bool mDisplayScreenUpdated = false;
 bool mGramsPerSecondUpdated = false;
 bool mSamplingRateUpdated = false;
 bool mResetDefaults = false;
+bool mIndicateTare = true;
 
 bool mWeightSensorTareAttemptsUpdated = false;
 
@@ -362,6 +363,11 @@ void display_reset_label_defaults()
     mResetDefaults = true;
 }
 
+void display_indicate_tare()
+{
+    mIndicateTare = true;
+}
+
 void display_turn_backlight_on()
 {
     nrf_gpio_pin_clear(p_scales_display1->backlight_pin);
@@ -489,6 +495,25 @@ void display_loop()
         }
 
         mWeightUpdated = false;
+    }
+
+    if (mIndicateTare)
+    {
+        char buffer[5] = "---"; // Make sure this buffer is large enough to hold the formatted string
+
+        // First buffer contains the whole numbers before the decimal place
+        strcpy(wholeNumbers, buffer);
+
+        char buffer2[2] = "-";
+        strcpy(fractionalPart, buffer2);
+
+        lv_label_set_text(objects.label_weight_integer, wholeNumbers);
+        lv_label_set_text(objects.label_weight_fraction, fractionalPart);
+
+        lv_bar_set_value(objects.graph_bar, 0, LV_ANIM_OFF);
+        lv_bar_set_value(objects.graph_flow_rate_bar, 0, LV_ANIM_OFF);
+
+        mIndicateTare = false;
     }
     
     if (mToggleElapsedTimeVisibility)
