@@ -33,10 +33,8 @@
 #include "Components/SavedParameters/SavedParameters.h"
 #include "Components/IQS227D/iqs227d.h"
 
-APP_TIMER_DEF(m_weight_sensor_tick_timer_id);
 APP_TIMER_DEF(m_elapsed_time_timer_id);
 APP_TIMER_DEF(m_battery_level_timer_id);
-
 APP_TIMER_DEF(m_touch_sensor1_timer_id);
 APP_TIMER_DEF(m_touch_sensor4_timer_id);
 
@@ -62,12 +60,12 @@ uint32_t currentElapsedTime = 0;
 bool elapsed_time_timer_running = false;
 
 //Initializing TWI0 instance
-#define TWI_INSTANCE_ID                 0
+#define TWI0_INSTANCE_ID                 0
 #define TWI_SECONDARY_INSTANCE_ID       1
 
 //I2C Pins Settings, you change them to any other pins
-#define TWI_SCL_M           6         //I2C SCL Pin
-#define TWI_SDA_M           8        //I2C SDA Pin
+#define TWI0_SCL_M           6         //I2C SCL Pin
+#define TWI0_SDA_M           8        //I2C SDA Pin
 
 #define SPI3_SCK_PIN 12
 #define SPI3_MISO_PIN 14
@@ -75,13 +73,12 @@ bool elapsed_time_timer_running = false;
 #define SPI3_SS_PIN 11
 
 // Create a Handle for the twi communication
-const nrfx_twi_t m_twi0 = NRFX_TWI_INSTANCE(TWI_INSTANCE_ID);
+const nrfx_twi_t m_twi0 = NRFX_TWI_INSTANCE(TWI0_INSTANCE_ID);
 const nrfx_twi_t m_twi_secondary = NRFX_TWI_INSTANCE(TWI_SECONDARY_INSTANCE_ID);
 
 #define ST7789_SPI_INSTANCE 3
 static const nrfx_spim_t spim3 = NRFX_SPIM_INSTANCE(ST7789_SPI_INSTANCE);  /**< SPI instance. */
 
-#define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(5)    
 #define ELAPSED_TIMER_TIMER_INTERVAL            APP_TIMER_TICKS(1000) 
 #define BATTERY_LEVEL_TIMER_INTERVAL            APP_TIMER_TICKS(500) 
 #define TOUCH_SENSOR1_TIMER_INTERVAL            APP_TIMER_TICKS(3000) 
@@ -492,11 +489,6 @@ void touch_sensor4_timeout_handler(void * p_context)
     }
 }
 
-void weight_sensor_tick_inc_handler()
-{
-    weight_sensor_tick_inc(5);
-}
-
 /**@brief Function for the Timer initialization.
  *
  * @details Initializes the timer module. This creates and starts application timers.
@@ -505,9 +497,6 @@ static void timers_init(void)
 {
     // Initialize timer module.
     ret_code_t err_code = app_timer_init();
-    APP_ERROR_CHECK(err_code);
-
-    err_code = app_timer_create(&m_weight_sensor_tick_timer_id, APP_TIMER_MODE_REPEATED, weight_sensor_tick_inc_handler);
     APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_create(&m_elapsed_time_timer_id, APP_TIMER_MODE_REPEATED, elapsed_time_timeout_handler);
@@ -527,9 +516,6 @@ void timers_start()
 {
     ret_code_t err_code;
 
-    err_code = app_timer_start(m_weight_sensor_tick_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, NULL);
-    APP_ERROR_CHECK(err_code);
-
     err_code = app_timer_start(m_battery_level_timer_id, BATTERY_LEVEL_TIMER_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
@@ -537,9 +523,6 @@ void timers_start()
 void timers_stop()
 {
     ret_code_t err_code;
-
-    err_code = app_timer_stop(m_weight_sensor_tick_timer_id);
-    APP_ERROR_CHECK(err_code);
 
     err_code = app_timer_stop(m_elapsed_time_timer_id);
     APP_ERROR_CHECK(err_code);
@@ -607,8 +590,8 @@ void twi0_master_init(void)
 
     // Configure the settings for twi communication
     const nrfx_twi_config_t twi_config = {
-       .scl                = TWI_SCL_M,  //SCL Pin
-       .sda                = TWI_SDA_M,  //SDA Pin
+       .scl                = TWI0_SCL_M,  //SCL Pin
+       .sda                = TWI0_SDA_M,  //SDA Pin
        .frequency          = NRF_TWI_FREQ_400K, //Communication Speed
        .interrupt_priority = APP_IRQ_PRIORITY_HIGH, //Interrupt Priority(Note: if using Bluetooth then select priority carefully)
        .hold_bus_uninit     = true //automatically clear bus
@@ -653,8 +636,8 @@ void twi0_master_uninit(void)
     nrfx_twi_uninit(&m_twi0);
 
     // set pins to defult config
-    nrf_gpio_cfg_default(TWI_SCL_M);
-    nrf_gpio_cfg_default(TWI_SDA_M);
+    nrf_gpio_cfg_default(TWI0_SCL_M);
+    nrf_gpio_cfg_default(TWI0_SDA_M);
 }
 
 

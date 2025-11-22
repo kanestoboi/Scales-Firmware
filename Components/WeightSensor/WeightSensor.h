@@ -56,7 +56,7 @@ uint16_t weight_sensor_get_sampling_rate();
 
 void weight_sensor_data_ready_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 
-void weight_sensor_tick_inc(uint32_t tickPeriod);
+void weight_sensor_tick_inc(void * p_context);
 
 float weight_sensor_get_grams_per_second();
 

@@ -63,6 +63,11 @@ void (*mConversionCompleteCallback)() = NULL;
 void (*mNewWeightValueReceivedCallback)(float weight) = NULL;
 void (*mNewWeightFilteredValueReceivedCallback)(float weight) = NULL;
 
+APP_TIMER_DEF(m_weight_sensor_tick_timer_id);
+
+const uint32_t READ_WEIGHT_SENSOR_TICKS_INTERVAL_MS =   (uint32_t)5;
+#define READ_WEIGHT_SENSOR_TICKS_INTERVAL       APP_TIMER_TICKS(READ_WEIGHT_SENSOR_TICKS_INTERVAL_MS)    
+
 // Define filter order and sections (4th order = 2 biquads)
 #define NUM_SECTIONS 2
 
@@ -78,7 +83,6 @@ Biquad flow_filter[NUM_SECTIONS] = {
     {0.02008337, 0.04016673, 0.02008337, -1.5610181, 0.6413515, 0, 0},
     {0.02008337, 0.04016673, 0.02008337, -1.5610181, 0.6413515, 0, 0}
 };
-
 
 static void ads123x_timeout_handler(void * p_context)
 {
@@ -315,6 +319,10 @@ void weight_sensor_init(weight_sensor_init_t ws_init)
 
     weight_sensor_sleep(&scale);
 
+    // Create the timer for running the module's tick handler
+    err_code = app_timer_create(&m_weight_sensor_tick_timer_id, APP_TIMER_MODE_REPEATED, weight_sensor_tick_inc);
+    APP_ERROR_CHECK(err_code);
+
     mTaringAttempts = 0;
 }
 
@@ -362,6 +370,9 @@ void weight_sensor_sleep()
     nrf_drv_gpiote_in_event_enable(pin_DOUT, false);
     ADS123X_PowerOff(&scale);
     nrf_gpio_pin_set(pin_APWR);
+
+    ret_code_t err_code = app_timer_stop(m_weight_sensor_tick_timer_id);
+    APP_ERROR_CHECK(err_code);
 }
 
 void weight_sensor_wakeup()
@@ -374,6 +385,9 @@ void weight_sensor_wakeup()
     ads123x_timeout_handler(NULL);
 
     nrf_drv_gpiote_in_event_enable(pin_DOUT, true);
+
+    ret_code_t err_code = app_timer_start(m_weight_sensor_tick_timer_id, READ_WEIGHT_SENSOR_TICKS_INTERVAL, (void*)&READ_WEIGHT_SENSOR_TICKS_INTERVAL_MS);
+    APP_ERROR_CHECK(err_code);
 
     mWeightSensorCurrentState = START_TARING;
 }
@@ -428,9 +442,10 @@ void weight_sensor_data_ready_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity
    ads123x_timeout_handler(NULL);
 }
 
-void weight_sensor_tick_inc(uint32_t tickPeriod)
+void weight_sensor_tick_inc(void * p_context)
 {
-    mTimeMS += tickPeriod;
+    uint32_t *tickPeriod = (uint32_t *)p_context;
+    mTimeMS += *tickPeriod;
 }
 
 float weight_sensor_get_grams_per_second()
